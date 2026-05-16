@@ -56,6 +56,7 @@ export type ActivityBarItem =
   | 'database'
   | 'extensions'
   | 'todo'
+  | 'outline'
 
 export interface AppState {
   currentFolder: string | null

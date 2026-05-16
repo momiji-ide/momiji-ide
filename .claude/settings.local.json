@@ -5,7 +5,14 @@
       "PowerShell(npm --version)",
       "Bash(npm run *)",
       "Bash(cd /d \"F:\\\\Buat tools\\\\Code Editor\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(grep -iE \"\\\\.\\(jpg|jpeg|png|gif|webp|bmp|svg|pdf|mp4|mp3|wav\\)$\")",
+      "Bash(grep -iE \"\\\\.\\(jpg|jpeg|png|gif|webp|bmp\\)$\")",
+      "Bash(git rm *)",
+      "Bash(git add *)"
     ]
   }
 }
