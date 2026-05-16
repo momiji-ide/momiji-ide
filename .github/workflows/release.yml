@@ -3,12 +3,11 @@ name: Build & Release
 on:
   push:
     tags:
-      - 'v*'          # triggers on v1.0.0, v1.2.3, etc.
+      - 'v*'
 
 permissions:
-  contents: write     # needed to create GitHub Releases
+  contents: write
   packages: write
-  actions: read
 
 jobs:
   build-windows:
@@ -23,10 +22,18 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Build & publish (Windows)
-        run: npm run dist
+      - name: Rebuild native modules for Electron
+        run: npx electron-rebuild --force --types prod,dev,optional
+        env:
+          npm_config_msvs_version: '2019'
+
+      - name: Build (vite)
+        run: npm run build
+
+      - name: Package & publish (Windows)
+        run: npm run dist -- --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,10 +49,16 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Build & publish (macOS)
-        run: npm run dist
+      - name: Rebuild native modules for Electron
+        run: npx electron-rebuild --force --types prod,dev,optional
+
+      - name: Build (vite)
+        run: npm run build
+
+      - name: Package & publish (macOS)
+        run: npm run dist -- --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -60,13 +73,24 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            python3 make g++ \
+            rpm fakeroot dpkg \
+            libx11-dev libxkbfile-dev libsecret-1-dev
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Install Linux build deps
-        run: sudo apt-get install -y rpm fakeroot
+      - name: Rebuild native modules for Electron
+        run: npx electron-rebuild --force --types prod,dev,optional
 
-      - name: Build & publish (Linux)
-        run: npm run dist
+      - name: Build (vite)
+        run: npm run build
+
+      - name: Package & publish (Linux)
+        run: npm run dist -- --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
