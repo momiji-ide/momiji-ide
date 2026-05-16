@@ -42,3 +42,10 @@ yarn-error.log*
 # Temporary
 *.tmp
 *.temp
+
+# AI-generated / reference images in root (logos are in src/renderer/src/assets/)
+ChatGPT Image*.png
+Gemini_Generated_*.png
+logo-kitsune2.png
+*.png
+!resources/*.png
