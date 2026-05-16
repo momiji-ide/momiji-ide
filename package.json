@@ -28,6 +28,7 @@
     "autoprefixer": "^10.4.19",
     "electron": "^31.0.2",
     "electron-builder": "^24.13.3",
+    "electron-icon-builder": "^2.0.1",
     "electron-vite": "^2.3.0",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
@@ -70,19 +71,35 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "resources/icon.ico"
     },
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "icon": "resources/icon.icns"
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "resources/icon.png"
     },

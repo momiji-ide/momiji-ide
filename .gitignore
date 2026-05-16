@@ -1,6 +1,9 @@
 # Claude Code internal files
 .claude/
 
+# Generated icon intermediates
+resources/icons/
+
 # Dependencies
 node_modules/
 
