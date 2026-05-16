@@ -1,0 +1,99 @@
+{
+  "name": "parallax-ide",
+  "version": "1.0.0",
+  "description": "Parallax IDE — Code from every angle, powered by Kitsune AI",
+  "main": "out/main/index.js",
+  "homepage": "./",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "ide",
+    "code-editor",
+    "electron",
+    "ai",
+    "parallax",
+    "kitsune"
+  ],
+  "author": "Parallax",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
+  },
+  "dependencies": {
+    "@blockly/block-shareable-procedures": "^6.0.12",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "@xyflow/react": "^12.10.2",
+    "blockly": "^12.5.1",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.8.3",
+    "lucide-react": "^1.16.0",
+    "monaco-editor": "^0.50.0",
+    "node-pty": "^1.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-resizable-panels": "^2.0.19",
+    "zustand": "^4.5.4"
+  },
+  "build": {
+    "appId": "com.parallax.ide",
+    "productName": "Parallax IDE",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "parallax-ide",
+      "repo": "parallax-ide"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "resources/icon.icns"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] }
+      ],
+      "icon": "resources/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

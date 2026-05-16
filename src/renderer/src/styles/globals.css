@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Parallax IDE × Kitsune AI — CSS Variables ── */
+:root {
+  --bg-base: #1e1e2e;
+  --bg-mantle: #181825;
+  --bg-crust: #11111b;
+  --bg-surface0: #313244;
+  --bg-surface1: #45475a;
+  --bg-surface2: #585b70;
+  --bg-overlay0: #6c7086;
+  --bg-overlay1: #7f849c;
+  --text: #cdd6f4;
+  --text-muted: #a6adc8;
+  --text-subtle: #7f849c;
+  --accent-blue: #89b4fa;
+  --accent-mauve: #cba6f7;
+  --accent-green: #a6e3a1;
+  --accent-red: #f38ba8;
+  --accent-yellow: #f9e2af;
+  --accent-peach: #fab387;
+  --accent-teal: #94e2d5;
+  --accent-sapphire: #74c7ec;
+  --border: #313244;
+}
+
+/* ── Catppuccin Latte (light) ── */
+[data-theme="light"] {
+  --bg-base: #eff1f5;
+  --bg-mantle: #e6e9ef;
+  --bg-crust: #dce0e8;
+  --bg-surface0: #ccd0da;
+  --bg-surface1: #bcc0cc;
+  --bg-surface2: #acb0be;
+  --bg-overlay0: #9ca0b0;
+  --bg-overlay1: #8c8fa1;
+  --text: #4c4f69;
+  --text-muted: #5c5f77;
+  --text-subtle: #6c6f85;
+  --accent-blue: #1e66f5;
+  --accent-mauve: #8839ef;
+  --accent-green: #40a02b;
+  --accent-red: #d20f39;
+  --accent-yellow: #df8e1d;
+  --accent-peach: #fe640b;
+  --accent-teal: #179299;
+  --accent-sapphire: #209fb5;
+  --border: #ccd0da;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-base);
+  color: var(--text);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-surface1); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-surface2); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* ── Selection ── */
+::selection { background: color-mix(in srgb, var(--accent-blue) 35%, transparent); }
+
+/* ── Drag region ── */
+.drag-region { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
+
+/* ── Animations ── */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Utility animations ── */
+.animate-spin    { animation: spin 1s linear infinite; }
+.animate-pulse   { animation: pulse 2s ease-in-out infinite; }
+.animate-fade-in { animation: fadeIn 0.2s ease-out; }
+.animate-slide-up { animation: slideInUp 0.2s ease-out; }
+
+/* ── Focus styles ── */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 1px;
+}
+
+/* ── Transitions ── */
+button, a, input, textarea, select {
+  transition-property: background-color, border-color, color, opacity, transform;
+  transition-duration: 100ms;
+  transition-timing-function: ease;
+}
+
+/* ── Blockly overrides ── */
+.blocklySvg { background: var(--bg-base) !important; }
+.blocklyToolboxDiv { background: var(--bg-mantle) !important; border-right: 1px solid var(--border) !important; }
+.blocklyTreeLabel { color: var(--text) !important; font-size: 12px !important; font-family: inherit !important; }
+.blocklyTreeRow:hover { background: var(--bg-surface0) !important; }
+.blocklyTreeSelected, .blocklyTreeRow.blocklyTreeSelected { background: var(--bg-surface0) !important; }
+.blocklyTreeSelected > .blocklyTreeLabel { color: var(--accent-blue) !important; }
+.blocklyFlyoutBackground { fill: var(--bg-mantle) !important; }
+.blocklyScrollbarBackground { fill: transparent !important; }
+.blocklyScrollbarHandle { fill: var(--bg-surface1) !important; rx: 3 !important; }
+.blocklyZoom > image, .blocklyZoom > svg { filter: invert(0.7) !important; }
+.blocklyTrash > image { filter: invert(0.7) !important; }
+.blocklyWidgetDiv, .blocklyDropDownDiv { background: var(--bg-surface0) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }

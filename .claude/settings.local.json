@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "Bash(npm run *)",
+      "Bash(cd /d \"F:\\\\Buat tools\\\\Code Editor\")",
+      "Bash(npm install *)"
+    ]
+  }
+}
