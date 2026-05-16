@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   build-windows:
@@ -15,24 +14,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
-      - name: Rebuild native modules for Electron
-        run: npx electron-rebuild --force --types prod,dev,optional
-        env:
-          npm_config_msvs_version: '2019'
-
-      - name: Build (vite)
+      - name: Build
         run: npm run build
 
-      - name: Package & publish (Windows)
+      - name: Package & release (Windows)
         run: npm run dist -- --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,22 +35,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
-      - name: Rebuild native modules for Electron
-        run: npx electron-rebuild --force --types prod,dev,optional
-
-      - name: Build (vite)
+      - name: Build
         run: npm run build
 
-      - name: Package & publish (macOS)
+      - name: Package & release (macOS)
         run: npm run dist -- --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,10 +56,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install Linux build tools
@@ -79,18 +67,17 @@ jobs:
           sudo apt-get install -y \
             python3 make g++ \
             rpm fakeroot dpkg \
-            libx11-dev libxkbfile-dev libsecret-1-dev
+            libx11-dev libxkbfile-dev libsecret-1-dev \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 \
+            libgtk-3-0 libgbm1
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
-      - name: Rebuild native modules for Electron
-        run: npx electron-rebuild --force --types prod,dev,optional
-
-      - name: Build (vite)
+      - name: Build
         run: npm run build
 
-      - name: Package & publish (Linux)
+      - name: Package & release (Linux)
         run: npm run dist -- --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
