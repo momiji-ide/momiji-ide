@@ -6,6 +6,7 @@ import { SearchPanel }    from '../Search/SearchPanel'
 import { AIPanel }        from '../AI/AIPanel'
 import { GitPanel }       from '../Git/GitPanel'
 import { TodoPanel }      from '../Todo/TodoPanel'
+import { OutlinePanel }   from '../Outline/OutlinePanel'
 
 // Heavy panels — lazy loaded on first access
 const BlockEditor     = lazy(() => import('../BlockEditor/BlockEditor').then(m => ({ default: m.BlockEditor })))
@@ -76,6 +77,7 @@ export function Sidebar() {
     search:     <SearchPanel />,
     git:        <GitPanel />,
     todo:       <TodoPanel />,
+    outline:    <OutlinePanel />,
     snippets:   <Suspense fallback={<PanelLoader />}><SnippetManager /></Suspense>,
     templates:  <Suspense fallback={<PanelLoader />}><TemplateGallery /></Suspense>,
     packages:   <Suspense fallback={<PanelLoader />}><PackageManager /></Suspense>,

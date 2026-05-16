@@ -144,3 +144,16 @@ export function IcoTodo({ size = 20 }: P) {
     </svg>
   )
 }
+
+export function IcoOutline({ size = 20 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="6" y1="10" x2="21" y2="10" />
+      <line x1="6" y1="14" x2="21" y2="14" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+      <circle cx="3" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="14" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}

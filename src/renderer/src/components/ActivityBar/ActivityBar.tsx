@@ -3,7 +3,7 @@ import type { ActivityBarItem } from '../../types'
 import {
   IcoExplorer, IcoSearch, IcoScaffold, IcoTemplates, IcoPackages,
   IcoHttp, IcoBlocks, IcoFlow, IcoDebug, IcoGit, IcoSnippets,
-  IcoAI, IcoDatabase, IcoExtensions, IcoSettings, IcoTodo
+  IcoAI, IcoDatabase, IcoExtensions, IcoSettings, IcoTodo, IcoOutline
 } from './Icons'
 
 interface NavItem {
@@ -22,6 +22,7 @@ const TOP_ITEMS: NavItem[] = [
 
 const MID_ITEMS: NavItem[] = [
   { id: 'ai',        icon: <IcoAI />,        label: 'Kitsune AI' },
+  { id: 'outline',   icon: <IcoOutline />,   label: 'Symbol Outline' },
   { id: 'todo',      icon: <IcoTodo />,      label: 'TODO / Tasks' },
   { id: 'http',      icon: <IcoHttp />,      label: 'HTTP Client' },
   { id: 'blocks',    icon: <IcoBlocks />,    label: 'Block Editor' },

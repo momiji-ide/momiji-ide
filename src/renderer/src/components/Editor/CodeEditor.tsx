@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import MonacoEditor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
@@ -6,6 +6,7 @@ import { MarkdownPreview } from './MarkdownPreview'
 import { ParallaxLogo } from '../Logo/ParallaxLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { FileIcon } from '../Sidebar/FileIcon'
+import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
 
 // Patterns for finding definitions across languages
 function findDefinitionInText(content: string, word: string): number {
@@ -54,6 +55,9 @@ export function CodeEditor() {
   const splitTab = tabs.find((t) => t.id === splitTabId)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lintTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Color picker state
+  const [colorPicker, setColorPicker] = useState<{ color: string; x: number; y: number; line: number; col: number; original: string } | null>(null)
 
   // Listen for F12 / editor commands from main process
   useEffect(() => {
@@ -224,6 +228,75 @@ export function CodeEditor() {
       }))
     })
 
+    // Color swatch decorations
+    let colorDecorations: string[] = []
+    const updateColorDecorations = () => {
+      const model = editorInstance.getModel()
+      if (!model) return
+      const decorations: import('monaco-editor').editor.IModelDeltaDecoration[] = []
+      const lineCount = Math.min(model.getLineCount(), 2000)
+      for (let i = 1; i <= lineCount; i++) {
+        const line = model.getLineContent(i)
+        const colors = findColorsInLine(line)
+        colors.forEach(c => {
+          decorations.push({
+            range: new monaco.Range(i, c.col + 1, i, c.col + 1),
+            options: {
+              before: {
+                content: ' ',
+                inlineClassName: `color-swatch-${c.hex.slice(1)}`,
+              }
+            }
+          })
+        })
+      }
+      colorDecorations = editorInstance.deltaDecorations(colorDecorations, decorations)
+      // Inject swatch styles
+      const styleId = 'parallax-color-swatches'
+      let styleEl = document.getElementById(styleId)
+      if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = styleId; document.head.appendChild(styleEl) }
+      const allColors = new Set<string>()
+      for (let i = 1; i <= lineCount; i++) {
+        findColorsInLine(model.getLineContent(i)).forEach(c => allColors.add(c.hex))
+      }
+      styleEl.textContent = [...allColors].map(hex =>
+        `.color-swatch-${hex.slice(1)} { display:inline-block; width:10px; height:10px; background:${hex}; border:1px solid rgba(128,128,128,0.4); border-radius:2px; margin-right:2px; vertical-align:middle; cursor:pointer; }`
+      ).join('\n')
+    }
+    editorInstance.onDidChangeModelContent(() => setTimeout(updateColorDecorations, 300))
+    editorInstance.onDidChangeModel(() => setTimeout(updateColorDecorations, 100))
+    setTimeout(updateColorDecorations, 200)
+
+    // Click on color swatch → open picker
+    editorInstance.onMouseDown((e) => {
+      const pos = e.target.position
+      if (pos && e.target.type === 1 /* outside gutter */) {
+        const model = editorInstance.getModel()
+        if (model) {
+          const line = model.getLineContent(pos.lineNumber)
+          const colors = findColorsInLine(line)
+          // Check if click is near a color token
+          const hit = colors.find(c => Math.abs(c.col - pos.column + 1) < c.value.length + 2)
+          if (hit) {
+            const editorDom = editorInstance.getDomNode()
+            const rect = editorDom?.getBoundingClientRect()
+            const scrolledVisibleRange = editorInstance.getScrolledVisiblePosition({ lineNumber: pos.lineNumber, column: hit.col + 1 })
+            if (scrolledVisibleRange && rect) {
+              setColorPicker({
+                color: hit.hex,
+                x: rect.left + scrolledVisibleRange.left,
+                y: rect.top + scrolledVisibleRange.top,
+                line: pos.lineNumber,
+                col: hit.col,
+                original: hit.value
+              })
+              return
+            }
+          }
+        }
+      }
+    })
+
     // Override Ctrl+Click for definition (ensure it works)
     editorInstance.onMouseDown((e) => {
       if (e.event.ctrlKey || e.event.metaKey) {
@@ -310,6 +383,25 @@ export function CodeEditor() {
       if (model2) mo.editor.setModelMarkers(model2, 'parallax-lint', [])
     }
   }, [])
+
+  // Apply picked color back to editor
+  const handleColorApply = useCallback((newHex: string) => {
+    if (!colorPicker || !editorRef.current || !monacoRef.current) return
+    const editor = editorRef.current
+    const monaco = monacoRef.current
+    const model = editor.getModel()
+    if (!model) return
+    const line = colorPicker.line
+    const lineText = model.getLineContent(line)
+    const col = colorPicker.col
+    const orig = colorPicker.original
+    const startCol = col + 1
+    const endCol = col + orig.length + 1
+    editor.executeEdits('color-picker', [{
+      range: new monaco.Range(line, startCol, line, endCol),
+      text: newHex
+    }])
+  }, [colorPicker])
 
   const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
 
@@ -482,16 +574,27 @@ export function CodeEditor() {
   }
 
   return (
-    <MonacoEditor
-      key={activeTab.id}
-      language={activeTab.language}
-      value={activeTab.content}
-      theme={monacoTheme}
-      beforeMount={handleEditorBeforeMount}
-      onMount={handleEditorMount}
-      onChange={handleChange}
-      options={monacoOptions}
-    />
+    <>
+      <MonacoEditor
+        key={activeTab.id}
+        language={activeTab.language}
+        value={activeTab.content}
+        theme={monacoTheme}
+        beforeMount={handleEditorBeforeMount}
+        onMount={handleEditorMount}
+        onChange={handleChange}
+        options={monacoOptions}
+      />
+      {colorPicker && (
+        <ColorPickerPopup
+          color={colorPicker.color}
+          x={colorPicker.x}
+          y={colorPicker.y}
+          onApply={handleColorApply}
+          onClose={() => setColorPicker(null)}
+        />
+      )}
+    </>
   )
 }
 
