@@ -57,12 +57,14 @@
   "build": {
     "appId": "com.parallax.ide",
     "productName": "Parallax IDE",
+    "npmRebuild": false,
     "directories": {
       "output": "release"
     },
     "files": [
       "out/**/*",
-      "resources/**/*"
+      "resources/**/*",
+      "node_modules/node-pty/build/Release/*.node"
     ],
     "publish": {
       "provider": "github",
