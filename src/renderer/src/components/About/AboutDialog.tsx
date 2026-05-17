@@ -30,9 +30,56 @@ const FEATURES = [
   '🎨 7 Extra Themes',
 ]
 
+type AboutTab = 'authors' | 'features' | 'stack' | 'license'
+
+const AUTHORS = [
+  {
+    group: 'Project Founder',
+    members: [{ name: 'Haika', handle: 'haikaru.noriyuki@gmail.com', role: 'Creator & Lead Developer' }]
+  },
+  {
+    group: 'AI Engine',
+    members: [{ name: 'Kitsune AI', handle: 'Powered by Anthropic Claude, Google Gemini, OpenAI, Ollama', role: 'Integrated AI Assistant' }]
+  },
+  {
+    group: 'Special Thanks',
+    members: [
+      { name: 'Anthropic', handle: 'Claude API', role: 'AI Provider' },
+      { name: 'Microsoft', handle: 'Monaco Editor & VS Code', role: 'Editor Engine' },
+      { name: 'OpenAI', handle: 'GPT API', role: 'AI Provider' },
+      { name: 'Google', handle: 'Gemini API', role: 'AI Provider' },
+      { name: 'Electron Team', handle: 'electron/electron', role: 'Desktop Runtime' },
+    ]
+  },
+]
+
+const LICENSE_TEXT = `MIT License
+
+Copyright (c) 2025 Parallax IDE — Haika
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+
 export function AboutDialog({ onClose }: Props) {
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest' | 'available'>('idle')
   const [version, setVersion] = useState('1.0.0')
+  const [activeTab, setActiveTab] = useState<AboutTab>('authors')
 
   useEffect(() => {
     // Get app version via IPC
@@ -116,86 +163,114 @@ export function AboutDialog({ onClose }: Props) {
           </button>
         </div>
 
-        {/* RIGHT — Info */}
+        {/* RIGHT — Tabs */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
+          {/* Tab bar */}
+          <div className="flex items-center justify-between flex-shrink-0"
             style={{ borderBottom: '1px solid var(--border)' }}>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>About Parallax IDE</p>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>AI-Native IDE Platform</p>
+            <div className="flex">
+              {(['authors','features','stack','license'] as AboutTab[]).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className="px-4 py-3 text-xs font-semibold capitalize transition-colors"
+                  style={{
+                    color: activeTab === tab ? 'var(--text)' : 'var(--text-subtle)',
+                    borderBottom: activeTab === tab ? '2px solid var(--accent-mauve)' : '2px solid transparent',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    borderBottomStyle: 'solid',
+                  }}>
+                  {tab === 'stack' ? 'Built With' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
             </div>
             <button onClick={onClose}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-sm"
-              style={{ color: 'var(--text-subtle)', background: 'var(--bg-surface0)' }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg mr-3 text-sm"
+              style={{ color: 'var(--text-subtle)', background: 'var(--bg-surface0)', border: 'none', cursor: 'pointer' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface1)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}>
               ✕
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
-            {/* Features */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'var(--text-subtle)' }}>Features</p>
-              <div className="grid grid-cols-2 gap-1">
-                {FEATURES.map(f => (
-                  <p key={f} className="text-xs" style={{ color: 'var(--text-muted)' }}>{f}</p>
-                ))}
-              </div>
-            </div>
+          <div className="flex-1 overflow-y-auto">
 
-            {/* Tech stack */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'var(--text-subtle)' }}>Built with</p>
-              <div className="flex flex-wrap gap-1.5">
-                {TECH_STACK.map(t => (
-                  <div key={t.name}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-                    style={{ background: t.color + '18', border: `1px solid ${t.color}44`, color: t.color }}
-                    title={t.desc}>
-                    {t.name}
+            {/* AUTHORS TAB */}
+            {activeTab === 'authors' && (
+              <div className="p-5 flex flex-col gap-5">
+                {AUTHORS.map(group => (
+                  <div key={group.group}>
+                    <p className="text-xs font-black uppercase tracking-widest mb-3"
+                      style={{ color: 'var(--accent-mauve)' }}>{group.group}</p>
+                    {group.members.map(m => (
+                      <div key={m.name} className="flex flex-col gap-0.5 px-3 py-2.5 rounded-lg mb-1.5"
+                        style={{ background: 'var(--bg-surface0)' }}>
+                        <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{m.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--accent-blue)' }}>{m.role}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{m.handle}</p>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
-            </div>
+            )}
 
-            {/* Links */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: 'var(--text-subtle)' }}>Links</p>
-              <div className="flex flex-col gap-1.5">
-                {[
-                  { icon: '🌐', label: 'Website', url: 'https://parallax-ide.com' },
-                  { icon: '📖', label: 'Documentation', url: 'https://docs.parallax-ide.com' },
-                  { icon: '🐛', label: 'Report an issue', url: 'https://github.com/parallax-ide/issues' },
-                  { icon: '⭐', label: 'Star on GitHub', url: 'https://github.com/parallax-ide' },
-                ].map(l => (
-                  <button key={l.label}
-                    onClick={() => window.open(l.url, '_blank')}
-                    className="flex items-center gap-2 text-xs text-left px-2 py-1 rounded-lg transition-colors"
-                    style={{ color: 'var(--accent-blue)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    {l.icon} {l.label}
-                    <span className="ml-auto text-xs" style={{ color: 'var(--text-subtle)' }}>↗</span>
-                  </button>
-                ))}
+            {/* FEATURES TAB */}
+            {activeTab === 'features' && (
+              <div className="p-5">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {FEATURES.map(f => (
+                    <div key={f} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs"
+                      style={{ background: 'var(--bg-surface0)', color: 'var(--text)' }}>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-col gap-1.5">
+                  {[
+                    { icon: '🌐', label: 'GitHub', url: 'https://github.com/parallax-ide/parallax-ide' },
+                    { icon: '🐛', label: 'Report an issue', url: 'https://github.com/parallax-ide/parallax-ide/issues' },
+                    { icon: '⭐', label: 'Star on GitHub', url: 'https://github.com/parallax-ide/parallax-ide' },
+                  ].map(l => (
+                    <button key={l.label} onClick={() => window.open(l.url, '_blank')}
+                      className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg"
+                      style={{ color: 'var(--accent-blue)', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      {l.icon} {l.label} <span className="ml-auto" style={{ color: 'var(--text-subtle)' }}>↗</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Footer */}
-            <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-              <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-                MIT License · © 2025 Parallax IDE
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-                Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} ·
-                Chromium · Node.js
-              </p>
-            </div>
+            {/* BUILT WITH TAB */}
+            {activeTab === 'stack' && (
+              <div className="p-5 flex flex-col gap-2">
+                {TECH_STACK.map(t => (
+                  <div key={t.name} className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                    style={{ background: 'var(--bg-surface0)' }}>
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: t.color }} />
+                    <p className="text-xs font-semibold flex-1" style={{ color: 'var(--text)' }}>{t.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{t.desc}</p>
+                  </div>
+                ))}
+                <div className="mt-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                  <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+                    Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} · MIT License · © 2025 Parallax IDE
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* LICENSE TAB */}
+            {activeTab === 'license' && (
+              <div className="p-5">
+                <pre className="text-xs leading-relaxed whitespace-pre-wrap"
+                  style={{ color: 'var(--text-subtle)', fontFamily: 'monospace' }}>
+                  {LICENSE_TEXT}
+                </pre>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
