@@ -2,6 +2,9 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { ModelSelector } from './ModelSelector'
+import kitsuneNormal  from '../../assets/kitsune-normal.png'
+import kitsuneHappy   from '../../assets/kitsune-happy.png'
+import kitsuneConfuse from '../../assets/kitsune-confuse.png'
 
 // ─── Context window sizes ─────────────────────────────────────────────────────
 const CONTEXT_WINDOWS: Record<string, number> = {
@@ -204,6 +207,7 @@ export function KitsuneAgent() {
   const [selectedProviderId, setSelectedProviderId] = useState(
     () => aiProviders.find(p => p.enabled && p.apiKey)?.id ?? 'gemini'
   )
+  const [kitsuneExpr, setKitsuneExpr] = useState<'normal' | 'thinking' | 'happy'>('normal')
   const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
 
@@ -494,6 +498,7 @@ Never skip tool calls. If the task involves creating files, you must call write_
   const handleRun = useCallback(async () => {
     if (!task.trim() || running || !activeProvider || !currentFolder) return
     setRunning(true)
+    setKitsuneExpr('thinking')
     abortRef.current = false
     setActivities([])
     setFinalMessage('')
@@ -519,10 +524,34 @@ Never skip tool calls. If the task involves creating files, you must call write_
 
     stopTimer()
     setRunning(false)
-    if (!abortRef.current) addAct({ type: 'info', result: '✅ Agent finished', status: 'done' })
+
+    if (!abortRef.current) {
+      addAct({ type: 'info', result: '✅ Agent finished', status: 'done' })
+
+      // Happy expression for 4 seconds
+      setKitsuneExpr('happy')
+      setTimeout(() => setKitsuneExpr('normal'), 4000)
+
+      // System notification
+      if (Notification.permission === 'granted') {
+        new Notification('🦊 Kitsune Agent Done!', {
+          body: `Task completed: "${task.slice(0, 80)}${task.length > 80 ? '...' : ''}"`,
+          icon: kitsuneHappy,
+          silent: false,
+        })
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(p => {
+          if (p === 'granted') new Notification('🦊 Kitsune Agent Done!', {
+            body: `Task completed: "${task.slice(0, 80)}${task.length > 80 ? '...' : ''}"`,
+          })
+        })
+      }
+    } else {
+      setKitsuneExpr('normal')
+    }
   }, [task, running, activeProvider, currentFolder, autoApprove])
 
-  const handleStop = () => { abortRef.current = true; setRunning(false) }
+  const handleStop = () => { abortRef.current = true; setRunning(false); setKitsuneExpr('normal') }
 
   // ── Approve/deny pending write ────────────────────────────────────────────
   const handleWriteDecision = (path: string, approved: boolean) => {
@@ -535,9 +564,14 @@ Never skip tool calls. If the task involves creating files, you must call write_
       {/* Header */}
       <div className="px-3 py-2 flex-shrink-0 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-1.5">
-          <KitsuneLogo size={16} />
+          <img
+            src={kitsuneExpr === 'thinking' ? kitsuneConfuse : kitsuneExpr === 'happy' ? kitsuneHappy : kitsuneNormal}
+            style={{ width: 28, height: 28, objectFit: 'contain', transition: 'all 0.3s ease', flexShrink: 0 }}
+            alt="Kitsune"
+          />
           <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--accent-mauve)' }}>KITSUNE AGENT</span>
           <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--accent-yellow)22', color: 'var(--accent-yellow)', border: '1px solid var(--accent-yellow)44', fontSize: 9 }}>BETA</span>
+          {running && <span className="text-xs animate-pulse" style={{ color: 'var(--accent-green)', fontSize: 9 }}>● working</span>}
         </div>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1 text-xs cursor-pointer" style={{ color: 'var(--text-muted)' }}>
