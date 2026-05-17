@@ -456,6 +456,11 @@
     .footer-copy { font-size: 0.78rem; color: var(--overlay0); }
     .footer-copy span { color: var(--mauve); }
 
+    @keyframes kitsuneFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-12px); }
+    }
+
     /* ── SCROLL ANIM ── */
     [data-fade] {
       opacity: 0; transform: translateY(24px);
@@ -842,13 +847,13 @@
           pointer-events: none;
         "></div>
         <img
-          src="kitsune-concept.png"
-          alt="Kitsune AI Character Design"
+          src="kitsune-char.png"
+          alt="Kitsune AI Character"
           style="
-            width: 100%; border-radius: 16px;
-            border: 1px solid rgba(251,146,60,0.2);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.08);
+            width: 100%; max-width: 380px; display: block; margin: 0 auto;
+            filter: drop-shadow(0 16px 48px rgba(251,146,60,0.35));
             position: relative;
+            animation: kitsuneFloat 4s ease-in-out infinite;
           "
         />
       </div>

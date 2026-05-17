@@ -58,3 +58,4 @@ logo-kitsune2.png
 
 !docs/*.png
 !src/renderer/src/assets/kitsune-concept.png
+!src/renderer/src/assets/kitsune-char.png

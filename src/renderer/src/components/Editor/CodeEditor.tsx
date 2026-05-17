@@ -5,7 +5,7 @@ import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { ParallaxLogo } from '../Logo/ParallaxLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
-import kitsuneConceptImg from '../../assets/kitsune-concept.png'
+import kitsuneCharImg from '../../assets/kitsune-char.png'
 import { FileIcon } from '../Sidebar/FileIcon'
 import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
 
@@ -736,15 +736,15 @@ function WelcomeScreen() {
           animation: 'kitsuneFloat 4s ease-in-out infinite',
         }}>
           <img
-            src={kitsuneConceptImg}
+            src={kitsuneCharImg}
             alt="Kitsune AI"
             style={{
               width: '100%', height: '100%',
-              objectFit: 'cover',
-              objectPosition: '18% 8%',
-              maskImage: 'linear-gradient(to top, transparent 0%, black 20%, black 100%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%, black 100%)',
-              filter: 'drop-shadow(0 8px 32px rgba(251,146,60,0.25))',
+              objectFit: 'contain',
+              objectPosition: 'center bottom',
+              maskImage: 'linear-gradient(to top, transparent 0%, black 15%, black 100%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 15%, black 100%)',
+              filter: 'drop-shadow(0 8px 40px rgba(251,146,60,0.3))',
             }}
           />
         </div>
