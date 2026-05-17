@@ -59,3 +59,6 @@ logo-kitsune2.png
 !docs/*.png
 !src/renderer/src/assets/kitsune-concept.png
 !src/renderer/src/assets/kitsune-char.png
+!src/renderer/src/assets/kitsune-normal.png
+!src/renderer/src/assets/kitsune-happy.png
+!src/renderer/src/assets/kitsune-confuse.png

@@ -3,6 +3,9 @@ import { useAppStore } from '../../store/appStore'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { KitsuneAgent } from './KitsuneAgent'
 import { ModelSelector } from './ModelSelector'
+import kitsuneNormal  from '../../assets/kitsune-normal.png'
+import kitsuneHappy   from '../../assets/kitsune-happy.png'
+import kitsuneConfuse from '../../assets/kitsune-confuse.png'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -302,6 +305,7 @@ export function AIPanel() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [kitsuneExpr, setKitsuneExpr] = useState<'normal' | 'thinking' | 'happy'>('normal')
   const [selectedProviderId, setSelectedProviderId] = useState('claude')
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [attachedImage, setAttachedImage] = useState<AttachedImage | null>(null)
@@ -469,6 +473,7 @@ export function AIPanel() {
 
     setMessages(prev => [...prev, { role: 'user', content: userMessage, id: msgId++, image: imageSnapshot?.preview }])
     setIsLoading(true)
+    setKitsuneExpr('thinking')
     startTimer()
 
     const streamId = msgId++
@@ -507,7 +512,7 @@ export function AIPanel() {
       stopTimer()
       const msg = err instanceof Error ? err.message : 'Unknown error'
       let friendly = `❌ **Error:** ${msg}`
-      if (msg.includes('aborted')) { setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: m.content + '\n\n_[stopped]_', streaming: false } : m)); setIsLoading(false); return }
+      if (msg.includes('aborted')) { setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: m.content + '\n\n_[stopped]_', streaming: false } : m)); setIsLoading(false); setKitsuneExpr('normal'); return }
       if (msg.includes('quota') || msg.includes('limit: 0') || msg.includes('RESOURCE_EXHAUSTED')) {
         friendly = `❌ **API Quota / Access Error** (model: \`${activeProvider?.model}\`)\n\n"limit: 0" usually means Gemini API is not enabled for this key's project.\n\n**Fix:**\n1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)\n2. Create a new API key there\n3. Paste it in ⚙️ Settings → AI & API Keys\n\n__FIX_BUTTON__`
       } else if (msg.includes('401') || msg.includes('API_KEY') || msg.includes('invalid')) {
@@ -520,9 +525,11 @@ export function AIPanel() {
       setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: friendly, streaming: false } : m))
     }
     setIsLoading(false)
+    setKitsuneExpr('happy')
+    setTimeout(() => setKitsuneExpr('normal'), 3000)
   }, [input, attachedImage, isLoading, activeProvider, messages, activeTab])
 
-  const handleStop = () => { abortRef.current?.abort(); stopTimer(); setIsLoading(false) }
+  const handleStop = () => { abortRef.current?.abort(); stopTimer(); setIsLoading(false); setKitsuneExpr('normal') }
 
   // ── Code helpers ──────────────────────────────────────────────────────────
   const extractCodeBlocks = (content: string) => [...content.matchAll(/```[\w]*\n?([\s\S]*?)```/g)].map(m => m[1].trim())
@@ -573,7 +580,11 @@ export function AIPanel() {
       {/* Header + Chat/Agent tabs */}
       <div className="flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="px-3 py-2 flex items-center gap-2">
-          <KitsuneLogo size={16} />
+          <img
+            src={kitsuneExpr === 'thinking' ? kitsuneConfuse : kitsuneExpr === 'happy' ? kitsuneHappy : kitsuneNormal}
+            style={{ width: 28, height: 28, objectFit: 'contain', transition: 'all 0.3s ease', flexShrink: 0 }}
+            alt="Kitsune"
+          />
           <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.12em' }}>KITSUNE AI</span>
           {isLoading && aiTab === 'chat' && <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)', border: '1px solid var(--accent-green)44', fontSize: 9 }}>● live</span>}
           <div className="flex-1" />
@@ -609,7 +620,22 @@ export function AIPanel() {
           <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
             {messages.length === 0 && (
               <div className="flex flex-col gap-2">
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Quick actions on current file:</p>
+                {/* Kitsune idle character */}
+                <div className="flex flex-col items-center py-2" style={{ gap: 6 }}>
+                  <img
+                    src={kitsuneNormal}
+                    alt="Kitsune"
+                    style={{
+                      width: 110, objectFit: 'contain',
+                      filter: 'drop-shadow(0 4px 16px rgba(251,146,60,0.2))',
+                      animation: 'kitsuneIdleFloat 3s ease-in-out infinite',
+                    }}
+                  />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--accent-mauve)' }}>Hey! I'm Kitsune 🦊</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--text-muted)', maxWidth: 180 }}>Ask me anything or pick a quick action below</p>
+                </div>
+                <style>{`@keyframes kitsuneIdleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Quick actions on current file:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {quickActions.map(a => (
                     <button key={a.label} onClick={() => setInput(a.prompt)}
