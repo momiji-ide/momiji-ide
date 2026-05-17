@@ -19,8 +19,38 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Python setuptools (fixes distutils on Python 3.12+)
+        run: pip install setuptools
+
+      - name: Install dependencies (skip scripts to avoid node-pty failure)
+        run: npm ci --ignore-scripts
+
+      - name: Patch winpty.gyp (skip GetCommitHash.bat which fails on CI)
+        shell: pwsh
+        run: |
+          $ptyPath = "node_modules\node-pty\deps\winpty\src"
+
+          # Patch winpty.gyp — hardcode commit hash, skip bat scripts
+          $gyp = Get-Content "$ptyPath\winpty.gyp" -Raw
+          $gyp = $gyp -replace [regex]::Escape("<!(cmd /c `"cd shared && GetCommitHash.bat`")"), "none"
+          $gyp = $gyp -replace [regex]::Escape("<!(cmd /c `"cd shared && UpdateGenVersion.bat <(WINPTY_COMMIT_HASH)`")"), "gen"
+          Set-Content "$ptyPath\winpty.gyp" $gyp
+
+          # Create gen/GenVersion.h manually
+          New-Item -ItemType Directory -Path "$ptyPath\gen" -Force | Out-Null
+          $header = @"
+          // AUTO-GENERATED (CI patch)
+          const char GenVersion_Version[] = "0.4.4-dev";
+          const char GenVersion_Commit[] = "none";
+          "@
+          Set-Content "$ptyPath\gen\GenVersion.h" $header
+
+          Write-Host "winpty.gyp patched OK"
+
+      - name: Rebuild node-pty for Electron
+        run: npx electron-rebuild -f -w node-pty
+        env:
+          npm_config_msvs_version: "2022"
 
       - name: Build
         run: npm run build
@@ -47,8 +77,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (skip scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild node-pty for Electron (macOS)
+        run: npx electron-rebuild -f -w node-pty
 
       - name: Build
         run: npm run build
@@ -79,12 +112,15 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y \
-            python3 make g++ \
+            python3 python3-setuptools make g++ \
             rpm fakeroot dpkg \
             libx11-dev libxkbfile-dev libsecret-1-dev
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (skip scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild node-pty for Electron (Linux)
+        run: npx electron-rebuild -f -w node-pty
 
       - name: Build
         run: npm run build
