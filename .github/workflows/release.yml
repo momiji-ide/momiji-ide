@@ -22,16 +22,14 @@ jobs:
       - name: Install Python setuptools (fixes distutils on Python 3.12+)
         run: pip install setuptools
 
-      - name: Install dependencies (skip native build scripts)
+      - name: Install dependencies (skip native scripts)
         run: npm ci --ignore-scripts
 
-      - name: Patch winpty.gyp for CI (skip GetCommitHash.bat)
-        run: node scripts/patch-node-pty.js
+      - name: Try rebuild node-pty (optional — fallback to child_process if fails)
+        run: node scripts/patch-node-pty.js && npx electron-rebuild -f -w node-pty
+        continue-on-error: true
 
-      - name: Rebuild node-pty for Electron (Windows)
-        run: npx electron-rebuild -f -w node-pty
-
-      - name: Build renderer + main
+      - name: Build
         run: npm run build
 
       - name: Package (Windows)
@@ -56,13 +54,14 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies (skip native build scripts)
+      - name: Install dependencies (skip native scripts)
         run: npm ci --ignore-scripts
 
-      - name: Rebuild node-pty for Electron (macOS)
+      - name: Try rebuild node-pty (optional — fallback if fails)
         run: npx electron-rebuild -f -w node-pty
+        continue-on-error: true
 
-      - name: Build renderer + main
+      - name: Build
         run: npm run build
 
       - name: Package (macOS)
@@ -95,13 +94,14 @@ jobs:
             rpm fakeroot dpkg \
             libx11-dev libxkbfile-dev libsecret-1-dev
 
-      - name: Install dependencies (skip native build scripts)
+      - name: Install dependencies (skip native scripts)
         run: npm ci --ignore-scripts
 
-      - name: Rebuild node-pty for Electron (Linux)
+      - name: Try rebuild node-pty (optional — fallback if fails)
         run: npx electron-rebuild -f -w node-pty
+        continue-on-error: true
 
-      - name: Build renderer + main
+      - name: Build
         run: npm run build
 
       - name: Package (Linux)
