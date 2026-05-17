@@ -5,6 +5,7 @@ import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { ParallaxLogo } from '../Logo/ParallaxLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
+import kitsuneConceptImg from '../../assets/kitsune-concept.png'
 import { FileIcon } from '../Sidebar/FileIcon'
 import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
 
@@ -652,13 +653,13 @@ function WelcomeScreen() {
     <div className="flex h-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>
 
       {/* LEFT — branding + actions */}
-      <div className="flex flex-col items-center justify-center flex-shrink-0 px-10 overflow-y-auto"
-        style={{ width: 320, borderRight: '1px solid var(--border)', gap: 24 }}>
+      <div className="flex flex-col items-center justify-center flex-shrink-0 px-8 overflow-y-auto"
+        style={{ width: 280, borderRight: '1px solid var(--border)', gap: 20 }}>
 
         {/* Logo */}
         <div className="text-center flex flex-col items-center">
-          <ParallaxLogo size={52} className="mb-3" />
-          <h1 className="text-2xl font-black tracking-widest mb-1" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.15em' }}>
+          <ParallaxLogo size={44} className="mb-2" />
+          <h1 className="text-xl font-black tracking-widest mb-1" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.15em' }}>
             PARALLAX
           </h1>
           <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)', letterSpacing: '0.08em' }}>CODE FROM EVERY ANGLE</p>
@@ -691,8 +692,73 @@ function WelcomeScreen() {
         </div>
       </div>
 
+      {/* CENTER — Kitsune character */}
+      <div className="flex-1 flex flex-col items-center justify-end overflow-hidden relative"
+        style={{ borderRight: '1px solid var(--border)', minWidth: 0 }}>
+
+        {/* Background glow */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(ellipse 70% 80% at 50% 100%, rgba(251,146,60,0.08) 0%, rgba(203,166,247,0.05) 40%, transparent 70%)'
+        }} />
+
+        {/* Speech bubble */}
+        <div className="relative mb-2 mx-6" style={{ zIndex: 2 }}>
+          <div className="px-4 py-2.5 rounded-2xl text-center text-xs"
+            style={{
+              background: 'var(--bg-surface0)',
+              border: '1px solid rgba(251,146,60,0.3)',
+              color: 'var(--text)',
+              maxWidth: 260,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+            }}>
+            <p className="font-semibold mb-0.5" style={{ color: '#fb923c' }}>Hey! I'm Kitsune 🦊</p>
+            <p style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+              Open a project and I'll help you code,<br/>debug, and ship faster!
+            </p>
+          </div>
+          {/* bubble tail */}
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: '8px solid rgba(251,146,60,0.3)',
+            margin: '0 auto',
+            marginTop: -1
+          }} />
+        </div>
+
+        {/* Kitsune character — cropped to main figure */}
+        <div style={{
+          width: '100%', maxWidth: 340,
+          height: '75%', minHeight: 300,
+          position: 'relative', zIndex: 1,
+          animation: 'kitsuneFloat 4s ease-in-out infinite',
+        }}>
+          <img
+            src={kitsuneConceptImg}
+            alt="Kitsune AI"
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              objectPosition: '18% 8%',
+              maskImage: 'linear-gradient(to top, transparent 0%, black 20%, black 100%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%, black 100%)',
+              filter: 'drop-shadow(0 8px 32px rgba(251,146,60,0.25))',
+            }}
+          />
+        </div>
+
+        <style>{`
+          @keyframes kitsuneFloat {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-10px); }
+          }
+        `}</style>
+      </div>
+
       {/* RIGHT — recent projects */}
-      <div className="flex-1 flex flex-col px-8 py-8 overflow-y-auto">
+      <div className="flex flex-col px-6 py-8 overflow-y-auto flex-shrink-0" style={{ width: 300 }}>
         {/* Recent Folders */}
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-subtle)' }}>
