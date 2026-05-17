@@ -35,7 +35,7 @@ type AboutTab = 'authors' | 'features' | 'stack' | 'license'
 const AUTHORS = [
   {
     group: 'Project Founder',
-    members: [{ name: 'Haika', handle: 'haikaru.noriyuki@gmail.com', role: 'Creator & Lead Developer' }]
+    members: [{ name: 'Haikal Hakim Baiqunni', handle: 'haikaru.noriyuki@gmail.com', role: 'Creator & Lead Developer' }]
   },
   {
     group: 'AI Engine',
@@ -55,7 +55,7 @@ const AUTHORS = [
 
 const LICENSE_TEXT = `MIT License
 
-Copyright (c) 2025 Parallax IDE — Haika
+Copyright (c) 2025 Parallax IDE — Haikal Hakim Baiqunni
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
