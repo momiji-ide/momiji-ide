@@ -27,6 +27,18 @@ const PROVIDER_MODELS: Record<string, ModelDef[]> = {
     { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'flagship',  shortcut: 1 },
     { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'faster',    shortcut: 2 },
     { value: 'o1-mini',     label: 'o1 Mini',     sublabel: 'reasoning', shortcut: 3 },
+  ],
+  ollama: [
+    { value: 'qwen2.5-coder:7b',  label: 'Qwen2.5 Coder 7B',  sublabel: 'best for code ⭐', shortcut: 1 },
+    { value: 'qwen2.5-coder:32b', label: 'Qwen2.5 Coder 32B', sublabel: 'GPT-4 level code',  shortcut: 2 },
+    { value: 'gemma3:12b',        label: 'Gemma 3 12B',        sublabel: 'Google, balanced',  shortcut: 3 },
+    { value: 'gemma3:27b',        label: 'Gemma 3 27B',        sublabel: 'Google, powerful',  shortcut: 4 },
+    { value: 'llama3.2:3b',       label: 'Llama 3.2 3B',       sublabel: 'lightweight' },
+    { value: 'llama3.3:70b',      label: 'Llama 3.3 70B',      sublabel: 'most capable' },
+    { value: 'deepseek-coder-v2', label: 'DeepSeek Coder V2',  sublabel: 'code specialist' },
+    { value: 'codellama:13b',     label: 'CodeLlama 13B',      sublabel: 'Meta code model' },
+    { value: 'mistral:7b',        label: 'Mistral 7B',         sublabel: 'fast & capable' },
+    { value: 'phi4',              label: 'Phi-4',              sublabel: 'Microsoft, punchy' },
   ]
 }
 
@@ -34,6 +46,17 @@ const PROVIDER_LABELS: Record<string, string> = {
   claude: 'Claude',
   gemini: 'Gemini',
   openai: 'GPT',
+  ollama: 'Ollama',
+}
+
+// Fetch locally installed Ollama models
+async function fetchOllamaModels(baseUrl: string): Promise<string[]> {
+  try {
+    const resp = await fetch(`${baseUrl}/api/tags`, { signal: AbortSignal.timeout(3000) })
+    if (!resp.ok) return []
+    const data = await resp.json()
+    return (data.models ?? []).map((m: any) => m.name as string)
+  } catch { return [] }
 }
 
 function shortModelLabel(model: string): string {
@@ -64,6 +87,8 @@ interface Props {
 export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
   const { aiProviders, updateAIProvider } = useAppStore()
   const [open, setOpen] = useState(false)
+  const [localModels, setLocalModels] = useState<string[]>([])
+  const [fetchingLocal, setFetchingLocal] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   const enabledProviders = aiProviders.filter(p => p.enabled && p.apiKey)
@@ -174,6 +199,44 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
               )
             })}
 
+            {/* Ollama — local model browser */}
+            {activeProvider.id === 'ollama' && (
+              <div className="px-3 pb-2 pt-1" style={{ borderTop: '1px solid var(--border)', marginTop: 4 }}>
+                <div className="flex items-center justify-between mb-1">
+                  <p style={{ color: 'var(--text-subtle)', fontSize: 9 }} className="text-xs font-semibold uppercase">Installed locally</p>
+                  <button
+                    onClick={async () => {
+                      setFetchingLocal(true)
+                      const ms = await fetchOllamaModels(activeProvider.baseUrl ?? 'http://localhost:11434')
+                      setLocalModels(ms)
+                      setFetchingLocal(false)
+                    }}
+                    className="text-xs px-1.5 py-0.5 rounded transition-all"
+                    style={{ color: 'var(--accent-green)', border: '1px solid var(--accent-green)44', fontSize: 9 }}>
+                    {fetchingLocal ? '⟳' : '↻ Scan'}
+                  </button>
+                </div>
+                {localModels.length > 0 ? (
+                  <div className="flex flex-col gap-0.5 max-h-32 overflow-y-auto">
+                    {localModels.map(m => (
+                      <button key={m} onClick={() => { updateAIProvider({ ...activeProvider, model: m }); setOpen(false) }}
+                        className="w-full text-left px-2 py-1 rounded text-xs font-mono transition-all flex items-center gap-1"
+                        style={{ background: activeProvider.model === m ? 'var(--accent-green)22' : 'var(--bg-crust)', color: activeProvider.model === m ? 'var(--accent-green)' : 'var(--text-muted)', fontSize: 10 }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface1)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = activeProvider.model === m ? 'var(--accent-green)22' : 'var(--bg-crust)')}>
+                        {activeProvider.model === m && <span style={{ color: 'var(--accent-green)' }}>✓ </span>}
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-subtle)', fontSize: 9 }}>
+                    {fetchingLocal ? 'Scanning...' : 'Click ↻ Scan to detect installed models'}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Custom model input */}
             <div className="px-3 pb-2 pt-1" style={{ borderTop: '1px solid var(--border)', marginTop: 4 }}>
               <p className="text-xs mb-1" style={{ color: 'var(--text-subtle)', fontSize: 9 }}>CUSTOM MODEL ID</p>
@@ -189,7 +252,7 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
                     if (v) { updateAIProvider({ ...activeProvider, model: v }); setOpen(false) }
                   }
                 }}
-                placeholder="e.g. gemini-3-flash-preview"
+                placeholder={activeProvider.id === 'ollama' ? 'e.g. qwen2.5-coder:7b' : 'e.g. gemini-3-flash-preview'}
                 className="w-full px-2 py-1 rounded text-xs outline-none font-mono"
                 style={{ background: 'var(--bg-crust)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 10 }}
                 onClick={e => e.stopPropagation()}

@@ -204,7 +204,7 @@ export function KitsuneAgent() {
   const [selectedProviderId, setSelectedProviderId] = useState(
     () => aiProviders.find(p => p.enabled && p.apiKey)?.id ?? 'gemini'
   )
-  const enabledProviders = aiProviders.filter(p => p.enabled && p.apiKey)
+  const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
 
   const startTimer = () => {
@@ -450,6 +450,46 @@ Never skip tool calls. If the task involves creating files, you must call write_
     if (iterations >= MAX_ITER) addAct({ type: 'info', result: '⚠️ Reached max iterations (20)', status: 'done' })
   }
 
+  // ── Ollama agentic loop (OpenAI-compatible tool calling) ─────────────────
+  const runOllamaAgent = async (provider: typeof aiProviders[0], taskText: string) => {
+    const base = provider.baseUrl ?? 'http://localhost:11434'
+    const sysPrompt = `You are Kitsune, an autonomous coding agent. Project folder: ${currentFolder}. Use the provided tools to read, write, list, and search files. Always explore structure first, then read before editing. Summarize changes when done.`
+
+    const tools = CLAUDE_TOOLS.map(t => ({
+      type: 'function',
+      function: { name: t.name, description: t.description, parameters: t.input_schema }
+    }))
+
+    const messages: any[] = [{ role: 'user', content: taskText }]
+    let iterations = 0
+
+    while (!abortRef.current && iterations < 20) {
+      iterations++
+      const resp = await fetch(`${base}/v1/chat/completions`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ollama' },
+        body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: sysPrompt }, ...messages], tools, tool_choice: 'auto' })
+      })
+      if (!resp.ok) throw new Error(`Ollama error ${resp.status} — is Ollama running? Run: ollama serve`)
+      const data = await resp.json()
+      const msg = data.choices[0].message
+
+      if (data.usage) { setStatsTokensIn(data.usage.prompt_tokens ?? 0); setStatsTokensOut(t => t + (data.usage.completion_tokens ?? 0)) }
+      if (msg.content) addAct({ type: 'info', result: msg.content, status: 'done' })
+      messages.push(msg)
+
+      if (!msg.tool_calls?.length) { if (msg.content) setFinalMessage(msg.content); break }
+
+      const toolResults: any[] = []
+      for (const tc of msg.tool_calls) {
+        if (abortRef.current) break
+        const args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments
+        const result = await executeTool(tc.function.name, args)
+        toolResults.push({ role: 'tool', tool_call_id: tc.id, content: result })
+      }
+      messages.push(...toolResults)
+    }
+  }
+
   // ── Run agent ─────────────────────────────────────────────────────────────
   const handleRun = useCallback(async () => {
     if (!task.trim() || running || !activeProvider || !currentFolder) return
@@ -471,7 +511,8 @@ Never skip tool calls. If the task involves creating files, you must call write_
     try {
       if (activeProvider.id === 'claude') await runClaudeAgent(activeProvider, task)
       else if (activeProvider.id === 'gemini') await runGeminiAgent(activeProvider, task)
-      else addAct({ type: 'error', result: 'Agent mode requires Claude or Gemini. Enable one in ⚙️ Settings.', status: 'error' })
+      else if (activeProvider.id === 'ollama') await runOllamaAgent(activeProvider, task)
+      else addAct({ type: 'error', result: 'Agent mode requires Claude, Gemini, or Ollama. Enable one in ⚙️ Settings.', status: 'error' })
     } catch (e: any) {
       addAct({ type: 'error', result: `❌ ${e.message}`, status: 'error' })
     }

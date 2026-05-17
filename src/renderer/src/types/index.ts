@@ -37,6 +37,7 @@ export interface AIProvider {
   apiKey: string
   model: string
   enabled: boolean
+  baseUrl?: string   // for Ollama / custom endpoints
 }
 
 export type ActivityBarItem =

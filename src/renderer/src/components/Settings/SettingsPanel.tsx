@@ -306,6 +306,7 @@ const PROVIDER_LINKS: Record<string, { label: string; url: string }> = {
   claude: { label: 'Get Claude API key', url: 'https://console.anthropic.com/keys' },
   gemini: { label: 'Get Gemini API key (free)', url: 'https://aistudio.google.com/apikey' },
   openai: { label: 'Get OpenAI API key', url: 'https://platform.openai.com/api-keys' },
+  ollama: { label: 'Download Ollama (free, local)', url: 'https://ollama.com/download' },
 }
 
 function FetchGeminiModels({ apiKey, onSelect }: { apiKey: string; onSelect: (m: string) => void }) {
@@ -463,26 +464,28 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="text-xs" style={{ color: 'var(--text-muted)' }}>API Key</label>
-        <div className="flex gap-1">
-          <input
-            type={showKey ? 'text' : 'password'}
-            placeholder={provider.id === 'claude' ? 'sk-ant-...' : provider.id === 'gemini' ? 'AIza...' : 'sk-...'}
-            value={provider.apiKey}
-            onChange={(e) => onUpdate({ ...provider, apiKey: e.target.value })}
-            className="flex-1 px-2 py-1.5 rounded text-xs outline-none font-mono"
-            style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
-          />
-          <button
-            onClick={() => setShowKey(!showKey)}
-            className="px-2 rounded text-xs"
-            style={{ background: 'var(--bg-base)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-          >
-            {showKey ? '🙈' : '👁️'}
-          </button>
+      {provider.id !== 'ollama' && (
+        <div className="flex flex-col gap-2">
+          <label className="text-xs" style={{ color: 'var(--text-muted)' }}>API Key</label>
+          <div className="flex gap-1">
+            <input
+              type={showKey ? 'text' : 'password'}
+              placeholder={provider.id === 'claude' ? 'sk-ant-...' : provider.id === 'gemini' ? 'AIza...' : 'sk-...'}
+              value={provider.apiKey}
+              onChange={(e) => onUpdate({ ...provider, apiKey: e.target.value })}
+              className="flex-1 px-2 py-1.5 rounded text-xs outline-none font-mono"
+              style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
+            />
+            <button
+              onClick={() => setShowKey(!showKey)}
+              className="px-2 rounded text-xs"
+              style={{ background: 'var(--bg-base)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+            >
+              {showKey ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Model</label>
@@ -536,6 +539,33 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
             }}>
             {testResult}
           </p>
+        )}
+
+        {/* Ollama: no API key needed, show base URL */}
+        {provider.id === 'ollama' && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-start gap-2 px-2 py-2 rounded"
+              style={{ background: 'var(--accent-green)11', border: '1px solid var(--accent-green)33' }}>
+              <span style={{ fontSize: 14 }}>🦙</span>
+              <div>
+                <p className="text-xs font-semibold" style={{ color: 'var(--accent-green)' }}>No API key needed — runs locally!</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+                  1. Install Ollama → <code style={{ fontFamily: 'monospace' }}>ollama.com/download</code><br/>
+                  2. Pull a model → <code style={{ fontFamily: 'monospace' }}>ollama pull qwen2.5-coder:7b</code><br/>
+                  3. Enable toggle → done!
+                </p>
+              </div>
+            </div>
+            <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Ollama URL</label>
+            <input
+              type="text"
+              value={provider.baseUrl ?? 'http://localhost:11434'}
+              onChange={e => onUpdate({ ...provider, baseUrl: e.target.value })}
+              placeholder="http://localhost:11434"
+              className="px-2 py-1.5 rounded text-xs outline-none font-mono"
+              style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
+            />
+          </div>
         )}
 
         {/* Free tier note for Gemini */}

@@ -314,7 +314,7 @@ export function AIPanel() {
   const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef   = useRef<number>(0)
 
-  const enabledProviders = aiProviders.filter(p => p.enabled && p.apiKey)
+  const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
   const activeTab        = tabs.find(t => t.id === activeTabId)
 
@@ -422,6 +422,31 @@ export function AIPanel() {
     return { text, tokensIn: usage?.promptTokenCount, tokensOut: usage?.candidatesTokenCount }
   }
 
+  // ── Ollama (local, OpenAI-compatible) ────────────────────────────────────
+  const callOllama = async (provider: typeof aiProviders[0], userMessage: string, image: AttachedImage | null) => {
+    const base = provider.baseUrl ?? 'http://localhost:11434'
+    const history = messages.filter(m => !m.streaming).map(m => ({ role: m.role, content: m.content }))
+    const userContent: any = image
+      ? [{ type: 'image_url', image_url: { url: `data:${image.mimeType};base64,${image.data}` } }, { type: 'text', text: userMessage }]
+      : userMessage
+    const resp = await fetch(`${base}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ollama' },
+      body: JSON.stringify({
+        model: provider.model,
+        messages: [{ role: 'system', content: buildSystemPrompt() }, ...history, { role: 'user', content: userContent }]
+      })
+    })
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '')
+      throw new Error(txt.includes('model') || resp.status === 404
+        ? `Model "${provider.model}" not found locally.\n\nFix: open terminal and run:\n\`ollama pull ${provider.model}\``
+        : `Ollama error ${resp.status}. Is Ollama running? Start it with: \`ollama serve\``)
+    }
+    const data = await resp.json()
+    return { text: data.choices[0].message.content as string, tokensIn: data.usage?.prompt_tokens, tokensOut: data.usage?.completion_tokens }
+  }
+
   // ── OpenAI (vision) ───────────────────────────────────────────────────────
   const callOpenAI = async (provider: typeof aiProviders[0], userMessage: string, image: AttachedImage | null) => {
     const history = messages.filter(m => !m.streaming).map(m => ({ role: m.role, content: m.content }))
@@ -464,6 +489,11 @@ export function AIPanel() {
         if (inTok > 0) setContextUsed(inTok + outTok)
       } else if (activeProvider.id === 'gemini') {
         const { text, tokensIn, tokensOut } = await callGemini(activeProvider, userMessage, imageSnapshot)
+        const elapsed = stopTimer()
+        setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
+        if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))
+      } else if (activeProvider.id === 'ollama') {
+        const { text, tokensIn, tokensOut } = await callOllama(activeProvider, userMessage, imageSnapshot)
         const elapsed = stopTimer()
         setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
         if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))
