@@ -84,20 +84,23 @@ function Btn({ item, isActive, onClick }: {
   isActive: boolean
   onClick: () => void
 }) {
+  const isAI = item.id === 'ai'
+  const activeColor = isAI ? 'var(--accent-mauve)' : 'var(--accent-blue)'
+
   return (
     <button
       onClick={onClick}
       title={item.label}
       className="relative flex items-center justify-center w-10 h-10 rounded-lg transition-all"
       style={{
-        background: isActive ? 'var(--bg-surface0)' : 'transparent',
-        color: isActive ? 'var(--accent-blue)' : 'var(--text-subtle)',
-        borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+        background: isActive ? (isAI ? 'rgba(203,166,247,0.12)' : 'var(--bg-surface0)') : 'transparent',
+        color: isActive ? activeColor : 'var(--text-subtle)',
+        borderLeft: isActive ? `2px solid ${activeColor}` : '2px solid transparent',
       }}
       onMouseEnter={e => {
         if (!isActive) {
-          e.currentTarget.style.background = 'var(--bg-surface0)'
-          e.currentTarget.style.color = 'var(--text)'
+          e.currentTarget.style.background = isAI ? 'rgba(203,166,247,0.08)' : 'var(--bg-surface0)'
+          e.currentTarget.style.color = isAI ? 'var(--accent-mauve)' : 'var(--text)'
         }
       }}
       onMouseLeave={e => {
