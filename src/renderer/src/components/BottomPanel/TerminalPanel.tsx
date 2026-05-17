@@ -5,15 +5,11 @@ import { WebLinksAddon } from '@xterm/addon-web-links'
 import { useAppStore } from '../../store/appStore'
 import '@xterm/xterm/css/xterm.css'
 
-interface TermTab { id: string; title: string; running: boolean }
+interface TermTab { id: string; title: string }
 let tabCounter = 0
 
-const isWin  = navigator.userAgent.includes('Windows')
-const SHELL  = isWin ? 'cmd'  : 'bash'
-const mkArgs = (cmd: string) => isWin ? ['/c', cmd] : ['-c', cmd]
-
 export function TerminalPanel() {
-  const currentFolder  = useAppStore(s => s.currentFolder)
+  const currentFolder = useAppStore(s => s.currentFolder)
   const [tabs, setTabs]         = useState<TermTab[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [input, setInput]       = useState('')
@@ -26,15 +22,17 @@ export function TerminalPanel() {
   const inputRef       = useRef<HTMLInputElement>(null)
   const initializedRef = useRef(false)
 
-  // ── Create tab ───────────────────────────────────────────────────────
-  const createTab = useCallback(() => {
+  // ── Create tab — spawns a PERSISTENT shell ────────────────────────────
+  const createTab = useCallback(async () => {
     const id = `term-${++tabCounter}`
-    setTabs(prev => [...prev, { id, title: `Shell ${tabCounter}`, running: false }])
+    setTabs(prev => [...prev, { id, title: `Shell ${tabCounter}` }])
     setActiveId(id)
-    setInput('')
-    setHistIdx(-1)
+    setInput(''); setHistIdx(-1)
+
+    // Spawn interactive shell — stays alive, cd persists
+    await window.api.terminal.create(id, currentFolder ?? undefined)
     setTimeout(() => inputRef.current?.focus(), 100)
-  }, [])
+  }, [currentFolder])
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -68,8 +66,7 @@ export function TerminalPanel() {
         },
         fontFamily: "'Cascadia Code','JetBrains Mono','Fira Code',Consolas,monospace",
         fontSize: 13, lineHeight: 1.45, cursorBlink: false,
-        scrollback: 5000, convertEol: true, allowProposedApi: true,
-        disableStdin: true, // display only — input goes via the input bar
+        scrollback: 5000, convertEol: true, allowProposedApi: true, disableStdin: true,
       })
 
       const fitAddon = new FitAddon()
@@ -81,41 +78,40 @@ export function TerminalPanel() {
       terminalsRef.current.set(activeId, term)
       fitAddonsRef.current.set(activeId, fitAddon)
 
-      const cwd = currentFolder || ''
-      const shortCwd = cwd ? cwd.split(/[\\/]/).slice(-2).join('/') : '~'
-      term.writeln(`\x1b[35m🦊 Parallax IDE Terminal\x1b[0m  \x1b[90m${shortCwd}\x1b[0m`)
-      term.writeln('\x1b[90m' + '─'.repeat(40) + '\x1b[0m\r\n')
-
       setTimeout(() => inputRef.current?.focus(), 80)
     }
     requestAnimationFrame(tryMount)
     return () => { cancelled = true }
-  }, [activeId, currentFolder]) // eslint-disable-line
+  }, [activeId]) // eslint-disable-line
 
-  // ── stdout/stderr → xterm ────────────────────────────────────────────
+  // ── Shell output → xterm ─────────────────────────────────────────────
   useEffect(() => {
-    const offOut  = window.api.process.onStdout((id, data) => terminalsRef.current.get(id)?.write(data))
-    const offErr  = window.api.process.onStderr((id, data) => terminalsRef.current.get(id)?.write(`\x1b[31m${data}\x1b[0m`))
-    const offExit = window.api.process.onExit((id, code) => {
-      setTabs(prev => prev.map(t => t.id === id ? { ...t, running: false } : t))
-      if (code !== 0) terminalsRef.current.get(id)?.write(`\x1b[33m[exit: ${code}]\x1b[0m\r\n`)
-      // refocus input after command finishes
-      if (id === activeId) setTimeout(() => inputRef.current?.focus(), 50)
+    const off = window.api.terminal.onData((id, data) => {
+      terminalsRef.current.get(id)?.write(data)
     })
-    return () => { offOut(); offErr(); offExit() }
-  }, [activeId])
+    return off
+  }, [])
+
+  useEffect(() => {
+    const off = window.api.terminal.onExit((id) => {
+      terminalsRef.current.get(id)?.writeln('\r\n\x1b[33m[Shell exited]\x1b[0m')
+    })
+    return off
+  }, [])
 
   // ── Resize ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return
-    const ro = new ResizeObserver(() => { if (activeId) fitAddonsRef.current.get(activeId)?.fit() })
+    const ro = new ResizeObserver(() => {
+      if (activeId) fitAddonsRef.current.get(activeId)?.fit()
+    })
     ro.observe(containerRef.current)
     return () => ro.disconnect()
   }, [activeId])
 
-  // ── Run command ──────────────────────────────────────────────────────
-  const runCommand = useCallback(async (cmd: string) => {
-    if (!cmd.trim() || !activeId) return
+  // ── Send command to persistent shell ─────────────────────────────────
+  const sendCommand = useCallback((cmd: string) => {
+    if (!activeId) return
     const term = terminalsRef.current.get(activeId)
     if (!term) return
 
@@ -123,28 +119,32 @@ export function TerminalPanel() {
       term.clear(); setInput(''); setHistory(h => [cmd, ...h.slice(0,99)]); setHistIdx(-1); return
     }
 
+    // Echo the command so user can see what they typed
     term.write(`\x1b[32m❯\x1b[0m \x1b[1m${cmd}\x1b[0m\r\n`)
     setHistory(h => [cmd, ...h.slice(0, 99)])
     setHistIdx(-1)
     setInput('')
-    setTabs(prev => prev.map(t => t.id === activeId ? { ...t, running: true } : t))
 
-    await window.api.process.run(activeId, SHELL, mkArgs(cmd), currentFolder ?? undefined)
-  }, [activeId, currentFolder])
+    // Send to PERSISTENT shell (cd persists, env persists, just like real terminal!)
+    window.api.terminal.write(activeId, cmd + '\r\n')
+  }, [activeId])
 
-  // ── Keyboard handler on input ────────────────────────────────────────
+  // ── Keyboard ─────────────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      runCommand(input.trim())
+      const cmd = input.trim()
+      if (cmd) sendCommand(cmd)
     } else if (e.ctrlKey && e.key === 'c') {
       e.preventDefault()
-      const tab = tabs.find(t => t.id === activeId)
-      if (tab?.running && activeId) {
-        window.api.process.kill(activeId)
-        terminalsRef.current.get(activeId)?.write('\x1b[31m^C\x1b[0m\r\n')
-        setTabs(prev => prev.map(t => t.id === activeId ? { ...t, running: false } : t))
+      // Send Ctrl+C to shell (SIGINT)
+      if (activeId) {
+        window.api.terminal.write(activeId, '\x03')
+        terminalsRef.current.get(activeId)?.write('^C\r\n')
       }
+    } else if (e.ctrlKey && e.key === 'l') {
+      e.preventDefault()
+      terminalsRef.current.get(activeId!)?.clear()
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       const idx = Math.min(histIdx + 1, history.length - 1)
@@ -153,16 +153,13 @@ export function TerminalPanel() {
       e.preventDefault()
       const idx = Math.max(histIdx - 1, -1)
       setHistIdx(idx); setInput(idx === -1 ? '' : history[idx])
-    } else if (e.ctrlKey && e.key === 'l') {
-      e.preventDefault()
-      terminalsRef.current.get(activeId!)?.clear()
     }
   }
 
   // ── Close tab ────────────────────────────────────────────────────────
   const closeTab = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    window.api.process.kill(id)
+    window.api.terminal.kill(id)
     terminalsRef.current.get(id)?.dispose()
     terminalsRef.current.delete(id)
     fitAddonsRef.current.delete(id)
@@ -179,7 +176,7 @@ export function TerminalPanel() {
     setTimeout(() => { fitAddonsRef.current.get(id)?.fit(); inputRef.current?.focus() }, 50)
   }
 
-  const activeTab = tabs.find(t => t.id === activeId)
+  const isWin = navigator.userAgent.includes('Windows')
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#1e1e2e' }}>
@@ -198,43 +195,31 @@ export function TerminalPanel() {
                 borderRight: '1px solid var(--border)',
                 borderTop: activeId === tab.id ? '1px solid var(--accent-mauve)' : '1px solid transparent',
               }}>
-              <span style={{ fontSize: 8, color: tab.running ? '#f9e2af' : '#a6e3a1' }}>
-                {tab.running ? '◉' : '●'}
-              </span>
+              <span style={{ fontSize: 8, color: '#a6e3a1' }}>●</span>
               {tab.title}
               <span onClick={e => closeTab(tab.id, e)}
-                style={{ marginLeft: 4, width: 14, height: 14, fontSize: 14,
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 3, color: 'var(--text-subtle)', cursor: 'pointer' }}
+                style={{ marginLeft: 4, width: 14, height: 14, fontSize: 14, display: 'inline-flex',
+                  alignItems: 'center', justifyContent: 'center', borderRadius: 3,
+                  color: 'var(--text-subtle)', cursor: 'pointer' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >×</span>
             </button>
           ))}
         </div>
-
         <button onClick={createTab}
-          title="New Terminal (Ctrl+`)"
           style={{ width: 30, height: 33, background: 'transparent', border: 'none',
             cursor: 'pointer', color: 'var(--text-subtle)', fontSize: 20,
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface0)'; e.currentTarget.style.color = 'var(--text)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-subtle)' }}
         >+</button>
-
         <button onClick={() => terminalsRef.current.get(activeId!)?.clear()}
           style={{ padding: '0 10px', height: 33, background: 'transparent', border: 'none',
             cursor: 'pointer', color: 'var(--text-subtle)', fontSize: 11, flexShrink: 0 }}
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-subtle)')}
         >Clear</button>
-
-        {activeTab?.running && (
-          <button onClick={() => { window.api.process.kill(activeId!); setTabs(p => p.map(t => t.id===activeId?{...t,running:false}:t)) }}
-            style={{ padding: '0 10px', height: 33, background: 'transparent', border: 'none',
-              cursor: 'pointer', color: '#f38ba8', fontSize: 11, flexShrink: 0 }}
-          >■ Stop</button>
-        )}
       </div>
 
       {/* xterm output */}
@@ -242,11 +227,9 @@ export function TerminalPanel() {
         onClick={() => inputRef.current?.focus()}>
         {tabs.map(tab => (
           <div key={tab.id} id={`xterm-${tab.id}`}
-            style={{
-              position: 'absolute', inset: 0, padding: '2px 4px',
+            style={{ position: 'absolute', inset: 0, padding: '2px 4px',
               visibility: activeId === tab.id ? 'visible' : 'hidden',
-              pointerEvents: 'none',
-            }}
+              pointerEvents: 'none' }}
           />
         ))}
         {tabs.length === 0 && (
@@ -261,38 +244,24 @@ export function TerminalPanel() {
 
       {/* Input bar */}
       {activeId && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8,
           padding: '7px 12px', background: '#181825',
-          borderTop: '1px solid rgba(203,166,247,0.15)',
-        }}
+          borderTop: '1px solid rgba(203,166,247,0.15)' }}
           onClick={() => inputRef.current?.focus()}
         >
-          {/* Prompt */}
-          <span style={{
-            fontFamily: "'Cascadia Code',monospace", fontSize: 13, flexShrink: 0,
-            color: activeTab?.running ? '#f9e2af' : '#a6e3a1',
-            userSelect: 'none',
-          }}>
-            {activeTab?.running ? '⟳' : isWin ? '>' : '$'}
+          <span style={{ fontFamily: "'Cascadia Code',monospace", fontSize: 13,
+            color: '#a6e3a1', userSelect: 'none', flexShrink: 0 }}>
+            {isWin ? '>' : '$'}
           </span>
-
           <input
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={activeTab?.running}
-            placeholder={activeTab?.running ? 'Running...  Ctrl+C to stop' : ''}
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            style={{
-              flex: 1, background: 'transparent', border: 'none', outline: 'none',
+            autoComplete="off" autoCorrect="off" spellCheck={false}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none',
               fontFamily: "'Cascadia Code','Fira Code',Consolas,monospace",
-              fontSize: 13, color: 'var(--text)', caretColor: '#a6e3a1',
-              opacity: activeTab?.running ? 0.4 : 1,
-            }}
+              fontSize: 13, color: 'var(--text)', caretColor: '#a6e3a1' }}
           />
         </div>
       )}
