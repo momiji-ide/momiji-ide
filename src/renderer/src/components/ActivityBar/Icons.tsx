@@ -105,8 +105,28 @@ export const IcoSnippets = ({ size = 20 }: P) => (
 )
 
 export const IcoAI = ({ size = 20 }: P) => (
-  <svg {...base} width={size} height={size}>
-    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    stroke="none"
+  >
+    {/* Fox face / Kitsune */}
+    <path d="M16 3C9.5 3 5 8 5 13.5c0 4.5 2.8 7.5 5.5 9L10 26l6-2 6 2-.5-3.5C24.2 21 27 18 27 13.5 27 8 22.5 3 16 3z" />
+    {/* Left ear */}
+    <path d="M5 3 C3.5 1 1.5 2 1 4 C2 7 5 9 7 9.5 C6.5 7 5.5 5 5 3z"
+      style={{ fill: 'currentColor', opacity: 0.7 }} />
+    {/* Right ear */}
+    <path d="M27 3 C28.5 1 30.5 2 31 4 C30 7 27 9 25 9.5 C25.5 7 26.5 5 27 3z"
+      style={{ fill: 'currentColor', opacity: 0.7 }} />
+    {/* Eyes */}
+    <circle cx="12" cy="14" r="1.8" fill="var(--bg-crust, #11111b)" />
+    <circle cx="20" cy="14" r="1.8" fill="var(--bg-crust, #11111b)" />
+    {/* Nose / smile */}
+    <path d="M14 18.5 Q16 20.5 18 18.5" stroke="var(--bg-crust, #11111b)" strokeWidth="1.2"
+      fill="none" strokeLinecap="round" />
   </svg>
 )
 
