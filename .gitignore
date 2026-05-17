@@ -55,3 +55,5 @@ Gemini_Generated_*.png
 logo-kitsune2.png
 *.png
 !resources/*.png
+
+!docs/*.png
