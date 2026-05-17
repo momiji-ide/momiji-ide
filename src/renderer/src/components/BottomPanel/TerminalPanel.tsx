@@ -1,258 +1,248 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { ansiToHtml } from '../../utils/codeRunner'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { Terminal } from '@xterm/xterm'
+import { FitAddon } from '@xterm/addon-fit'
+import { WebLinksAddon } from '@xterm/addon-web-links'
 import { useAppStore } from '../../store/appStore'
+import '@xterm/xterm/css/xterm.css'
 
-interface OutputLine {
-  id: number
-  html: string
-  type: 'stdout' | 'stderr' | 'system'
+interface TermTab {
+  id: string
+  title: string
+  exited: boolean
 }
 
-interface TerminalPanelProps {
-  processId: string
-  cwd?: string
-}
+let tabCounter = 0
 
-let lineId = 0
+export function TerminalPanel() {
+  const currentFolder = useAppStore(s => s.currentFolder)
+  const [tabs, setTabs] = useState<TermTab[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const terminalsRef = useRef<Map<string, Terminal>>(new Map())
+  const fitAddonsRef = useRef<Map<string, FitAddon>>(new Map())
+  const containerRef = useRef<HTMLDivElement>(null)
 
-const SHELLS = [
-  { id: 'powershell', label: '⚡ PowerShell', cmd: 'powershell', argsFn: (c: string) => ['-Command', c] },
-  { id: 'cmd',        label: '> CMD',         cmd: 'cmd',        argsFn: (c: string) => ['/c', c] },
-  { id: 'bash',       label: '$ Bash',        cmd: 'bash',       argsFn: (c: string) => ['-c', c] },
-  { id: 'zsh',        label: '$ Zsh',         cmd: 'zsh',        argsFn: (c: string) => ['-c', c] },
-]
+  // ── Create a new terminal tab ─────────────────────────────────────────
+  const createTab = useCallback(async (cwd?: string) => {
+    const id = `term-${++tabCounter}`
+    const newTab: TermTab = { id, title: `Shell ${tabCounter}`, exited: false }
 
-export function TerminalPanel({ processId, cwd }: TerminalPanelProps) {
-  const { settings } = useAppStore()
-  const [lines, setLines] = useState<OutputLine[]>([])
-  const [input, setInput] = useState('')
-  const [isRunning, setIsRunning] = useState(false)
-  const [history, setHistory] = useState<string[]>([])
-  const [histIdx, setHistIdx] = useState(-1)
-  const [shell, setShell] = useState(settings.terminalShell ?? 'powershell')
-  const [shellOpen, setShellOpen] = useState(false)
-  const shellBtnRef = useRef<HTMLButtonElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+    setTabs(prev => [...prev, newTab])
+    setActiveId(id)
 
-  const addLine = useCallback((text: string, type: OutputLine['type']) => {
-    const chunks = text.split('\n')
-    setLines((prev) => [
-      ...prev,
-      ...chunks
-        .filter((_, i) => i < chunks.length - 1 || chunks[chunks.length - 1] !== '')
-        .map((chunk) => ({
-          id: lineId++,
-          html: ansiToHtml(chunk),
-          type
-        }))
-    ])
+    const result = await window.api.terminal.create(id, cwd ?? currentFolder ?? undefined)
+    if (!result?.success) {
+      console.error('[Terminal] Failed to create shell:', result?.error)
+    }
+  }, [currentFolder])
+
+  // ── Init: open first terminal on mount ───────────────────────────────
+  useEffect(() => {
+    createTab()
+  }, []) // eslint-disable-line
+
+  // ── Mount xterm into DOM whenever activeId changes ───────────────────
+  useEffect(() => {
+    if (!activeId) return
+
+    // Already mounted — just refit
+    if (terminalsRef.current.has(activeId)) {
+      setTimeout(() => fitAddonsRef.current.get(activeId)?.fit(), 30)
+      return
+    }
+
+    const el = document.getElementById(`xterm-${activeId}`)
+    if (!el) return
+
+    const term = new Terminal({
+      theme: {
+        background:   '#1e1e2e',
+        foreground:   '#cdd6f4',
+        cursor:       '#f5e0dc',
+        cursorAccent: '#1e1e2e',
+        black:        '#45475a', red:     '#f38ba8',
+        green:        '#a6e3a1', yellow:  '#f9e2af',
+        blue:         '#89b4fa', magenta: '#cba6f7',
+        cyan:         '#94e2d5', white:   '#bac2de',
+        brightBlack:  '#585b70', brightRed:     '#f38ba8',
+        brightGreen:  '#a6e3a1', brightYellow:  '#f9e2af',
+        brightBlue:   '#89b4fa', brightMagenta: '#cba6f7',
+        brightCyan:   '#94e2d5', brightWhite:   '#a6adc8',
+        selectionBackground: 'rgba(203,166,247,0.3)',
+      },
+      fontFamily: "'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace",
+      fontSize: 13,
+      lineHeight: 1.45,
+      cursorBlink: true,
+      cursorStyle: 'block',
+      scrollback: 5000,
+      allowProposedApi: true,
+    })
+
+    const fitAddon = new FitAddon()
+    term.loadAddon(fitAddon)
+    term.loadAddon(new WebLinksAddon())
+    term.open(el)
+    fitAddon.fit()
+
+    terminalsRef.current.set(activeId, term)
+    fitAddonsRef.current.set(activeId, fitAddon)
+
+    // User types → send to shell
+    term.onData(data => window.api.terminal.write(activeId, data))
+
+    // Welcome banner
+    term.writeln('\x1b[35m  🦊 Parallax IDE Terminal\x1b[0m')
+    term.writeln('\x1b[90m  ─────────────────────────\x1b[0m')
+    term.write('\r\n')
+
+  }, [activeId]) // eslint-disable-line
+
+  // ── Stream data from shell → xterm ───────────────────────────────────
+  useEffect(() => {
+    const off = window.api.terminal.onData((id, data) => {
+      terminalsRef.current.get(id)?.write(data)
+    })
+    return off
   }, [])
 
+  // ── Shell exit ────────────────────────────────────────────────────────
   useEffect(() => {
-    const offOut = window.api.process.onStdout((id, data) => {
-      if (id === processId) addLine(data, 'stdout')
+    const off = window.api.terminal.onExit((id, code) => {
+      terminalsRef.current.get(id)?.writeln(
+        `\r\n\x1b[33m[Process exited with code ${code}]\x1b[0m`
+      )
+      setTabs(prev => prev.map(t => t.id === id ? { ...t, exited: true } : t))
     })
-    const offErr = window.api.process.onStderr((id, data) => {
-      if (id === processId) addLine(data, 'stderr')
+    return off
+  }, [])
+
+  // ── Refit when container resizes ─────────────────────────────────────
+  useEffect(() => {
+    if (!containerRef.current) return
+    const ro = new ResizeObserver(() => {
+      if (activeId) fitAddonsRef.current.get(activeId)?.fit()
     })
-    const offExit = window.api.process.onExit((id, code) => {
-      if (id === processId) {
-        setIsRunning(false)
-        const msg = code === 0
-          ? '\x1b[32m\n[Process exited with code 0]\x1b[0m'
-          : `\x1b[31m\n[Process exited with code ${code}]\x1b[0m`
-        addLine(msg, 'system')
+    ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [activeId])
+
+  // ── Close a tab ──────────────────────────────────────────────────────
+  const closeTab = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.api.terminal.kill(id)
+    terminalsRef.current.get(id)?.dispose()
+    terminalsRef.current.delete(id)
+    fitAddonsRef.current.delete(id)
+
+    setTabs(prev => {
+      const next = prev.filter(t => t.id !== id)
+      if (activeId === id) {
+        const newActive = next.at(-1) ?? null
+        setActiveId(newActive?.id ?? null)
       }
+      return next
     })
-    return () => { offOut(); offErr(); offExit() }
-  }, [processId, addLine])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
-  }, [lines])
-
-  const runCommand = useCallback(async (cmd: string) => {
-    if (!cmd.trim()) return
-    const shellCfg = SHELLS.find(s => s.id === shell) ?? SHELLS[0]
-    addLine(`\x1b[90m[${shellCfg.label}]\x1b[0m \x1b[34m${cmd}\x1b[0m`, 'system')
-    setHistory((h) => [cmd, ...h.slice(0, 49)])
-    setHistIdx(-1)
-    setIsRunning(true)
-    await window.api.process.run(processId, shellCfg.cmd, shellCfg.argsFn(cmd), cwd)
-  }, [processId, cwd, addLine, shell])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isRunning) {
-      window.api.process.stdin(processId, input + '\n')
-      addLine(input, 'stdout')
-      setInput('')
-    } else {
-      runCommand(input)
-      setInput('')
-    }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      const idx = Math.min(histIdx + 1, history.length - 1)
-      setHistIdx(idx)
-      setInput(history[idx] ?? '')
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      const idx = Math.max(histIdx - 1, -1)
-      setHistIdx(idx)
-      setInput(idx === -1 ? '' : history[idx])
-    } else if (e.key === 'c' && e.ctrlKey && isRunning) {
-      e.preventDefault()
-      window.api.process.kill(processId)
-    }
+  // ── Switch tab ───────────────────────────────────────────────────────
+  const switchTab = (id: string) => {
+    setActiveId(id)
+    setTimeout(() => fitAddonsRef.current.get(id)?.fit(), 30)
   }
-
-  const clearTerminal = () => setLines([])
-
-  // Close shell dropdown on outside click
-  useEffect(() => {
-    if (!shellOpen) return
-    const close = () => setShellOpen(false)
-    window.addEventListener('click', close)
-    return () => window.removeEventListener('click', close)
-  }, [shellOpen])
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace" }}
-      onClick={() => inputRef.current?.focus()}
-    >
-      {/* Toolbar */}
-      <div
-        className="flex items-center justify-between px-3 py-1 flex-shrink-0"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>TERMINAL</span>
-
-          {/* Shell selector — custom dropdown */}
-          <div className="relative">
+    <div className="flex flex-col h-full" style={{ background: '#1e1e2e' }}>
+      {/* Tab bar */}
+      <div className="flex items-center flex-shrink-0" style={{
+        height: 33, background: 'var(--bg-mantle)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div className="flex items-stretch flex-1 overflow-x-auto">
+          {tabs.map(tab => (
             <button
-              ref={shellBtnRef}
-              onClick={(e) => { e.stopPropagation(); setShellOpen(v => !v) }}
-              className="flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors"
+              key={tab.id}
+              onClick={() => switchTab(tab.id)}
+              className="flex items-center gap-1.5 px-3 text-xs flex-shrink-0 transition-all"
               style={{
-                background: shellOpen ? 'var(--bg-surface1)' : 'var(--bg-surface0)',
-                color: 'var(--text)',
-                border: '1px solid var(--border)'
-              }}>
-              {SHELLS.find(s => s.id === shell)?.label ?? shell}
-              <span style={{ color: 'var(--text-subtle)', fontSize: 9 }}>▾</span>
-            </button>
-
-            {shellOpen && (
-              <div
-                onClick={e => e.stopPropagation()}
-                className="absolute left-0 z-50 rounded-lg overflow-hidden py-1 shadow-xl"
-                style={{
-                  top: '100%', marginTop: 4, minWidth: 140,
-                  background: 'var(--bg-mantle)',
-                  border: '1px solid var(--border)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
-                }}>
-                {SHELLS.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => { setShell(s.id); setShellOpen(false) }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors"
-                    style={{
-                      background: shell === s.id ? 'var(--bg-surface0)' : 'transparent',
-                      color: shell === s.id ? 'var(--accent-blue)' : 'var(--text)',
-                      fontWeight: shell === s.id ? 600 : 400
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = shell === s.id ? 'var(--bg-surface0)' : 'transparent')}>
-                    {shell === s.id && <span style={{ color: 'var(--accent-blue)' }}>✓</span>}
-                    {shell !== s.id && <span style={{ width: 12 }} />}
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {isRunning && (
-            <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse"
-              style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>running</span>
-          )}
-          {cwd && (
-            <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-              {cwd.split(/[\\/]/).slice(-2).join('/')}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isRunning && (
-            <button
-              onClick={() => window.api.process.kill(processId)}
-              className="text-xs px-2 py-0.5 rounded transition-colors"
-              style={{ background: 'var(--accent-red)', color: 'white' }}
-              title="Kill process (Ctrl+C)"
+                height: 33,
+                background: activeId === tab.id ? '#1e1e2e' : 'transparent',
+                color: activeId === tab.id ? 'var(--text)' : 'var(--text-subtle)',
+                borderRight: '1px solid var(--border)',
+                borderTop: activeId === tab.id ? '1px solid var(--accent-mauve)' : '1px solid transparent',
+                borderBottom: 'none',
+              }}
             >
-              ■ Stop
+              <span style={{ fontSize: 8, color: tab.exited ? 'var(--accent-red)' : 'var(--accent-green)' }}>●</span>
+              {tab.title}
+              <span
+                onClick={e => closeTab(tab.id, e)}
+                className="flex items-center justify-center rounded transition-colors ml-1"
+                style={{
+                  width: 14, height: 14, fontSize: 12,
+                  color: 'var(--text-subtle)', cursor: 'pointer',
+                  lineHeight: '14px', textAlign: 'center',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >×</span>
             </button>
-          )}
-          <button
-            onClick={clearTerminal}
-            className="text-xs px-2 py-0.5 rounded transition-colors"
-            style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-            title="Clear"
-          >
-            Clear
-          </button>
+          ))}
         </div>
+
+        {/* New terminal */}
+        <button
+          onClick={() => createTab()}
+          title="New Terminal"
+          className="flex items-center justify-center transition-colors flex-shrink-0"
+          style={{
+            width: 30, height: 33, background: 'transparent',
+            border: 'none', cursor: 'pointer',
+            color: 'var(--text-subtle)', fontSize: 18, lineHeight: 1,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface0)'; e.currentTarget.style.color = 'var(--text)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-subtle)' }}
+        >+</button>
+
+        {/* Clear button */}
+        {activeId && terminalsRef.current.has(activeId) && (
+          <button
+            onClick={() => terminalsRef.current.get(activeId!)?.clear()}
+            title="Clear"
+            className="flex items-center px-2 text-xs transition-colors flex-shrink-0"
+            style={{ height: 33, color: 'var(--text-subtle)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-subtle)' }}
+          >Clear</button>
+        )}
       </div>
 
-      {/* Output area */}
-      <div className="flex-1 overflow-y-auto p-3 text-xs leading-relaxed"
-        style={{ background: 'var(--bg-crust)' }}>
-        {lines.length === 0 && (
-          <p style={{ color: 'var(--text-subtle)' }}>
-            Terminal ready. Type a command and press Enter.{'\n'}
-            Ctrl+C to kill running process · ↑↓ for history
-          </p>
-        )}
-        {lines.map((line) => (
+      {/* xterm containers */}
+      <div ref={containerRef} className="flex-1 relative overflow-hidden">
+        {tabs.map(tab => (
           <div
-            key={line.id}
-            style={{ color: line.type === 'stderr' ? 'var(--accent-red)' : 'var(--text)' }}
-            dangerouslySetInnerHTML={{ __html: line.html || '&nbsp;' }}
+            key={tab.id}
+            id={`xterm-${tab.id}`}
+            style={{
+              position: 'absolute', inset: 0,
+              padding: '2px 4px',
+              display: activeId === tab.id ? 'block' : 'none',
+            }}
           />
         ))}
-        <div ref={bottomRef} />
-      </div>
 
-      {/* Input */}
-      <form
-        onSubmit={handleSubmit}
-        className="flex items-center px-3 py-2 flex-shrink-0"
-        style={{ background: 'var(--bg-crust)', borderTop: '1px solid var(--border)' }}
-      >
-        <span className="text-xs mr-2 flex-shrink-0" style={{ color: 'var(--accent-green)' }}>
-          {isRunning ? '>' : '$'}
-        </span>
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent outline-none text-xs"
-          style={{ color: 'var(--text)', caretColor: 'var(--accent-green)', fontFamily: 'inherit' }}
-          placeholder={isRunning ? 'Send input...' : 'Enter command...'}
-          autoComplete="off"
-          spellCheck={false}
-        />
-      </form>
+        {tabs.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full gap-2"
+            style={{ color: 'var(--text-subtle)', fontSize: 13 }}>
+            <span style={{ fontSize: 24 }}>⚡</span>
+            <span>No terminal open</span>
+            <button
+              onClick={() => createTab()}
+              className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)', border: 'none', cursor: 'pointer' }}
+            >Open Terminal</button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

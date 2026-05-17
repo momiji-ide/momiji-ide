@@ -83,6 +83,22 @@ const api = {
       ipcRenderer.on('process:exit', handler)
       return () => ipcRenderer.removeListener('process:exit', handler)
     }
+  },
+  terminal: {
+    create: (id: string, cwd?: string) => ipcRenderer.invoke('terminal:create', id, cwd),
+    write: (id: string, data: string) => ipcRenderer.invoke('terminal:write', id, data),
+    kill: (id: string) => ipcRenderer.invoke('terminal:kill', id),
+    getCwd: () => ipcRenderer.invoke('terminal:getCwd'),
+    onData: (callback: (id: string, data: string) => void) => {
+      const handler = (_: Electron.IpcRendererEvent, id: string, data: string) => callback(id, data)
+      ipcRenderer.on('terminal:data', handler)
+      return () => ipcRenderer.removeListener('terminal:data', handler)
+    },
+    onExit: (callback: (id: string, code: number) => void) => {
+      const handler = (_: Electron.IpcRendererEvent, id: string, code: number) => callback(id, code)
+      ipcRenderer.on('terminal:exit', handler)
+      return () => ipcRenderer.removeListener('terminal:exit', handler)
+    }
   }
 }
 
