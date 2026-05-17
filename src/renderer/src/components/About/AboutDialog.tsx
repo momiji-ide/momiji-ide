@@ -240,7 +240,7 @@ export function AboutDialog({ onClose }: Props) {
                 ))}
                 <div className="mt-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                   <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-                    Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} · MIT License · © 2025 Parallax IDE
+                    Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} · © 2025 Parallax IDE · All Rights Reserved
                   </p>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function AboutDialog({ onClose }: Props) {
                   </button>
                 ))}
                 <p className="text-xs text-center mt-3" style={{ color:'var(--overlay0)' }}>
-                  © 2025 Parallax IDE · Haikal Hakim Baiqunni
+                  © 2025 Parallax IDE · Haikal Hakim Baiqunni · All Rights Reserved
                 </p>
               </div>
             )}
