@@ -1,6 +1,10 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 
 const api = {
+  zoom: {
+    setFactor: (factor: number) => webFrame.setZoomFactor(factor),
+    getFactor: () => webFrame.getZoomFactor(),
+  },
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
     maximize: () => ipcRenderer.invoke('window:maximize'),

@@ -105,7 +105,26 @@ export function SettingsPanel() {
                 ]}
               />
             </SettingRow>
-            <SettingRow label="Font Size">
+            {/* UI Zoom — scales entire app (fonts, icons, layout) */}
+            <SettingRow label="UI Scale">
+              <div className="flex items-center gap-2">
+                <input
+                  type="range" min={0.75} max={1.5} step={0.05}
+                  value={settings.uiZoom ?? 1.15}
+                  onChange={(e) => applySettings({ uiZoom: +e.target.value })}
+                  className="flex-1"
+                />
+                <span className="text-xs font-mono w-10 text-center"
+                  style={{ color: 'var(--accent-blue)' }}>
+                  {Math.round((settings.uiZoom ?? 1.15) * 100)}%
+                </span>
+              </div>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+                Scales the entire UI — fonts, icons, and layout
+              </p>
+            </SettingRow>
+
+            <SettingRow label="Editor Font Size">
               <div className="flex items-center gap-2">
                 <input
                   type="range" min={10} max={28} value={settings.fontSize}

@@ -15,7 +15,8 @@ const defaultSettings: EditorSettings = {
   autoSave: true,
   autoSaveDelay: 1000,
   pythonPath: 'python',
-  terminalShell: navigator.userAgent.includes('Win') ? 'powershell' : 'bash'
+  terminalShell: navigator.userAgent.includes('Win') ? 'powershell' : 'bash',
+  uiZoom: 1.15,
 }
 
 interface AppStore extends AppState {
