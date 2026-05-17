@@ -93,7 +93,8 @@
           ]
         }
       ],
-      "icon": "resources/icon.icns"
+      "icon": "resources/icon.icns",
+      "artifactName": "Parallax-IDE-${version}-${arch}.${ext}"
     },
     "linux": {
       "target": [
@@ -104,7 +105,8 @@
           ]
         }
       ],
-      "icon": "resources/icon.png"
+      "icon": "resources/icon.png",
+      "artifactName": "Parallax-IDE-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
