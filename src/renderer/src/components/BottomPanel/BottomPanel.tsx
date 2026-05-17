@@ -92,7 +92,7 @@ export function BottomPanel({ height }: BottomPanelProps) {
       {/* Panel content — keep all mounted to preserve state */}
       <div className="flex-1 overflow-hidden">
         <div style={{ display: activeTab === 'terminal' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
-          <TerminalPanel processId="terminal-main" cwd={currentFolder ?? undefined} />
+          <TerminalPanel />
         </div>
         <div style={{ display: activeTab === 'output' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
           <OutputPanel processId="runner-main" onRunningChange={setOutputRunning} />

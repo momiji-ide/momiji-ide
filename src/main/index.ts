@@ -13,6 +13,7 @@ app.commandLine.appendSwitch('disable-features', 'MediaStreamTrackTransfer')
 
 let mainWindow: BrowserWindow | null = null
 const runningProcesses = new Map<string, ChildProcess>()
+const terminals = new Map<string, ChildProcess>()
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -484,6 +485,74 @@ function setupIpcHandlers(): void {
   // Shell command (for terminal)
   ipcMain.handle('process:shell', async (_, id: string, command: string, cwd?: string) => {
     return ipcMain.emit('process:run', null as any, id, command, [], cwd)
+  })
+
+  // ─── Terminal (interactive shell with xterm.js) ────────────────────
+  ipcMain.handle('terminal:create', async (_, id: string, cwd?: string) => {
+    try {
+      // Kill existing terminal with same id
+      if (terminals.has(id)) {
+        try { terminals.get(id)!.kill() } catch {}
+        terminals.delete(id)
+      }
+
+      const isWin = process.platform === 'win32'
+      const shell = isWin ? 'cmd.exe' : (process.env.SHELL || 'bash')
+      const workDir = cwd || process.env.USERPROFILE || process.env.HOME || '/'
+
+      const proc = spawn(shell, [], {
+        cwd: workDir,
+        env: {
+          ...process.env,
+          TERM: 'xterm-256color',
+          COLORTERM: 'truecolor',
+          FORCE_COLOR: '1',
+        },
+        stdio: ['pipe', 'pipe', 'pipe']
+      })
+
+      terminals.set(id, proc)
+
+      proc.stdout?.on('data', (data: Buffer) => {
+        mainWindow?.webContents.send('terminal:data', id, data.toString('utf-8'))
+      })
+      proc.stderr?.on('data', (data: Buffer) => {
+        mainWindow?.webContents.send('terminal:data', id, data.toString('utf-8'))
+      })
+      proc.on('exit', (code) => {
+        terminals.delete(id)
+        mainWindow?.webContents.send('terminal:exit', id, code ?? 0)
+      })
+      proc.on('error', (err) => {
+        mainWindow?.webContents.send('terminal:data', id, `\x1b[31mShell error: ${err.message}\x1b[0m\r\n`)
+      })
+
+      return { success: true, pid: proc.pid, shell }
+    } catch (err) {
+      return { success: false, error: String(err) }
+    }
+  })
+
+  ipcMain.handle('terminal:write', async (_, id: string, data: string) => {
+    const proc = terminals.get(id)
+    if (!proc || !proc.stdin) return false
+    try {
+      proc.stdin.write(data)
+      return true
+    } catch { return false }
+  })
+
+  ipcMain.handle('terminal:kill', async (_, id: string) => {
+    const proc = terminals.get(id)
+    if (proc) {
+      try { proc.kill('SIGTERM') } catch {}
+      terminals.delete(id)
+    }
+    return true
+  })
+
+  ipcMain.handle('terminal:getCwd', async () => {
+    return process.env.USERPROFILE || process.env.HOME || '/'
   })
 }
 
