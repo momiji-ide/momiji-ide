@@ -11,6 +11,7 @@ export function StatusBar({ onCommandPalette }: Props) {
   const [cursor, setCursor] = useState({ line: 1, col: 1 })
   const [showPythonPicker, setShowPythonPicker] = useState(false)
   const [pythonVersion, setPythonVersion] = useState<string | null>(null)
+  const [kitsuneInline, setKitsuneInline] = useState(true)
 
   useEffect(() => {
     const handler = (e: CustomEvent) => setCursor(e.detail)
@@ -101,6 +102,15 @@ export function StatusBar({ onCommandPalette }: Props) {
               Ln {cursor.line}, Col {cursor.col}
             </StatusBtn>
           )}
+          <StatusBtn
+            onClick={() => {
+              setKitsuneInline(v => !v)
+              window.dispatchEvent(new CustomEvent('kitsune:toggleInline'))
+            }}
+            title={kitsuneInline ? 'Kitsune AI Inline — ON (click to disable)' : 'Kitsune AI Inline — OFF (click to enable)'}
+          >
+            🦊 {kitsuneInline ? 'AI ✓' : 'AI ✗'}
+          </StatusBtn>
           <StatusBtn onClick={handleTerminal} title="Toggle Terminal (Ctrl+`)">
             ⚡ Terminal
           </StatusBtn>
