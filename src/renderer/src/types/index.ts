@@ -29,6 +29,7 @@ export interface EditorSettings {
   autoSaveDelay: number
   pythonPath: string
   terminalShell: string
+  uiZoom: number  // 0.75 – 1.5, default 1.15
 }
 
 export interface AIProvider {

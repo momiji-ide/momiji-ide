@@ -34,6 +34,17 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', settings.theme === 'light' ? 'light' : '')
   }, [settings.theme])
 
+  // Apply UI zoom via webFrame (scales everything — fonts, icons, layout)
+  useEffect(() => {
+    const factor = settings.uiZoom ?? 1.15
+    window.api.zoom?.setFactor(factor)
+  }, [settings.uiZoom])
+
+  // Apply zoom on first mount
+  useEffect(() => {
+    window.api.zoom?.setFactor(settings.uiZoom ?? 1.15)
+  }, []) // eslint-disable-line
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
