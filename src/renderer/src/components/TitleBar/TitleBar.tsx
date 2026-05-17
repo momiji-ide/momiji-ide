@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { KitsuneLogo } from '../Logo/KitsuneLogo'
 
 interface Props {
   onCommandPalette: () => void
@@ -36,7 +36,7 @@ export function TitleBar({ onCommandPalette }: Props) {
     >
       {/* Left: Logo */}
       <div className="no-drag flex items-center gap-2 px-3 flex-shrink-0">
-        <ParallaxLogo size={18} />
+        <KitsuneLogo size={18} />
         <span className="font-black text-xs select-none tracking-widest" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.12em' }}>PARALLAX</span>
       </div>
 
