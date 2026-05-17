@@ -44,56 +44,74 @@ export function TerminalPanel() {
   useEffect(() => {
     if (!activeId) return
 
-    // Already mounted — just refit
+    // Already mounted → just refit + focus
     if (terminalsRef.current.has(activeId)) {
-      setTimeout(() => fitAddonsRef.current.get(activeId)?.fit(), 30)
+      setTimeout(() => {
+        fitAddonsRef.current.get(activeId)?.fit()
+        terminalsRef.current.get(activeId)?.focus()
+      }, 50)
       return
     }
 
-    const el = document.getElementById(`xterm-${activeId}`)
-    if (!el) return
+    // Wait for DOM to render the container div before mounting xterm
+    const mountTerminal = () => {
+      const el = document.getElementById(`xterm-${activeId}`)
+      if (!el) {
+        // DOM not ready yet, retry
+        requestAnimationFrame(mountTerminal)
+        return
+      }
 
-    const term = new Terminal({
-      theme: {
-        background:   '#1e1e2e',
-        foreground:   '#cdd6f4',
-        cursor:       '#f5e0dc',
-        cursorAccent: '#1e1e2e',
-        black:        '#45475a', red:     '#f38ba8',
-        green:        '#a6e3a1', yellow:  '#f9e2af',
-        blue:         '#89b4fa', magenta: '#cba6f7',
-        cyan:         '#94e2d5', white:   '#bac2de',
-        brightBlack:  '#585b70', brightRed:     '#f38ba8',
-        brightGreen:  '#a6e3a1', brightYellow:  '#f9e2af',
-        brightBlue:   '#89b4fa', brightMagenta: '#cba6f7',
-        brightCyan:   '#94e2d5', brightWhite:   '#a6adc8',
-        selectionBackground: 'rgba(203,166,247,0.3)',
-      },
-      fontFamily: "'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace",
-      fontSize: 13,
-      lineHeight: 1.45,
-      cursorBlink: true,
-      cursorStyle: 'block',
-      scrollback: 5000,
-      allowProposedApi: true,
-    })
+      const term = new Terminal({
+        theme: {
+          background:   '#1e1e2e',
+          foreground:   '#cdd6f4',
+          cursor:       '#f5e0dc',
+          cursorAccent: '#1e1e2e',
+          black:        '#45475a', red:     '#f38ba8',
+          green:        '#a6e3a1', yellow:  '#f9e2af',
+          blue:         '#89b4fa', magenta: '#cba6f7',
+          cyan:         '#94e2d5', white:   '#bac2de',
+          brightBlack:  '#585b70', brightRed:     '#f38ba8',
+          brightGreen:  '#a6e3a1', brightYellow:  '#f9e2af',
+          brightBlue:   '#89b4fa', brightMagenta: '#cba6f7',
+          brightCyan:   '#94e2d5', brightWhite:   '#a6adc8',
+          selectionBackground: 'rgba(203,166,247,0.3)',
+        },
+        fontFamily: "'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace",
+        fontSize: 13,
+        lineHeight: 1.45,
+        cursorBlink: true,
+        cursorStyle: 'block',
+        scrollback: 5000,
+        allowProposedApi: true,
+        convertEol: true,
+      })
 
-    const fitAddon = new FitAddon()
-    term.loadAddon(fitAddon)
-    term.loadAddon(new WebLinksAddon())
-    term.open(el)
-    fitAddon.fit()
+      const fitAddon = new FitAddon()
+      term.loadAddon(fitAddon)
+      term.loadAddon(new WebLinksAddon())
+      term.open(el)
 
-    terminalsRef.current.set(activeId, term)
-    fitAddonsRef.current.set(activeId, fitAddon)
+      // Give xterm a frame to layout before fitting
+      requestAnimationFrame(() => {
+        fitAddon.fit()
+        term.focus()
+      })
 
-    // User types → send to shell
-    term.onData(data => window.api.terminal.write(activeId, data))
+      terminalsRef.current.set(activeId, term)
+      fitAddonsRef.current.set(activeId, fitAddon)
 
-    // Welcome banner
-    term.writeln('\x1b[35m  🦊 Parallax IDE Terminal\x1b[0m')
-    term.writeln('\x1b[90m  ─────────────────────────\x1b[0m')
-    term.write('\r\n')
+      // User types → send raw to shell
+      term.onData(data => window.api.terminal.write(activeId, data))
+
+      // Welcome banner
+      term.writeln('\x1b[35m  🦊 Parallax IDE Terminal\x1b[0m')
+      term.writeln('\x1b[90m  ─────────────────────────\x1b[0m')
+      term.write('\r\n')
+    }
+
+    requestAnimationFrame(mountTerminal)
 
   }, [activeId]) // eslint-disable-line
 
@@ -147,7 +165,15 @@ export function TerminalPanel() {
   // ── Switch tab ───────────────────────────────────────────────────────
   const switchTab = (id: string) => {
     setActiveId(id)
-    setTimeout(() => fitAddonsRef.current.get(id)?.fit(), 30)
+    setTimeout(() => {
+      fitAddonsRef.current.get(id)?.fit()
+      terminalsRef.current.get(id)?.focus()
+    }, 50)
+  }
+
+  // ── Focus active terminal on click ───────────────────────────────────
+  const handleContainerClick = () => {
+    if (activeId) terminalsRef.current.get(activeId)?.focus()
   }
 
   return (
@@ -217,7 +243,7 @@ export function TerminalPanel() {
       </div>
 
       {/* xterm containers */}
-      <div ref={containerRef} className="flex-1 relative overflow-hidden">
+      <div ref={containerRef} className="flex-1 relative overflow-hidden" onClick={handleContainerClick}>
         {tabs.map(tab => (
           <div
             key={tab.id}
