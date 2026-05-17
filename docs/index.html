@@ -465,6 +465,9 @@
       opacity: 1; transform: translateY(0);
     }
 
+    @media (max-width: 768px) {
+      #meet-kitsune .container > div { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+    }
     @media (max-width: 640px) {
       nav { padding: 0 1rem; }
       .nav-links .hide-sm { display: none; }
@@ -483,7 +486,7 @@
   </a>
   <div class="nav-links">
     <a href="#features" class="hide-sm">Features</a>
-    <a href="#kitsune" class="hide-sm">Kitsune AI</a>
+    <a href="#meet-kitsune" class="hide-sm" style="color: #fb923c;">Kitsune AI</a>
     <a href="#download">Download</a>
     <a href="https://github.com/parallax-ide/parallax-ide" target="_blank" class="hide-sm">GitHub</a>
     <a href="#download" class="nav-cta">Get Parallax →</a>
@@ -821,6 +824,97 @@
           <div class="provider-sub">Mistral, Grok, Cohere...</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MEET KITSUNE ── -->
+<section id="meet-kitsune" style="background: var(--bg-crust); border-top: 1px solid var(--surface0); padding: 6rem 1.5rem; overflow: hidden;">
+  <div class="container">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; max-width: 1100px; margin: 0 auto;">
+
+      <!-- Left: character art -->
+      <div data-fade style="position:relative;">
+        <!-- Glow behind image -->
+        <div style="
+          position: absolute; inset: -20px;
+          background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(251,146,60,0.15) 0%, rgba(203,166,247,0.08) 50%, transparent 70%);
+          pointer-events: none;
+        "></div>
+        <img
+          src="kitsune-concept.png"
+          alt="Kitsune AI Character Design"
+          style="
+            width: 100%; border-radius: 16px;
+            border: 1px solid rgba(251,146,60,0.2);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,146,60,0.08);
+            position: relative;
+          "
+        />
+      </div>
+
+      <!-- Right: info -->
+      <div data-fade>
+        <p class="section-label" style="color: #fb923c;">// CHARACTER PROFILE</p>
+        <h2 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">
+          Meet <span style="color: #fb923c;">Kitsune AI</span>
+        </h2>
+        <p style="font-size: 0.8rem; color: var(--overlay0); font-style: italic; margin-bottom: 1.75rem; font-family: monospace;">
+          キツネ・エーアイ — "Your Intelligent Companion."
+        </p>
+
+        <!-- Stat card -->
+        <div style="
+          background: var(--bg-mantle); border: 1px solid rgba(251,146,60,0.2);
+          border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem;
+          font-family: monospace; font-size: 0.78rem;
+        ">
+          <div style="display:grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; color: var(--subtext1);">
+            <span style="color: #fb923c;">▸ NAME</span>      <span>Kitsune AI</span>
+            <span style="color: #fb923c;">▸ MODEL</span>     <span>KITSUNE-V1</span>
+            <span style="color: #fb923c;">▸ TYPE</span>      <span>AI Assistant</span>
+            <span style="color: #fb923c;">▸ POWERED BY</span><span>Claude · Gemini · GPT · Ollama</span>
+          </div>
+        </div>
+
+        <!-- Specialties -->
+        <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: #fb923c; margin-bottom: 0.75rem;">SPECIALTY</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
+          <div class="kp">
+            <div class="kp-icon" style="background: rgba(251,146,60,0.12); font-size:1rem;">⚡</div>
+            <div><div class="kp-title">Code Generation</div><div class="kp-desc">Write full components, modules, and entire project structures from a single prompt.</div></div>
+          </div>
+          <div class="kp">
+            <div class="kp-icon" style="background: rgba(251,146,60,0.12); font-size:1rem;">🔍</div>
+            <div><div class="kp-title">Debugging</div><div class="kp-desc">Trace bugs across files, explain root causes, and apply the fix directly.</div></div>
+          </div>
+          <div class="kp">
+            <div class="kp-icon" style="background: rgba(251,146,60,0.12); font-size:1rem;">🏗️</div>
+            <div><div class="kp-title">Architecting</div><div class="kp-desc">Design system architecture, suggest patterns, and review your codebase structure.</div></div>
+          </div>
+          <div class="kp">
+            <div class="kp-icon" style="background: rgba(251,146,60,0.12); font-size:1rem;">🤖</div>
+            <div><div class="kp-title">Autonomous Tasks</div><div class="kp-desc">Agent mode — Kitsune reads, plans, executes, and iterates without hand-holding.</div></div>
+          </div>
+        </div>
+
+        <!-- Quote -->
+        <div style="
+          border-left: 3px solid #fb923c;
+          padding: 0.75rem 1.25rem;
+          background: rgba(251,146,60,0.06);
+          border-radius: 0 8px 8px 0;
+          font-style: italic;
+        ">
+          <div style="font-size: 0.85rem; color: var(--text); margin-bottom: 4px;">
+            "I'll handle the compile, the debug, and everything in between!"
+          </div>
+          <div style="font-size: 0.72rem; color: var(--overlay0); font-family: monospace;">
+            コンパイルも、デバッグも、キツネにおまかせ！
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
