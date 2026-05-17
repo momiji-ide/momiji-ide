@@ -208,6 +208,7 @@ export function KitsuneAgent() {
     () => aiProviders.find(p => p.enabled && p.apiKey)?.id ?? 'gemini'
   )
   const [kitsuneExpr, setKitsuneExpr] = useState<'normal' | 'thinking' | 'happy'>('normal')
+  const [pastedImages, setPastedImages] = useState<{ base64: string; mediaType: string; preview: string }[]>([])
   const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
 
@@ -324,7 +325,7 @@ export function KitsuneAgent() {
   }
 
   // ── Claude agentic loop ───────────────────────────────────────────────────
-  const runClaudeAgent = async (provider: typeof aiProviders[0], taskText: string) => {
+  const runClaudeAgent = async (provider: typeof aiProviders[0], taskText: string, images: typeof pastedImages) => {
     const sysPrompt = `You are Kitsune, an autonomous coding agent inside Parallax IDE.
 Project folder: ${currentFolder}
 
@@ -339,7 +340,12 @@ Workflow:
 
 Never skip tool calls. Always execute, don't describe.`
 
-    const messages: any[] = [{ role: 'user', content: taskText }]
+    // Build first message — include images if any were pasted
+    const firstContent: any[] = [
+      ...images.map(img => ({ type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.base64 } })),
+      { type: 'text', text: taskText }
+    ]
+    const messages: any[] = [{ role: 'user', content: images.length > 0 ? firstContent : taskText }]
     let iterations = 0
     const MAX_ITER = 20
 
@@ -383,7 +389,7 @@ Never skip tool calls. Always execute, don't describe.`
   }
 
   // ── Gemini agentic loop ───────────────────────────────────────────────────
-  const runGeminiAgent = async (provider: typeof aiProviders[0], taskText: string) => {
+  const runGeminiAgent = async (provider: typeof aiProviders[0], taskText: string, images: typeof pastedImages) => {
     const sysPrompt = `You are Kitsune, an autonomous coding agent inside Parallax IDE.
 Project folder: ${currentFolder}
 
@@ -398,7 +404,12 @@ Required workflow:
 
 Never skip tool calls. If the task involves creating files, you must call write_file.`
 
-    const contents: any[] = [{ role: 'user', parts: [{ text: taskText }] }]
+    // Build first message — include images if any were pasted
+    const firstParts: any[] = [
+      ...images.map(img => ({ inline_data: { mime_type: img.mediaType, data: img.base64 } })),
+      { text: taskText }
+    ]
+    const contents: any[] = [{ role: 'user', parts: firstParts }]
     let iterations = 0
     const MAX_ITER = 20
 
@@ -497,14 +508,16 @@ Never skip tool calls. If the task involves creating files, you must call write_
   // ── Run agent ─────────────────────────────────────────────────────────────
   const handleRun = useCallback(async () => {
     if (!task.trim() || running || !activeProvider || !currentFolder) return
+    const imageSnapshot = [...pastedImages]   // snapshot before clearing
     setRunning(true)
     setKitsuneExpr('thinking')
     abortRef.current = false
     setActivities([])
     setFinalMessage('')
     setPendingWrites([])
+    setPastedImages([])
 
-    addAct({ type: 'info', result: `🦊 Kitsune Agent started: "${task}"`, status: 'done' })
+    addAct({ type: 'info', result: `🦊 Kitsune Agent started: "${task}"${imageSnapshot.length ? ` (+${imageSnapshot.length} image${imageSnapshot.length > 1 ? 's' : ''})` : ''}`, status: 'done' })
 
     // Reset stats + start timer
     setStatsTokensIn(0); setStatsTokensOut(0)
@@ -514,8 +527,8 @@ Never skip tool calls. If the task involves creating files, you must call write_
     addAct({ type: 'info', result: `Using: ${activeProvider.name} · ${activeProvider.model}`, status: 'done' })
 
     try {
-      if (activeProvider.id === 'claude') await runClaudeAgent(activeProvider, task)
-      else if (activeProvider.id === 'gemini') await runGeminiAgent(activeProvider, task)
+      if (activeProvider.id === 'claude') await runClaudeAgent(activeProvider, task, imageSnapshot)
+      else if (activeProvider.id === 'gemini') await runGeminiAgent(activeProvider, task, imageSnapshot)
       else if (activeProvider.id === 'ollama') await runOllamaAgent(activeProvider, task)
       else addAct({ type: 'error', result: 'Agent mode requires Claude, Gemini, or Ollama. Enable one in ⚙️ Settings.', status: 'error' })
     } catch (e: any) {
@@ -549,9 +562,26 @@ Never skip tool calls. If the task involves creating files, you must call write_
     } else {
       setKitsuneExpr('normal')
     }
-  }, [task, running, activeProvider, currentFolder, autoApprove])
+  }, [task, running, activeProvider, currentFolder, autoApprove, pastedImages])
 
   const handleStop = () => { abortRef.current = true; setRunning(false); setKitsuneExpr('normal') }
+
+  // ── Image paste handler ───────────────────────────────────────────────────
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(e.clipboardData.items)
+    const imageItem = items.find(it => it.type.startsWith('image/'))
+    if (!imageItem) return
+    e.preventDefault()
+    const file = imageItem.getAsFile()
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string
+      const base64  = dataUrl.split(',')[1]
+      setPastedImages(prev => [...prev, { base64, mediaType: imageItem.type, preview: dataUrl }])
+    }
+    reader.readAsDataURL(file)
+  }
 
   // ── Approve/deny pending write ────────────────────────────────────────────
   const handleWriteDecision = (path: string, approved: boolean) => {
@@ -607,11 +637,31 @@ Never skip tool calls. If the task involves creating files, you must call write_
                 value={task}
                 onChange={e => setTask(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) handleRun() }}
-                placeholder="e.g. Add dark mode toggle to App.tsx, or Create a REST API for users in src/api/..."
+                onPaste={handlePaste}
+                placeholder="e.g. Add dark mode toggle to App.tsx... (Ctrl+V to paste image)"
                 rows={3} disabled={running}
                 className="w-full px-2 py-1.5 rounded text-xs resize-none outline-none"
                 style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)' }}
               />
+              {/* Pasted image thumbnails */}
+              {pastedImages.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {pastedImages.map((img, i) => (
+                    <div key={i} className="relative rounded overflow-hidden" style={{ width: 56, height: 56, border: '1px solid var(--accent-mauve)66' }}>
+                      <img src={img.preview} alt={`img${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        onClick={() => setPastedImages(prev => prev.filter((_, j) => j !== i))}
+                        className="absolute top-0 right-0 flex items-center justify-center"
+                        style={{ width: 16, height: 16, background: 'var(--accent-red)', color: 'white', fontSize: 9, lineHeight: 1 }}>
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <span className="self-center text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+                    {pastedImages.length} image{pastedImages.length > 1 ? 's' : ''} — will be sent with task
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 {running ? (
                   <button onClick={handleStop} className="flex-1 py-1.5 rounded text-xs font-bold"
@@ -685,9 +735,8 @@ Never skip tool calls. If the task involves creating files, you must call write_
             {/* Running spinner */}
             {running && (
               <div className="flex items-center gap-2 px-2 py-2">
-                <div className="animate-spin" style={{ width: 16, height: 16 }}>
-                  <KitsuneLogo size={16} />
-                </div>
+                <img src={kitsuneConfuse} alt="thinking" style={{ width: 20, height: 20, objectFit: 'contain' }}
+                  className="animate-bounce" />
                 <span className="text-xs animate-pulse" style={{ color: 'var(--accent-mauve)' }}>Kitsune is working…</span>
               </div>
             )}
