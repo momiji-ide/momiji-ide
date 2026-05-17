@@ -488,17 +488,22 @@
     .footer-copy { font-size: 0.78rem; color: var(--overlay0); }
     .footer-copy span { color: var(--mauve); }
 
+    /* ── KITSUNE FLOAT ── */
+    .kitsune-hero {
+      width: 100%; max-width: 360px;
+      display: block; margin: 0 auto;
+      filter: drop-shadow(0 16px 48px rgba(251,146,60,.35));
+      animation: kitsuneFloat 4s ease-in-out infinite;
+      transition: filter .3s ease, transform .3s ease;
+    }
+    .kitsune-hero:hover {
+      filter: drop-shadow(0 24px 64px rgba(251,146,60,.6)) brightness(1.06);
+      transform: scale(1.03) translateY(-6px);
+      animation-play-state: paused;
+    }
     @keyframes kitsuneFloat {
       0%, 100% { transform: translateY(0px)   rotate(0deg); }
-      50%       { transform: translateY(-14px) rotate(1.5deg); }
-    }
-
-    /* ── KITSUNE INTERACTIVE ── */
-    #kitsune-img {
-      transition: filter .3s ease;
-    }
-    #kitsune-wrap:hover #kitsune-img {
-      filter: drop-shadow(0 20px 60px rgba(251,146,60,.7)) brightness(1.05);
+      50%       { transform: translateY(-16px) rotate(1.5deg); }
     }
 
     /* ── SCROLL ANIM ── */
@@ -876,46 +881,17 @@
   <div class="container">
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; max-width: 1100px; margin: 0 auto;">
 
-      <!-- Left: interactive character -->
-      <div data-fade style="position:relative; display:flex; flex-direction:column; align-items:center;">
+      <!-- Left: character art -->
+      <div data-fade style="position:relative; display:flex; justify-content:center;">
+        <!-- soft glow -->
+        <div style="position:absolute;inset:-20px;pointer-events:none;
+          background:radial-gradient(ellipse 70% 70% at 50% 60%,rgba(251,146,60,.15) 0%,rgba(203,166,247,.07) 50%,transparent 70%);"></div>
 
-        <!-- Speech bubble -->
-        <div id="kitsune-speech" style="
-          opacity:0; transform:scale(0) translateY(8px); transform-origin:bottom center;
-          transition: opacity .3s, transform .35s cubic-bezier(.34,1.56,.64,1);
-          background:var(--bg-mantle); border:1.5px solid rgba(251,146,60,.5);
-          border-radius:14px; padding:9px 18px; font-size:.85rem; white-space:nowrap;
-          color:var(--text); margin-bottom:12px; position:relative;
-          box-shadow:0 8px 24px rgba(0,0,0,.4); min-height:38px;
-        ">
-          <span id="kitsune-speech-text">こんにちは！ 🦊</span>
-          <!-- tail -->
-          <div style="position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
-            width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;
-            border-top:9px solid rgba(251,146,60,.5);"></div>
-        </div>
-
-        <!-- Glow -->
-        <div id="kitsune-glow" style="
-          position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-          width:280px; height:120px;
-          background:radial-gradient(ellipse, rgba(251,146,60,.25) 0%, transparent 70%);
-          pointer-events:none; transition:opacity .4s;
-        "></div>
-
-        <!-- Character image — expression switching -->
-        <div id="kitsune-wrap" style="cursor:pointer; position:relative; user-select:none;">
-          <img id="kitsune-img" src="kitsune-normal.png" alt="Kitsune"
-            style="width:100%;max-width:340px;display:block;margin:0 auto;
-              filter:drop-shadow(0 16px 48px rgba(251,146,60,.4));
-              will-change:transform;"
-          />
-        </div>
-
-        <p style="font-size:.7rem;color:var(--overlay0);margin-top:.75rem;
-          font-family:monospace;letter-spacing:.06em;opacity:.7;">
-          ✦ hover · click me ✦
-        </p>
+        <img
+          src="kitsune-char.png"
+          alt="Kitsune AI Character"
+          class="kitsune-hero"
+        />
       </div>
 
       <!-- Right: info -->
@@ -1078,150 +1054,7 @@
   )
   document.querySelectorAll('[data-fade]').forEach(el => observer.observe(el))
 
-  // ── KITSUNE INTERACTIVE CHARACTER ──────────────────────────────────────────
-  (function () {
-    const img        = document.getElementById('kitsune-img')
-    const wrap       = document.getElementById('kitsune-wrap')
-    const speechBox  = document.getElementById('kitsune-speech')
-    const speechText = document.getElementById('kitsune-speech-text')
-    const glow       = document.getElementById('kitsune-glow')
-    if (!img || !wrap) return
-
-    // Preload expression images
-    const EXPR = {
-      normal:  'kitsune-normal.png',
-      happy:   'kitsune-happy.png',
-      confuse: 'kitsune-confuse.png',
-    }
-    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src })
-
-    const msgs = [
-      "こんにちは！ 🦊", "Let me write that for you! ✨",
-      "Agent mode: ON 🤖", "コードを書くのが大好き！",
-      "Bug found… maybe 👀", "Ctrl+Enter → I'm on it!",
-      "Reading your entire codebase~ 📖", "No semicolons?? 😤",
-      "TypeScript is life 💙", "I love a good refactor ✨",
-      "押してくれてありがとう！", "Let's ship something great! 🚀",
-      "caffeine.exe loading… ☕", "404: sleep not found 💤"
-    ]
-
-    let floatAnim = null
-    let busy = false
-    let speechTimer = null
-    let hoverTimer = null
-    let currentExpr = 'normal'
-
-    // ── helpers ──────────────────────────────────────────────────────────────
-    function setExpr(name) {
-      if (currentExpr === name) return
-      currentExpr = name
-      img.style.opacity = '0'
-      setTimeout(() => { img.src = EXPR[name]; img.style.opacity = '1' }, 120)
-    }
-
-    function showSpeech(text) {
-      if (!speechBox || !speechText) return
-      speechText.textContent = text
-      speechBox.style.opacity = '1'
-      speechBox.style.transform = 'scale(1) translateY(0)'
-      clearTimeout(speechTimer)
-      speechTimer = setTimeout(hideSpeech, 3000)
-    }
-
-    function hideSpeech() {
-      if (!speechBox) return
-      speechBox.style.opacity = '0'
-      speechBox.style.transform = 'scale(0) translateY(8px)'
-    }
-
-    function startFloat() {
-      if (floatAnim) floatAnim.cancel()
-      floatAnim = img.animate([
-        { transform: 'translateY(0px)   rotate(0deg)' },
-        { transform: 'translateY(-14px) rotate(1.5deg)' },
-        { transform: 'translateY(0px)   rotate(0deg)' },
-      ], { duration: 3800, iterations: Infinity, easing: 'ease-in-out' })
-    }
-
-    function stopFloat() {
-      if (floatAnim) { floatAnim.pause(); floatAnim.cancel(); floatAnim = null }
-    }
-
-    // ── start idle float ─────────────────────────────────────────────────────
-    img.style.transition = 'opacity .12s ease'
-    startFloat()
-
-    // ── 3D tilt on mousemove ─────────────────────────────────────────────────
-    wrap.addEventListener('mousemove', (e) => {
-      if (busy) return
-      const r  = img.getBoundingClientRect()
-      const cx = r.left + r.width / 2
-      const cy = r.top  + r.height / 2
-      const dx = (e.clientX - cx) / (r.width  / 2)
-      const dy = (e.clientY - cy) / (r.height / 2)
-      if (floatAnim) floatAnim.pause()
-      img.style.transform = `perspective(700px) rotateY(${dx*14}deg) rotateX(${-dy*9}deg) scale(1.05)`
-    })
-
-    // ── hover enter: switch to happy ─────────────────────────────────────────
-    wrap.addEventListener('mouseenter', () => {
-      clearTimeout(hoverTimer)
-      hoverTimer = setTimeout(() => { if (!busy) setExpr('happy') }, 200)
-      if (glow) glow.style.background = 'radial-gradient(ellipse, rgba(251,146,60,.4) 0%, transparent 70%)'
-    })
-
-    // ── hover leave: back to normal float ────────────────────────────────────
-    wrap.addEventListener('mouseleave', () => {
-      clearTimeout(hoverTimer)
-      if (!busy) {
-        setExpr('normal')
-        img.style.transform = ''
-        img.style.transition = 'transform .4s ease, opacity .12s ease'
-        startFloat()
-      }
-      if (glow) glow.style.background = 'radial-gradient(ellipse, rgba(251,146,60,.25) 0%, transparent 70%)'
-    })
-
-    // ── click: confuse → jump → happy → normal ───────────────────────────────
-    wrap.addEventListener('click', () => {
-      if (busy) return
-      busy = true
-      stopFloat()
-
-      // 1. confuse face
-      setExpr('confuse')
-      showSpeech(msgs[Math.floor(Math.random() * msgs.length)])
-
-      // 2. jump with Web Animations API (always overrides inline styles)
-      setTimeout(() => {
-        img.style.transform = ''
-        const jump = img.animate([
-          { transform: 'translateY(0)    rotate(0deg)   scale(1)',    offset: 0   },
-          { transform: 'translateY(-38px) rotate(-7deg) scale(1.07)', offset: 0.25 },
-          { transform: 'translateY(-20px) rotate(4deg)  scale(1.04)', offset: 0.5  },
-          { transform: 'translateY(-30px) rotate(-3deg) scale(1.05)', offset: 0.7  },
-          { transform: 'translateY(-6px)  rotate(2deg)  scale(1.01)', offset: 0.88 },
-          { transform: 'translateY(0)    rotate(0deg)   scale(1)',    offset: 1   },
-        ], { duration: 700, easing: 'cubic-bezier(.36,.07,.19,.97)', fill: 'forwards' })
-
-        // 3. happy face during jump
-        setTimeout(() => setExpr('happy'), 150)
-
-        jump.onfinish = () => {
-          jump.cancel()
-          img.style.transform = ''
-          // 4. back to normal after 1.5s
-          setTimeout(() => {
-            setExpr('normal')
-            busy = false
-            startFloat()
-          }, 1500)
-        }
-      }, 80)
-    })
-
-    hideSpeech() // start hidden
-  })()
+  // no interactive JS needed
 
   // ── Download click log ──
   document.querySelectorAll('.dl-card').forEach(card => {
