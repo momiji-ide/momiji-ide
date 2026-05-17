@@ -489,9 +489,66 @@
     .footer-copy span { color: var(--mauve); }
 
     @keyframes kitsuneFloat {
-      0%, 100% { transform: translateY(0px); }
-      50%       { transform: translateY(-12px); }
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50%       { transform: translateY(-12px) rotate(1deg); }
     }
+
+    /* ── KITSUNE INTERACTIVE ── */
+    #kitsune-wrap {
+      position: relative; cursor: pointer;
+      display: flex; justify-content: center;
+      transform-style: preserve-3d;
+    }
+    #kitsune-wrap img {
+      transition: filter .3s ease;
+    }
+    #kitsune-wrap:hover img {
+      filter: drop-shadow(0 20px 60px rgba(251,146,60,.65)) brightness(1.06);
+    }
+    /* Speech bubble */
+    #kitsune-speech {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%) scale(0);
+      transform-origin: bottom center;
+      background: var(--bg-mantle);
+      border: 1.5px solid rgba(251,146,60,.5);
+      border-radius: 14px; padding: 9px 16px;
+      font-size: .82rem; white-space: nowrap;
+      color: var(--text); pointer-events: none;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0; z-index: 10;
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    #kitsune-speech.visible {
+      transform: translateX(-50%) scale(1);
+      opacity: 1;
+    }
+    #kitsune-speech::after {
+      content: '';
+      position: absolute; bottom: -10px; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(251,146,60,.5);
+    }
+    /* Reactions */
+    @keyframes kitsuneJump {
+      0%   { transform: translateY(0)    rotate(0deg)  scale(1); }
+      20%  { transform: translateY(-32px) rotate(-6deg) scale(1.05); }
+      45%  { transform: translateY(-18px) rotate(4deg)  scale(1.03); }
+      65%  { transform: translateY(-28px) rotate(-3deg) scale(1.04); }
+      85%  { transform: translateY(-8px)  rotate(2deg)  scale(1.01); }
+      100% { transform: translateY(0)    rotate(0deg)  scale(1); }
+    }
+    @keyframes kitsuneWave {
+      0%,100% { transform: rotate(0deg) translateY(0); }
+      15%     { transform: rotate(-10deg) translateY(-4px); }
+      35%     { transform: rotate(12deg) translateY(-8px); }
+      55%     { transform: rotate(-8deg) translateY(-4px); }
+      75%     { transform: rotate(10deg) translateY(-6px); }
+    }
+    .kitsune-jumping { animation: kitsuneJump .7s cubic-bezier(.36,.07,.19,.97) forwards !important; }
+    .kitsune-waving  { animation: kitsuneWave .8s ease-in-out !important; }
 
     /* ── SCROLL ANIM ── */
     [data-fade] {
@@ -873,19 +930,40 @@
         <!-- Glow behind image -->
         <div style="
           position: absolute; inset: -20px;
-          background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(251,146,60,0.15) 0%, rgba(203,166,247,0.08) 50%, transparent 70%);
-          pointer-events: none;
+          background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(251,146,60,0.18) 0%, rgba(203,166,247,0.08) 50%, transparent 70%);
+          pointer-events: none; border-radius: 50%;
+          transition: opacity .4s;
+        " id="kitsune-glow"></div>
+
+        <!-- Click hint -->
+        <p style="text-align:center;font-size:.7rem;color:var(--overlay0);margin-bottom:.5rem;font-family:monospace;letter-spacing:.06em;">
+          ✦ click me ✦
+        </p>
+
+        <div id="kitsune-wrap">
+          <!-- Speech bubble -->
+          <div id="kitsune-speech">こんにちは！ 🦊</div>
+
+          <img
+            id="kitsune-char"
+            src="kitsune-char.png"
+            alt="Kitsune AI Character"
+            style="
+              width: 100%; max-width: 380px; display: block; margin: 0 auto;
+              filter: drop-shadow(0 16px 48px rgba(251,146,60,0.35));
+              position: relative;
+              animation: kitsuneFloat 4s ease-in-out infinite;
+            "
+          />
+        </div>
+
+        <!-- Reaction emoji burst -->
+        <div id="kitsune-burst" style="
+          position:absolute; top:40%; left:50%;
+          transform:translate(-50%,-50%);
+          font-size:1.8rem; pointer-events:none;
+          opacity:0; transition:opacity .3s;
         "></div>
-        <img
-          src="kitsune-char.png"
-          alt="Kitsune AI Character"
-          style="
-            width: 100%; max-width: 380px; display: block; margin: 0 auto;
-            filter: drop-shadow(0 16px 48px rgba(251,146,60,0.35));
-            position: relative;
-            animation: kitsuneFloat 4s ease-in-out infinite;
-          "
-        />
       </div>
 
       <!-- Right: info -->
@@ -969,47 +1047,48 @@
       <!-- Windows -->
       <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-Setup-1.1.0.exe" class="dl-card">
         <div class="dl-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
             <path d="M0 3.449L9.75 2.099v9.451H0m10.949-9.602L24 0v11.5H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-13.051-1.949" fill="#00adef"/>
           </svg>
         </div>
         <div class="dl-os">Windows</div>
         <div class="dl-fmt">.exe installer · x64</div>
       </a>
-      <!-- macOS -->
-      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0.dmg" class="dl-card">
+      <!-- macOS Intel -->
+      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0-x64.dmg" class="dl-card">
         <div class="dl-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701"/>
           </svg>
         </div>
-        <div class="dl-os">macOS</div>
-        <div class="dl-fmt">.dmg · Intel &amp; Apple Silicon</div>
+        <div class="dl-os">macOS Intel</div>
+        <div class="dl-fmt">.dmg · x64</div>
+      </a>
+      <!-- macOS Apple Silicon -->
+      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0-arm64.dmg" class="dl-card">
+        <div class="dl-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701"/>
+          </svg>
+        </div>
+        <div class="dl-os">macOS Silicon</div>
+        <div class="dl-fmt">.dmg · Apple M1/M2/M3</div>
       </a>
       <!-- Linux -->
       <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0.AppImage" class="dl-card">
         <div class="dl-icon">
-          <!-- Tux penguin simplified SVG -->
           <svg width="38" height="40" viewBox="0 0 48 52" xmlns="http://www.w3.org/2000/svg">
-            <!-- body -->
             <ellipse cx="24" cy="34" rx="14" ry="16" fill="#111"/>
-            <!-- white belly -->
             <ellipse cx="24" cy="36" rx="9" ry="12" fill="#f5f5f0"/>
-            <!-- head -->
             <ellipse cx="24" cy="14" rx="11" ry="12" fill="#111"/>
-            <!-- face white -->
             <ellipse cx="24" cy="16" rx="7" ry="8" fill="#f5c842"/>
-            <!-- eyes -->
             <circle cx="20.5" cy="12" r="2.2" fill="white"/>
             <circle cx="27.5" cy="12" r="2.2" fill="white"/>
             <circle cx="20.5" cy="12.5" r="1.1" fill="#111"/>
             <circle cx="27.5" cy="12.5" r="1.1" fill="#111"/>
-            <!-- beak -->
             <ellipse cx="24" cy="18" rx="3" ry="2" fill="#f5a623"/>
-            <!-- feet -->
             <ellipse cx="18" cy="49" rx="5" ry="2.5" fill="#f5a623"/>
             <ellipse cx="30" cy="49" rx="5" ry="2.5" fill="#f5a623"/>
-            <!-- wings -->
             <ellipse cx="10" cy="34" rx="4" ry="9" fill="#111" transform="rotate(-10 10 34)"/>
             <ellipse cx="38" cy="34" rx="4" ry="9" fill="#111" transform="rotate(10 38 34)"/>
           </svg>
@@ -1047,7 +1126,100 @@
   )
   document.querySelectorAll('[data-fade]').forEach(el => observer.observe(el))
 
-  // Smooth download analytics placeholder
+  // ── KITSUNE INTERACTIVE CHARACTER ──────────────────────────────────────────
+  (function() {
+    const img     = document.getElementById('kitsune-char')
+    const wrap    = document.getElementById('kitsune-wrap')
+    const speech  = document.getElementById('kitsune-speech')
+    const burst   = document.getElementById('kitsune-burst')
+    const glow    = document.getElementById('kitsune-glow')
+    if (!img || !wrap || !speech) return
+
+    const msgs = [
+      "こんにちは！ 🦊", "Let me write that for you!", "Agent mode: ON 🤖",
+      "コードを書くのが大好き！", "I found a bug... maybe 👀",
+      "Ctrl+Enter → I'm on it!", "Reading your entire codebase~ 📖",
+      "No semicolons? 😤", "TypeScript is life 💙",
+      "OwO what's this code?", "I love a good refactor ✨",
+      "押してくれてありがとう！", "Let's ship it! 🚀"
+    ]
+    const bursts = ['✨','💫','⚡','🌸','💜','🦊','⭐','🎉']
+    let speechTimer, burstTimer, tiltRaf
+    let isAnimating = false
+
+    // ── 3D tilt on mousemove ──
+    wrap.addEventListener('mousemove', (e) => {
+      if (isAnimating) return
+      const r  = img.getBoundingClientRect()
+      const cx = r.left + r.width  / 2
+      const cy = r.top  + r.height / 2
+      const dx = (e.clientX - cx) / (r.width  / 2)
+      const dy = (e.clientY - cy) / (r.height / 2)
+      img.style.animation = 'none'
+      img.style.transform = `perspective(700px) rotateY(${dx * 14}deg) rotateX(${-dy * 9}deg) scale(1.04)`
+    })
+
+    wrap.addEventListener('mouseleave', () => {
+      if (isAnimating) return
+      img.style.transform = ''
+      img.style.animation = ''
+    })
+
+    // ── Click: jump + speech bubble ──
+    wrap.addEventListener('click', () => {
+      if (isAnimating) return
+      isAnimating = true
+
+      // Pick random message
+      const msg = msgs[Math.floor(Math.random() * msgs.length)]
+      speech.textContent = msg
+      speech.classList.add('visible')
+      clearTimeout(speechTimer)
+      speechTimer = setTimeout(() => speech.classList.remove('visible'), 2800)
+
+      // Burst emoji
+      burst.textContent = bursts[Math.floor(Math.random() * bursts.length)]
+      burst.style.opacity = '1'
+      burst.style.transform = `translate(-50%,-50%) scale(1.5)`
+      clearTimeout(burstTimer)
+      burstTimer = setTimeout(() => {
+        burst.style.opacity = '0'
+        burst.style.transform = 'translate(-50%,-110%) scale(0.5)'
+      }, 500)
+
+      // Jump animation
+      img.style.animation = 'none'
+      img.style.transform = ''
+      void img.offsetWidth
+      img.classList.add('kitsune-jumping')
+
+      // Intensify glow
+      if (glow) glow.style.opacity = '2'
+      setTimeout(() => { if (glow) glow.style.opacity = '' }, 700)
+
+      img.addEventListener('animationend', () => {
+        img.classList.remove('kitsune-jumping')
+        img.style.animation = ''
+        isAnimating = false
+      }, { once: true })
+    })
+
+    // ── Hover: wave hint ──
+    let waveTimeout
+    wrap.addEventListener('mouseenter', () => {
+      if (isAnimating) return
+      clearTimeout(waveTimeout)
+      waveTimeout = setTimeout(() => {
+        if (!isAnimating) {
+          img.classList.add('kitsune-waving')
+          img.addEventListener('animationend', () => img.classList.remove('kitsune-waving'), { once: true })
+        }
+      }, 600)
+    })
+    wrap.addEventListener('mouseleave', () => clearTimeout(waveTimeout))
+  })()
+
+  // ── Download click log ──
   document.querySelectorAll('.dl-card').forEach(card => {
     card.addEventListener('click', () => {
       const os = card.querySelector('.dl-os')?.textContent
