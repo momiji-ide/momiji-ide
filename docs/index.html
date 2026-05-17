@@ -164,45 +164,51 @@
       box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(203,166,247,.06);
     }
     .editor-topbar {
-      background: var(--bg-mantle); padding: 10px 14px;
-      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-crust); padding: 0 14px;
+      display: flex; align-items: center; gap: 8px; height: 36px;
       border-bottom: 1px solid var(--surface0);
     }
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
     .dot-red   { background: #ff5f57; }
     .dot-amber { background: #febc2e; }
     .dot-green { background: #28c840; }
+    .editor-titlebar-text {
+      flex: 1; text-align: center; font-size: 0.7rem; color: var(--subtext0);
+    }
     .editor-tab-bar {
       background: var(--bg-mantle);
       border-bottom: 1px solid var(--surface0);
-      display: flex; align-items: center; padding: 0 8px;
+      display: flex; align-items: stretch; padding: 0;
+      height: 35px;
     }
     .editor-tab {
-      padding: 6px 14px; font-size: 0.75rem;
+      padding: 0 16px; font-size: 0.75rem;
       border-right: 1px solid var(--surface0);
       display: flex; align-items: center; gap: 6px;
+      cursor: default;
     }
     .editor-tab.active {
       background: var(--bg); color: var(--text);
-      border-top: 1px solid var(--mauve);
+      border-top: 2px solid var(--mauve);
+      margin-top: -1px;
     }
-    .editor-tab:not(.active) { color: var(--subtext0); }
+    .editor-tab:not(.active) { color: var(--subtext0); background: var(--bg-mantle); }
     .editor-body {
       background: var(--bg);
-      display: flex; height: 380px;
+      display: flex; height: 360px;
     }
     .line-nums {
-      background: var(--bg); padding: 1rem 0.75rem;
+      background: var(--bg); padding: 0.85rem 0.75rem;
       color: var(--surface2); font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 0.78rem; text-align: right; user-select: none;
-      line-height: 1.7; border-right: 1px solid var(--surface0);
-      flex-shrink: 0; width: 40px;
+      font-size: 0.75rem; text-align: right; user-select: none;
+      line-height: 1.75; border-right: 1px solid rgba(69,71,90,0.4);
+      flex-shrink: 0; width: 42px;
     }
     .code-area {
-      flex: 1; padding: 1rem 1.25rem;
+      flex: 1; padding: 0.85rem 1.25rem;
       font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 0.78rem; line-height: 1.7;
-      overflow: auto;
+      font-size: 0.75rem; line-height: 1.75;
+      overflow: auto; text-align: left;
     }
     .c-keyword  { color: var(--mauve); }
     .c-func     { color: var(--blue); }
@@ -214,33 +220,50 @@
     .c-op       { color: var(--sky); }
 
     .ai-sidebar {
-      width: 240px; background: var(--bg-mantle);
+      width: 230px; background: var(--bg-mantle);
       border-left: 1px solid var(--surface0);
-      padding: 1rem; display: flex; flex-direction: column; gap: 8px;
-      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      flex-shrink: 0; overflow: hidden;
     }
     .ai-header {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.7rem; font-weight: 700; color: var(--mauve);
-      letter-spacing: 0.08em; padding-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.68rem; font-weight: 800; color: var(--mauve);
+      letter-spacing: 0.1em; padding: 10px 12px;
       border-bottom: 1px solid var(--surface0);
+      background: var(--bg-crust);
+    }
+    .ai-tabs {
+      display: flex; border-bottom: 1px solid var(--surface0);
+    }
+    .ai-tab {
+      flex: 1; padding: 6px; font-size: 0.68rem; font-weight: 600;
+      text-align: center; color: var(--subtext0); cursor: default;
+    }
+    .ai-tab.active {
+      color: var(--mauve); border-bottom: 2px solid var(--mauve);
+    }
+    .ai-body {
+      flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 7px;
+      overflow: hidden;
     }
     .ai-msg {
-      font-size: 0.7rem; line-height: 1.55; border-radius: 6px;
-      padding: 8px 10px;
+      font-size: 0.68rem; line-height: 1.5; border-radius: 8px;
+      padding: 7px 9px;
     }
     .ai-msg-user {
       background: var(--surface0); color: var(--subtext1);
-      align-self: flex-end;
+      align-self: flex-end; border-radius: 8px 8px 2px 8px;
+      max-width: 85%;
     }
     .ai-msg-kitsune {
       background: rgba(203,166,247,.08); color: var(--text);
       border: 1px solid rgba(203,166,247,.15);
+      border-radius: 8px 8px 8px 2px; max-width: 100%;
     }
     .ai-typing {
-      display: flex; gap: 4px; padding: 8px 10px;
-      background: rgba(203,166,247,.06); border-radius: 6px;
-      border: 1px solid rgba(203,166,247,.1);
+      display: flex; gap: 4px; padding: 7px 9px;
+      background: rgba(203,166,247,.06); border-radius: 8px;
+      border: 1px solid rgba(203,166,247,.1); width: fit-content;
     }
     .ai-typing span {
       width: 5px; height: 5px; border-radius: 50%;
@@ -252,6 +275,15 @@
     @keyframes bounce {
       0%,80%,100% { transform: translateY(0); opacity: .4; }
       40%         { transform: translateY(-4px); opacity: 1; }
+    }
+    .ai-input-bar {
+      padding: 8px 10px; border-top: 1px solid var(--surface0);
+      background: var(--bg);
+    }
+    .ai-input-inner {
+      background: var(--surface0); border-radius: 6px;
+      padding: 6px 10px; font-size: 0.65rem; color: var(--subtext0);
+      border: 1px solid var(--surface1);
     }
 
     /* ── SECTIONS ── */
@@ -425,7 +457,7 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0,0,0,.3);
     }
-    .dl-icon { font-size: 2rem; }
+    .dl-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
     .dl-os   { font-weight: 700; font-size: 0.9rem; }
     .dl-fmt  { font-size: 0.72rem; color: var(--subtext0); }
     .dl-version {
@@ -547,7 +579,7 @@
       <div class="dot dot-red"></div>
       <div class="dot dot-amber"></div>
       <div class="dot dot-green"></div>
-      <span style="margin-left:8px;font-size:0.72rem;color:var(--subtext0)">Parallax IDE — solar-system.ts</span>
+      <div class="editor-titlebar-text">Parallax IDE — solar-system.ts</div>
     </div>
     <div class="editor-tab-bar">
       <div class="editor-tab active">
@@ -565,50 +597,48 @@
     </div>
     <div class="editor-body">
       <div class="line-nums">1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17</div>
-      <div class="code-area">
-<span class="c-keyword">interface</span> <span class="c-type">Planet</span> {<br/>
-&nbsp;&nbsp;name:     <span class="c-type">string</span><br/>
-&nbsp;&nbsp;radius:   <span class="c-type">number</span><br/>
-&nbsp;&nbsp;distance: <span class="c-type">number</span><br/>
-&nbsp;&nbsp;color:    <span class="c-type">string</span><br/>
+      <div class="code-area"><span class="c-keyword">interface</span> <span class="c-type">Planet</span> {<br/>
+&nbsp;&nbsp;name<span class="c-op">:</span>     <span class="c-type">string</span><br/>
+&nbsp;&nbsp;radius<span class="c-op">:</span>   <span class="c-type">number</span><br/>
+&nbsp;&nbsp;distance<span class="c-op">:</span> <span class="c-type">number</span><br/>
+&nbsp;&nbsp;color<span class="c-op">:</span>    <span class="c-type">string</span><br/>
 }<br/>
 <br/>
-<span class="c-keyword">const</span> <span class="c-func">createOrbit</span> = (<span class="c-param">planet</span>: <span class="c-type">Planet</span>): <span class="c-type">void</span> <span class="c-op">=></span> {<br/>
-&nbsp;&nbsp;<span class="c-keyword">const</span> canvas = document.<span class="c-func">getElementById</span>(<span class="c-string">'canvas'</span>)<br/>
-&nbsp;&nbsp;<span class="c-keyword">const</span> ctx = canvas?.<span class="c-func">getContext</span>(<span class="c-string">'2d'</span>)<br/>
-&nbsp;&nbsp;<span class="c-keyword">if</span> (!ctx) <span class="c-keyword">return</span><br/>
-&nbsp;&nbsp;<br/>
+<span class="c-keyword">const</span> <span class="c-func">createOrbit</span> <span class="c-op">=</span> (<span class="c-param">planet</span><span class="c-op">:</span> <span class="c-type">Planet</span>)<span class="c-op">:</span> <span class="c-type">void</span> <span class="c-op">=></span> {<br/>
+&nbsp;&nbsp;<span class="c-keyword">const</span> canvas <span class="c-op">=</span> document.<span class="c-func">getElementById</span>(<span class="c-string">'canvas'</span>)<br/>
+&nbsp;&nbsp;<span class="c-keyword">const</span> ctx <span class="c-op">=</span> canvas<span class="c-op">?.</span><span class="c-func">getContext</span>(<span class="c-string">'2d'</span>)<br/>
+&nbsp;&nbsp;<span class="c-keyword">if</span> (<span class="c-op">!</span>ctx) <span class="c-keyword">return</span><br/>
+<br/>
 &nbsp;&nbsp;ctx.<span class="c-func">beginPath</span>()<br/>
 &nbsp;&nbsp;ctx.<span class="c-func">arc</span>(<span class="c-num">400</span>, <span class="c-num">300</span>, planet.distance, <span class="c-num">0</span>, Math.PI <span class="c-op">*</span> <span class="c-num">2</span>)<br/>
-&nbsp;&nbsp;ctx.strokeStyle = planet.color<br/>
+&nbsp;&nbsp;ctx.strokeStyle <span class="c-op">=</span> planet.color<br/>
 &nbsp;&nbsp;ctx.<span class="c-func">stroke</span>()<br/>
-}<br/>
+}
       </div>
       <div class="ai-sidebar">
         <div class="ai-header">
-          <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
-            <path d="M16 3C10 3 6 7.5 6 12C6 16 8.5 18.5 11 20L11 25L16 23L21 25L21 20C23.5 18.5 26 16 26 12C26 7.5 22 3 16 3Z" fill="#cba6f7"/>
-            <circle cx="12" cy="12" r="1.5" fill="#1e1e2e"/>
-            <circle cx="20" cy="12" r="1.5" fill="#1e1e2e"/>
-          </svg>
+          <img src="kitsune-char.png" width="16" height="16" style="object-fit:contain;opacity:.9"/>
           KITSUNE AI
         </div>
-        <div class="ai-msg ai-msg-user">Add collision detection between planets</div>
-        <div class="ai-msg ai-msg-kitsune">
-          I'll add a <code style="color:var(--yellow);background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px">checkCollision()</code> function using circle-to-circle distance formula...
-          <div class="chat-code">
-            function checkCollision(<br/>
-            &nbsp;&nbsp;a: Planet, b: Planet<br/>
-            ): boolean {<br/>
-            &nbsp;&nbsp;const dx = a.x - b.x<br/>
-            &nbsp;&nbsp;const dy = a.y - b.y<br/>
-            &nbsp;&nbsp;const dist = Math.hypot(dx,dy)<br/>
-            &nbsp;&nbsp;return dist &lt; a.r + b.r<br/>
-            }
-          </div>
+        <div class="ai-tabs">
+          <div class="ai-tab active">● Chat</div>
+          <div class="ai-tab">Agent</div>
         </div>
-        <div class="ai-typing">
-          <span></span><span></span><span></span>
+        <div class="ai-body">
+          <div class="ai-msg ai-msg-user">Add collision detection</div>
+          <div class="ai-msg ai-msg-kitsune">
+            I'll add <code style="color:var(--yellow);background:rgba(0,0,0,.25);padding:1px 4px;border-radius:3px;font-family:monospace">checkCollision()</code> using circle distance formula...
+            <div style="background:var(--bg-crust);border-radius:5px;padding:6px 8px;margin-top:5px;font-family:'Cascadia Code',monospace;font-size:0.62rem;color:var(--green);border:1px solid var(--surface0);line-height:1.6">
+              <span style="color:var(--c-keyword,var(--mauve))">const</span> dx <span style="color:var(--sky)">=</span> a.x <span style="color:var(--sky)">-</span> b.x<br/>
+              <span style="color:var(--mauve)">const</span> dy <span style="color:var(--sky)">=</span> a.y <span style="color:var(--sky)">-</span> b.y<br/>
+              <span style="color:var(--mauve)">return</span> Math.<span style="color:var(--blue)">hypot</span>(dx,dy)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--sky)">&lt;</span> a.r <span style="color:var(--sky)">+</span> b.r
+            </div>
+          </div>
+          <div class="ai-typing"><span></span><span></span><span></span></div>
+        </div>
+        <div class="ai-input-bar">
+          <div class="ai-input-inner">Ask Kitsune... Ctrl+V to paste image</div>
         </div>
       </div>
     </div>
@@ -936,27 +966,54 @@
       Latest release: <code>v1.0.0</code>
     </div>
     <div class="download-cards">
-      <a
-        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-Setup-1.0.0.exe"
-        class="dl-card"
-      >
-        <div class="dl-icon">🪟</div>
+      <!-- Windows -->
+      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-Setup-1.0.0.exe" class="dl-card">
+        <div class="dl-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 3.449L9.75 2.099v9.451H0m10.949-9.602L24 0v11.5H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-13.051-1.949" fill="#00adef"/>
+          </svg>
+        </div>
         <div class="dl-os">Windows</div>
         <div class="dl-fmt">.exe installer · x64</div>
       </a>
-      <a
-        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.dmg"
-        class="dl-card"
-      >
-        <div class="dl-icon">🍎</div>
+      <!-- macOS -->
+      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.dmg" class="dl-card">
+        <div class="dl-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701"/>
+          </svg>
+        </div>
         <div class="dl-os">macOS</div>
         <div class="dl-fmt">.dmg · Intel &amp; Apple Silicon</div>
       </a>
-      <a
-        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.AppImage"
-        class="dl-card"
-      >
-        <div class="dl-icon">🐧</div>
+      <!-- Linux -->
+      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.AppImage" class="dl-card">
+        <div class="dl-icon">
+          <!-- Tux penguin simplified SVG -->
+          <svg width="38" height="40" viewBox="0 0 48 52" xmlns="http://www.w3.org/2000/svg">
+            <!-- body -->
+            <ellipse cx="24" cy="34" rx="14" ry="16" fill="#111"/>
+            <!-- white belly -->
+            <ellipse cx="24" cy="36" rx="9" ry="12" fill="#f5f5f0"/>
+            <!-- head -->
+            <ellipse cx="24" cy="14" rx="11" ry="12" fill="#111"/>
+            <!-- face white -->
+            <ellipse cx="24" cy="16" rx="7" ry="8" fill="#f5c842"/>
+            <!-- eyes -->
+            <circle cx="20.5" cy="12" r="2.2" fill="white"/>
+            <circle cx="27.5" cy="12" r="2.2" fill="white"/>
+            <circle cx="20.5" cy="12.5" r="1.1" fill="#111"/>
+            <circle cx="27.5" cy="12.5" r="1.1" fill="#111"/>
+            <!-- beak -->
+            <ellipse cx="24" cy="18" rx="3" ry="2" fill="#f5a623"/>
+            <!-- feet -->
+            <ellipse cx="18" cy="49" rx="5" ry="2.5" fill="#f5a623"/>
+            <ellipse cx="30" cy="49" rx="5" ry="2.5" fill="#f5a623"/>
+            <!-- wings -->
+            <ellipse cx="10" cy="34" rx="4" ry="9" fill="#111" transform="rotate(-10 10 34)"/>
+            <ellipse cx="38" cy="34" rx="4" ry="9" fill="#111" transform="rotate(10 38 34)"/>
+          </svg>
+        </div>
         <div class="dl-os">Linux</div>
         <div class="dl-fmt">.AppImage · x64</div>
       </a>
