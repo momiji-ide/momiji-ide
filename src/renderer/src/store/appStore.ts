@@ -59,9 +59,10 @@ export const useAppStore = create<AppStore>()(
       activePanel: 'explorer',
       settings: defaultSettings,
       aiProviders: [
-        { id: 'claude', name: 'Claude (Anthropic)', apiKey: '', model: 'claude-sonnet-4-6', enabled: false },
-        { id: 'gemini', name: 'Gemini (Google)', apiKey: '', model: 'gemini-3-flash-preview', enabled: false },
-        { id: 'openai', name: 'GPT (OpenAI)', apiKey: '', model: 'gpt-4o', enabled: false }
+        { id: 'claude',  name: 'Claude (Anthropic)', apiKey: '', model: 'claude-sonnet-4-6',       enabled: false },
+        { id: 'gemini',  name: 'Gemini (Google)',     apiKey: '', model: 'gemini-3-flash-preview',  enabled: false },
+        { id: 'openai',  name: 'GPT (OpenAI)',        apiKey: '', model: 'gpt-4o',                  enabled: false },
+        { id: 'ollama',  name: 'Ollama (Local)',      apiKey: '', model: 'qwen2.5-coder:7b',        enabled: false, baseUrl: 'http://localhost:11434' },
       ],
       sidebarWidth: 260,
       showSidebar: true,
