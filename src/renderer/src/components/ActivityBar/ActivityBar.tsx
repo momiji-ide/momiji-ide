@@ -3,8 +3,9 @@ import type { ActivityBarItem } from '../../types'
 import {
   IcoExplorer, IcoSearch, IcoScaffold, IcoTemplates, IcoPackages,
   IcoHttp, IcoBlocks, IcoFlow, IcoDebug, IcoGit, IcoSnippets,
-  IcoAI, IcoDatabase, IcoExtensions, IcoSettings, IcoTodo, IcoOutline
+  IcoDatabase, IcoExtensions, IcoSettings, IcoTodo, IcoOutline
 } from './Icons'
+import kitsuneImg from '../../assets/logo-kitsune.png'
 
 interface NavItem {
   id: ActivityBarItem
@@ -21,7 +22,7 @@ const TOP_ITEMS: NavItem[] = [
 ]
 
 const MID_ITEMS: NavItem[] = [
-  { id: 'ai',        icon: <IcoAI />,        label: 'Kitsune AI' },
+  { id: 'ai',        icon: <img src={kitsuneImg} width={20} height={20} draggable={false} style={{ objectFit: 'contain', opacity: 'inherit' }} />, label: 'Kitsune AI' },
   { id: 'outline',   icon: <IcoOutline />,   label: 'Symbol Outline' },
   { id: 'todo',      icon: <IcoTodo />,      label: 'TODO / Tasks' },
   { id: 'http',      icon: <IcoHttp />,      label: 'HTTP Client' },
@@ -96,17 +97,20 @@ function Btn({ item, isActive, onClick }: {
         background: isActive ? (isAI ? 'rgba(203,166,247,0.12)' : 'var(--bg-surface0)') : 'transparent',
         color: isActive ? activeColor : 'var(--text-subtle)',
         borderLeft: isActive ? `2px solid ${activeColor}` : '2px solid transparent',
+        opacity: (!isActive && isAI) ? 0.45 : 1,
       }}
       onMouseEnter={e => {
         if (!isActive) {
           e.currentTarget.style.background = isAI ? 'rgba(203,166,247,0.08)' : 'var(--bg-surface0)'
           e.currentTarget.style.color = isAI ? 'var(--accent-mauve)' : 'var(--text)'
+          e.currentTarget.style.opacity = '1'
         }
       }}
       onMouseLeave={e => {
         if (!isActive) {
           e.currentTarget.style.background = 'transparent'
           e.currentTarget.style.color = 'var(--text-subtle)'
+          if (isAI) e.currentTarget.style.opacity = '0.45'
         }
       }}
     >
