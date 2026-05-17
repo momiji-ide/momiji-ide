@@ -196,6 +196,7 @@ export function useInlineCompletion(
         }
       },
       freeInlineCompletions: () => {},
+      disposeInlineCompletions: () => {},  // required in Monaco 0.45+
     })
 
     return () => {
