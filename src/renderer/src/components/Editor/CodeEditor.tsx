@@ -8,6 +8,7 @@ import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import kitsuneCharImg from '../../assets/kitsune-char.png'
 import { FileIcon } from '../Sidebar/FileIcon'
 import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
+import { useInlineCompletion } from './useInlineCompletion'
 
 // Patterns for finding definitions across languages
 function findDefinitionInText(content: string, word: string): number {
@@ -56,6 +57,16 @@ export function CodeEditor() {
   const splitTab = tabs.find((t) => t.id === splitTabId)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lintTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Kitsune AI Inline Completion (Copilot-style)
+  const [inlineEnabled, setInlineEnabled] = useState(true)
+  const inlineCompletion = useInlineCompletion(editorRef, monacoRef)
+
+  useEffect(() => {
+    const handler = () => setInlineEnabled(inlineCompletion.toggle())
+    window.addEventListener('kitsune:toggleInline', handler)
+    return () => window.removeEventListener('kitsune:toggleInline', handler)
+  }, [inlineCompletion])
 
   // Color picker state
   const [colorPicker, setColorPicker] = useState<{ color: string; x: number; y: number; line: number; col: number; original: string } | null>(null)
