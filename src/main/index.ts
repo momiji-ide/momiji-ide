@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
 import path from 'path'
 import { spawn, ChildProcess } from 'child_process'
+import * as pty from 'node-pty'
 
 // Enable Web Speech API in Electron (requires Google's speech service)
 app.commandLine.appendSwitch('enable-speech-input')
@@ -13,7 +14,7 @@ app.commandLine.appendSwitch('disable-features', 'MediaStreamTrackTransfer')
 
 let mainWindow: BrowserWindow | null = null
 const runningProcesses = new Map<string, ChildProcess>()
-const terminals = new Map<string, ChildProcess>()
+const terminals = new Map<string, pty.IPty>()
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -487,10 +488,9 @@ function setupIpcHandlers(): void {
     return ipcMain.emit('process:run', null as any, id, command, [], cwd)
   })
 
-  // ─── Terminal (interactive shell with xterm.js) ────────────────────
+  // ─── Terminal (node-pty — real PTY, keyboard works!) ──────────────
   ipcMain.handle('terminal:create', async (_, id: string, cwd?: string) => {
     try {
-      // Kill existing terminal with same id
       if (terminals.has(id)) {
         try { terminals.get(id)!.kill() } catch {}
         terminals.delete(id)
@@ -500,34 +500,31 @@ function setupIpcHandlers(): void {
       const shell = isWin ? 'cmd.exe' : (process.env.SHELL || 'bash')
       const workDir = cwd || process.env.USERPROFILE || process.env.HOME || '/'
 
-      const proc = spawn(shell, [], {
+      const ptyProc = pty.spawn(shell, [], {
+        name: 'xterm-256color',
+        cols: 120,
+        rows: 30,
         cwd: workDir,
         env: {
           ...process.env,
           TERM: 'xterm-256color',
           COLORTERM: 'truecolor',
           FORCE_COLOR: '1',
-        },
-        stdio: ['pipe', 'pipe', 'pipe']
+        } as Record<string, string>,
       })
 
-      terminals.set(id, proc)
+      terminals.set(id, ptyProc)
 
-      proc.stdout?.on('data', (data: Buffer) => {
-        mainWindow?.webContents.send('terminal:data', id, data.toString('utf-8'))
+      ptyProc.onData((data: string) => {
+        mainWindow?.webContents.send('terminal:data', id, data)
       })
-      proc.stderr?.on('data', (data: Buffer) => {
-        mainWindow?.webContents.send('terminal:data', id, data.toString('utf-8'))
-      })
-      proc.on('exit', (code) => {
+
+      ptyProc.onExit(({ exitCode }) => {
         terminals.delete(id)
-        mainWindow?.webContents.send('terminal:exit', id, code ?? 0)
-      })
-      proc.on('error', (err) => {
-        mainWindow?.webContents.send('terminal:data', id, `\x1b[31mShell error: ${err.message}\x1b[0m\r\n`)
+        mainWindow?.webContents.send('terminal:exit', id, exitCode ?? 0)
       })
 
-      return { success: true, pid: proc.pid, shell }
+      return { success: true, pid: ptyProc.pid, shell }
     } catch (err) {
       return { success: false, error: String(err) }
     }
@@ -535,17 +532,20 @@ function setupIpcHandlers(): void {
 
   ipcMain.handle('terminal:write', async (_, id: string, data: string) => {
     const proc = terminals.get(id)
-    if (!proc || !proc.stdin) return false
-    try {
-      proc.stdin.write(data)
-      return true
-    } catch { return false }
+    if (!proc) return false
+    try { proc.write(data); return true } catch { return false }
+  })
+
+  ipcMain.handle('terminal:resize', async (_, id: string, cols: number, rows: number) => {
+    const proc = terminals.get(id)
+    if (!proc) return false
+    try { proc.resize(cols, rows); return true } catch { return false }
   })
 
   ipcMain.handle('terminal:kill', async (_, id: string) => {
     const proc = terminals.get(id)
     if (proc) {
-      try { proc.kill('SIGTERM') } catch {}
+      try { proc.kill() } catch {}
       terminals.delete(id)
     }
     return true

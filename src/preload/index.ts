@@ -92,6 +92,7 @@ const api = {
     create: (id: string, cwd?: string) => ipcRenderer.invoke('terminal:create', id, cwd),
     write: (id: string, data: string) => ipcRenderer.invoke('terminal:write', id, data),
     kill: (id: string) => ipcRenderer.invoke('terminal:kill', id),
+    resize: (id: string, cols: number, rows: number) => ipcRenderer.invoke('terminal:resize', id, cols, rows),
     getCwd: () => ipcRenderer.invoke('terminal:getCwd'),
     onData: (callback: (id: string, data: string) => void) => {
       const handler = (_: Electron.IpcRendererEvent, id: string, data: string) => callback(id, data)
