@@ -97,8 +97,6 @@ export function TerminalPanel() {
         fontFamily:"'Cascadia Code','JetBrains Mono','Fira Code',Consolas,monospace",
         fontSize:13, lineHeight:1.45, cursorBlink:true, cursorStyle:'block',
         scrollback:5000, convertEol:true, allowProposedApi:true,
-        // Disable xterm's own keyboard — we use the overlay textarea instead
-        customKeyEventHandler: () => false,
       })
 
       const fitAddon = new FitAddon()
@@ -263,10 +261,13 @@ export function TerminalPanel() {
           />
         ))}
 
-        {/* Invisible textarea overlay — captures all keyboard input */}
+        {/* Invisible textarea — captures keyboard, syncs focus state to xterm */}
         <textarea
           ref={overlayRef}
           onKeyDown={handleKeyDown}
+          onChange={e => { e.target.value = '' }} // clear immediately, xterm handles display
+          onFocus={() => { if (activeId) terminalsRef.current.get(activeId)?.focus() }}
+          onBlur={() => { if (activeId) terminalsRef.current.get(activeId)?.blur?.() }}
           style={{
             position:'absolute', inset:0, zIndex:10,
             opacity:0, width:'100%', height:'100%',
@@ -277,10 +278,6 @@ export function TerminalPanel() {
           autoCorrect="off"
           spellCheck={false}
           tabIndex={0}
-          readOnly={false}
-          // Keep textarea empty — we handle display via xterm
-          value=""
-          onChange={() => {/* controlled */}}
         />
 
         {tabs.length === 0 && (

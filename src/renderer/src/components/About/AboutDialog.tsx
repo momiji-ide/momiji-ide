@@ -30,7 +30,7 @@ const FEATURES = [
   '🎨 7 Extra Themes',
 ]
 
-type AboutTab = 'authors' | 'features' | 'stack' | 'license'
+type AboutTab = 'authors' | 'features' | 'stack' | 'links'
 
 const AUTHORS = [
   {
@@ -53,28 +53,13 @@ const AUTHORS = [
   },
 ]
 
-const LICENSE_TEXT = `MIT License
-
-Copyright (c) 2025 Parallax IDE — Haikal Hakim Baiqunni
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+const LINKS = [
+  { icon: '🌐', label: 'Website', desc: 'parallax-ide.github.io/parallax-ide', url: 'https://parallax-ide.github.io/parallax-ide' },
+  { icon: '💻', label: 'GitHub', desc: 'github.com/parallax-ide/parallax-ide', url: 'https://github.com/parallax-ide/parallax-ide' },
+  { icon: '📥', label: 'Download / Releases', desc: 'Latest installers for Windows, macOS, Linux', url: 'https://github.com/parallax-ide/parallax-ide/releases' },
+  { icon: '🐛', label: 'Report a Bug', desc: 'github.com/parallax-ide/parallax-ide/issues', url: 'https://github.com/parallax-ide/parallax-ide/issues' },
+  { icon: '🦊', label: 'Kitsune AI', desc: 'Powered by Claude · Gemini · GPT · Ollama', url: 'https://github.com/parallax-ide/parallax-ide' },
+]
 
 export function AboutDialog({ onClose }: Props) {
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'latest' | 'available'>('idle')
@@ -169,7 +154,7 @@ export function AboutDialog({ onClose }: Props) {
           <div className="flex items-center justify-between flex-shrink-0"
             style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="flex">
-              {(['authors','features','stack','license'] as AboutTab[]).map(tab => (
+              {(['authors','features','stack','links'] as AboutTab[]).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className="px-4 py-3 text-xs font-semibold capitalize transition-colors"
                   style={{
@@ -261,13 +246,26 @@ export function AboutDialog({ onClose }: Props) {
               </div>
             )}
 
-            {/* LICENSE TAB */}
-            {activeTab === 'license' && (
-              <div className="p-5">
-                <pre className="text-xs leading-relaxed whitespace-pre-wrap"
-                  style={{ color: 'var(--text-subtle)', fontFamily: 'monospace' }}>
-                  {LICENSE_TEXT}
-                </pre>
+            {/* LINKS TAB */}
+            {activeTab === 'links' && (
+              <div className="p-5 flex flex-col gap-2">
+                {LINKS.map(l => (
+                  <button key={l.label} onClick={() => window.open(l.url, '_blank')}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors"
+                    style={{ background:'var(--bg-surface0)', border:'none', cursor:'pointer', width:'100%' }}
+                    onMouseEnter={e=>(e.currentTarget.style.background='var(--bg-surface1)')}
+                    onMouseLeave={e=>(e.currentTarget.style.background='var(--bg-surface0)')}>
+                    <span style={{ fontSize:20 }}>{l.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color:'var(--text)' }}>{l.label}</p>
+                      <p className="text-xs truncate" style={{ color:'var(--text-subtle)' }}>{l.desc}</p>
+                    </div>
+                    <span style={{ color:'var(--accent-blue)', fontSize:14 }}>↗</span>
+                  </button>
+                ))}
+                <p className="text-xs text-center mt-3" style={{ color:'var(--overlay0)' }}>
+                  © 2025 Parallax IDE · Haikal Hakim Baiqunni
+                </p>
               </div>
             )}
 
