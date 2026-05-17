@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react'
 import type * as Monaco from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
 
-const DEBOUNCE_MS = 700
+const DEBOUNCE_MS = 400
 const MAX_CONTEXT_LINES = 60  // lines before cursor to send as context
 const MAX_SUFFIX_LINES  = 10  // lines after cursor for FIM (fill-in-middle)
 
@@ -144,12 +144,11 @@ export function useInlineCompletion(
 
         // Debounce — wait for typing to stop
         clearTimeout(timerRef.current)
-        await new Promise<void>((resolve, reject) => {
-          timerRef.current = setTimeout(resolve, DEBOUNCE_MS)
-          token.onCancellationRequested(reject)
-        }).catch(() => null)
-
-        if (token.isCancellationRequested) return { items: [] }
+        const cancelled = await new Promise<boolean>((resolve) => {
+          timerRef.current = setTimeout(() => resolve(false), DEBOUNCE_MS)
+          token.onCancellationRequested(() => resolve(true))
+        })
+        if (cancelled || token.isCancellationRequested) return { items: [] }
 
         // Abort previous request
         abortRef.current?.abort()
@@ -170,7 +169,11 @@ export function useInlineCompletion(
           } else if (provider.id === 'ollama') {
             completion = await callOpenAI('', provider.model, provider.baseUrl ?? 'http://localhost:11434', prompt, ctrl.signal)
           }
-        } catch {
+        } catch (err: unknown) {
+          // Suppress abort/cancel errors — they're normal when user keeps typing
+          const msg = err instanceof Error ? err.message : String(err)
+          if (msg.includes('abort') || msg.includes('cancel') || msg.includes('Cancel')) return { items: [] }
+          // Silently fail on API errors (503, rate limit, etc.) — don't break the editor
           return { items: [] }
         }
 
