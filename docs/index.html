@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parallax IDE — Code smarter with Kitsune AI</title>
+  <meta name="description" content="Parallax IDE is a blazing-fast, AI-powered desktop code editor with Kitsune — your intelligent coding companion that reads, writes, and reasons through your entire codebase." />
+  <meta property="og:title" content="Parallax IDE" />
+  <meta property="og:description" content="AI-powered desktop code editor with Kitsune AI. Free forever." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231e1e2e'/><text y='24' x='4' font-size='22'>🦊</text></svg>" />
+  <style>
+    :root {
+      --bg:        #1e1e2e;
+      --bg-crust:  #11111b;
+      --bg-mantle: #181825;
+      --surface0:  #313244;
+      --surface1:  #45475a;
+      --surface2:  #585b70;
+      --overlay0:  #6c7086;
+      --text:      #cdd6f4;
+      --subtext1:  #bac2de;
+      --subtext0:  #a6adc8;
+      --lavender:  #b4befe;
+      --blue:      #89b4fa;
+      --sapphire:  #74c7ec;
+      --sky:       #89dceb;
+      --teal:      #94e2d5;
+      --green:     #a6e3a1;
+      --yellow:    #f9e2af;
+      --peach:     #fab387;
+      --maroon:    #eba0ac;
+      --red:       #f38ba8;
+      --mauve:     #cba6f7;
+      --pink:      #f5c2e7;
+      --flamingo:  #f2cdcd;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-crust);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 56px;
+      background: rgba(17,17,27,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(49,50,68,0.6);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 900; font-size: 0.85rem; letter-spacing: 0.14em;
+      color: var(--mauve); text-decoration: none;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--subtext1); text-decoration: none; font-size: 0.875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.825rem; font-weight: 600;
+      background: var(--mauve); color: var(--bg-crust) !important;
+      transition: opacity .2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85 !important; color: var(--bg-crust) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(203,166,247,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(137,180,250,.08) 0%, transparent 50%),
+        var(--bg-crust);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23313244' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.4; pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+      background: rgba(203,166,247,.12); color: var(--mauve);
+      border: 1px solid rgba(203,166,247,.25);
+      margin-bottom: 1.5rem; letter-spacing: 0.04em;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+    h1 .accent { color: var(--mauve); }
+    h1 .dim { color: var(--subtext0); }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--subtext1); max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-actions {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      justify-content: center; margin-bottom: 3.5rem;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0.75rem 1.75rem; border-radius: 8px;
+      font-weight: 700; font-size: 0.9rem; text-decoration: none;
+      transition: all .2s; cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: var(--mauve); color: var(--bg-crust);
+      box-shadow: 0 0 24px rgba(203,166,247,.3);
+    }
+    .btn-primary:hover {
+      background: var(--lavender);
+      box-shadow: 0 0 36px rgba(203,166,247,.5);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface0); color: var(--text);
+      border: 1px solid var(--surface1);
+    }
+    .btn-secondary:hover {
+      background: var(--surface1); transform: translateY(-1px);
+    }
+
+    .platforms {
+      display: flex; gap: 0.6rem; justify-content: center;
+      font-size: 0.75rem; color: var(--subtext0); align-items: center;
+    }
+    .platform-pill {
+      padding: 3px 10px; border-radius: 999px;
+      background: var(--surface0); border: 1px solid var(--surface1);
+      color: var(--subtext1);
+    }
+
+    /* ── EDITOR MOCKUP ── */
+    .editor-mockup {
+      max-width: 900px; width: 100%; margin: 4rem auto 0;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--surface0);
+      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(203,166,247,.06);
+    }
+    .editor-topbar {
+      background: var(--bg-mantle); padding: 10px 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--surface0);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red   { background: #ff5f57; }
+    .dot-amber { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .editor-tab-bar {
+      background: var(--bg-mantle);
+      border-bottom: 1px solid var(--surface0);
+      display: flex; align-items: center; padding: 0 8px;
+    }
+    .editor-tab {
+      padding: 6px 14px; font-size: 0.75rem;
+      border-right: 1px solid var(--surface0);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .editor-tab.active {
+      background: var(--bg); color: var(--text);
+      border-top: 1px solid var(--mauve);
+    }
+    .editor-tab:not(.active) { color: var(--subtext0); }
+    .editor-body {
+      background: var(--bg);
+      display: flex; height: 380px;
+    }
+    .line-nums {
+      background: var(--bg); padding: 1rem 0.75rem;
+      color: var(--surface2); font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.78rem; text-align: right; user-select: none;
+      line-height: 1.7; border-right: 1px solid var(--surface0);
+      flex-shrink: 0; width: 40px;
+    }
+    .code-area {
+      flex: 1; padding: 1rem 1.25rem;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.78rem; line-height: 1.7;
+      overflow: auto;
+    }
+    .c-keyword  { color: var(--mauve); }
+    .c-func     { color: var(--blue); }
+    .c-string   { color: var(--green); }
+    .c-comment  { color: var(--surface2); font-style: italic; }
+    .c-num      { color: var(--peach); }
+    .c-type     { color: var(--yellow); }
+    .c-param    { color: var(--flamingo); }
+    .c-op       { color: var(--sky); }
+
+    .ai-sidebar {
+      width: 240px; background: var(--bg-mantle);
+      border-left: 1px solid var(--surface0);
+      padding: 1rem; display: flex; flex-direction: column; gap: 8px;
+      flex-shrink: 0;
+    }
+    .ai-header {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.7rem; font-weight: 700; color: var(--mauve);
+      letter-spacing: 0.08em; padding-bottom: 6px;
+      border-bottom: 1px solid var(--surface0);
+    }
+    .ai-msg {
+      font-size: 0.7rem; line-height: 1.55; border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .ai-msg-user {
+      background: var(--surface0); color: var(--subtext1);
+      align-self: flex-end;
+    }
+    .ai-msg-kitsune {
+      background: rgba(203,166,247,.08); color: var(--text);
+      border: 1px solid rgba(203,166,247,.15);
+    }
+    .ai-typing {
+      display: flex; gap: 4px; padding: 8px 10px;
+      background: rgba(203,166,247,.06); border-radius: 6px;
+      border: 1px solid rgba(203,166,247,.1);
+    }
+    .ai-typing span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--mauve); opacity: .4;
+      animation: bounce 1.2s infinite;
+    }
+    .ai-typing span:nth-child(2) { animation-delay: .2s; }
+    .ai-typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); opacity: .4; }
+      40%         { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 1.5rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+      color: var(--mauve); text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 900; line-height: 1.2;
+      letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .section-sub {
+      color: var(--subtext1); font-size: 1.05rem;
+      max-width: 550px; margin-bottom: 3.5rem;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--bg-mantle);
+      border: 1px solid var(--surface0);
+      border-radius: 12px; padding: 1.5rem;
+      transition: border-color .25s, transform .2s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      opacity: 0; transition: opacity .25s;
+    }
+    .feature-card:hover { border-color: var(--surface1); transform: translateY(-2px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card.c-mauve::before   { background: linear-gradient(90deg, transparent, var(--mauve), transparent); }
+    .feature-card.c-blue::before    { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+    .feature-card.c-green::before   { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+    .feature-card.c-peach::before   { background: linear-gradient(90deg, transparent, var(--peach), transparent); }
+    .feature-card.c-sky::before     { background: linear-gradient(90deg, transparent, var(--sky), transparent); }
+    .feature-card.c-yellow::before  { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; margin-bottom: 1rem;
+    }
+    .fi-mauve  { background: rgba(203,166,247,.12); }
+    .fi-blue   { background: rgba(137,180,250,.12); }
+    .fi-green  { background: rgba(166,227,161,.12); }
+    .fi-peach  { background: rgba(250,179,135,.12); }
+    .fi-sky    { background: rgba(137,220,235,.12); }
+    .fi-yellow { background: rgba(249,226,175,.12); }
+
+    .feature-title {
+      font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text);
+    }
+    .feature-desc { font-size: 0.83rem; color: var(--subtext0); line-height: 1.55; }
+
+    /* ── KITSUNE HIGHLIGHT ── */
+    .kitsune-section {
+      background: var(--bg-mantle);
+      border-top: 1px solid var(--surface0);
+      border-bottom: 1px solid var(--surface0);
+    }
+    .kitsune-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+      max-width: 1100px; margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .kitsune-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+
+    .kitsune-chat {
+      background: var(--bg); border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--surface0);
+      box-shadow: 0 20px 40px rgba(0,0,0,.4);
+    }
+    .chat-header {
+      background: var(--bg-crust); padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--surface0);
+      font-size: 0.78rem; font-weight: 700; color: var(--mauve);
+      letter-spacing: 0.06em;
+    }
+    .chat-messages { padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble {
+      max-width: 85%; padding: 10px 13px; border-radius: 10px;
+      font-size: 0.78rem; line-height: 1.5;
+    }
+    .chat-user {
+      align-self: flex-end;
+      background: var(--surface0); color: var(--subtext1);
+      border-radius: 10px 10px 2px 10px;
+    }
+    .chat-ai {
+      align-self: flex-start;
+      background: rgba(203,166,247,.08); color: var(--text);
+      border: 1px solid rgba(203,166,247,.15);
+      border-radius: 10px 10px 10px 2px;
+    }
+    .chat-code {
+      background: var(--bg-crust); border-radius: 6px;
+      padding: 8px 10px; margin-top: 6px;
+      font-family: 'Cascadia Code', monospace; font-size: 0.72rem;
+      color: var(--green); border: 1px solid var(--surface0);
+    }
+
+    .kitsune-points { display: flex; flex-direction: column; gap: 1.5rem; }
+    .kp {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .kp-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .kp-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
+    .kp-desc  { font-size: 0.82rem; color: var(--subtext0); line-height: 1.5; }
+
+    /* ── PROVIDERS ── */
+    .providers-grid {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+    }
+    .provider-card {
+      background: var(--bg-mantle); border: 1px solid var(--surface0);
+      border-radius: 10px; padding: 1rem 1.25rem;
+      display: flex; align-items: center; gap: 10px;
+      min-width: 160px; transition: border-color .2s;
+    }
+    .provider-card:hover { border-color: var(--surface1); }
+    .provider-logo {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .provider-name { font-size: 0.85rem; font-weight: 600; }
+    .provider-sub  { font-size: 0.72rem; color: var(--subtext0); }
+    .free-tag {
+      font-size: 0.62rem; font-weight: 700; padding: 2px 6px;
+      border-radius: 4px; background: rgba(166,227,161,.15);
+      color: var(--green); border: 1px solid rgba(166,227,161,.3);
+      margin-left: auto;
+    }
+
+    /* ── DOWNLOAD ── */
+    .download-section {
+      background:
+        radial-gradient(ellipse 60% 80% at 50% 120%, rgba(203,166,247,.1) 0%, transparent 60%),
+        var(--bg-crust);
+      text-align: center;
+      border-top: 1px solid var(--surface0);
+    }
+    .download-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      justify-content: center; margin-top: 2.5rem;
+    }
+    .dl-card {
+      background: var(--bg-mantle); border: 1px solid var(--surface0);
+      border-radius: 12px; padding: 1.5rem 2rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      min-width: 160px; text-decoration: none; color: var(--text);
+      transition: all .2s;
+    }
+    .dl-card:hover {
+      border-color: var(--mauve); background: rgba(203,166,247,.06);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    }
+    .dl-icon { font-size: 2rem; }
+    .dl-os   { font-weight: 700; font-size: 0.9rem; }
+    .dl-fmt  { font-size: 0.72rem; color: var(--subtext0); }
+    .dl-version {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 0.5rem;
+      font-size: 0.75rem; color: var(--subtext0);
+    }
+    .dl-version code {
+      font-family: monospace; background: var(--surface0);
+      padding: 2px 8px; border-radius: 4px; color: var(--text);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg-crust); padding: 2.5rem 1.5rem;
+      border-top: 1px solid var(--surface0);
+      text-align: center;
+    }
+    .footer-links {
+      display: flex; justify-content: center; gap: 1.5rem;
+      flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .footer-links a {
+      color: var(--subtext0); text-decoration: none; font-size: 0.85rem;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.78rem; color: var(--overlay0); }
+    .footer-copy span { color: var(--mauve); }
+
+    /* ── SCROLL ANIM ── */
+    [data-fade] {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    [data-fade].visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 0 1rem; }
+      .nav-links .hide-sm { display: none; }
+      .ai-sidebar { display: none; }
+      .editor-body { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#1e1e2e"/>
+      <path d="M16 4 C10 4 6 8.5 6 13 C6 17 8.5 19.5 11 21 L11 26 L16 24 L21 26 L21 21 C23.5 19.5 26 17 26 13 C26 8.5 22 4 16 4Z" fill="#cba6f7"/>
+      <circle cx="12" cy="13" r="1.5" fill="#1e1e2e"/>
+      <circle cx="20" cy="13" r="1.5" fill="#1e1e2e"/>
+      <path d="M13 17 Q16 19.5 19 17" stroke="#1e1e2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M9 9 C8 6 5 5.5 4 6" stroke="#cba6f7" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M23 9 C24 6 27 5.5 28 6" stroke="#cba6f7" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    PARALLAX
+  </a>
+  <div class="nav-links">
+    <a href="#features" class="hide-sm">Features</a>
+    <a href="#kitsune" class="hide-sm">Kitsune AI</a>
+    <a href="#download">Download</a>
+    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank" class="hide-sm">GitHub</a>
+    <a href="#download" class="nav-cta">Get Parallax →</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#cba6f7"/></svg>
+    v1.0.0 — Now Available Free
+  </div>
+
+  <h1>
+    Code smarter with<br/>
+    <span class="accent">Kitsune AI</span><br/>
+    <span class="dim">your on-call genius</span>
+  </h1>
+
+  <p class="hero-sub">
+    Parallax IDE is a blazing-fast desktop code editor with a built-in AI that
+    reads, writes, and reasons through your entire codebase — powered by Claude,
+    Gemini, GPT, or 100% local Ollama.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#download" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1a1 1 0 011 1v6.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L7 8.586V2a1 1 0 011-1z"/>
+        <path d="M2 12a1 1 0 112 0v1h8v-1a1 1 0 112 0v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-1z"/>
+      </svg>
+      Download Free
+    </a>
+    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank" class="btn btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <div class="platforms">
+    <span>Free &amp; open source</span>
+    <span style="color:var(--surface1)">·</span>
+    <span class="platform-pill">🪟 Windows</span>
+    <span class="platform-pill">🍎 macOS</span>
+    <span class="platform-pill">🐧 Linux</span>
+  </div>
+
+  <!-- Editor Mockup -->
+  <div class="editor-mockup" data-fade>
+    <div class="editor-topbar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-amber"></div>
+      <div class="dot dot-green"></div>
+      <span style="margin-left:8px;font-size:0.72rem;color:var(--subtext0)">Parallax IDE — solar-system.ts</span>
+    </div>
+    <div class="editor-tab-bar">
+      <div class="editor-tab active">
+        <svg width="12" height="12" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="3" fill="#3178c6"/><text x="4" y="24" font-size="18" font-weight="900" fill="white" font-family="monospace">T</text></svg>
+        solar-system.ts
+      </div>
+      <div class="editor-tab">
+        <svg width="12" height="12" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="3" fill="#f7df1e"/><text x="3" y="25" font-size="20" font-weight="900" fill="#1e1e2e" font-family="monospace">J</text></svg>
+        index.js
+      </div>
+      <div class="editor-tab">
+        <svg width="12" height="12" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="3" fill="#e34f26"/><text x="3" y="25" font-size="16" font-weight="900" fill="white" font-family="sans-serif">H</text></svg>
+        index.html
+      </div>
+    </div>
+    <div class="editor-body">
+      <div class="line-nums">1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17</div>
+      <div class="code-area">
+<span class="c-keyword">interface</span> <span class="c-type">Planet</span> {<br/>
+&nbsp;&nbsp;name:     <span class="c-type">string</span><br/>
+&nbsp;&nbsp;radius:   <span class="c-type">number</span><br/>
+&nbsp;&nbsp;distance: <span class="c-type">number</span><br/>
+&nbsp;&nbsp;color:    <span class="c-type">string</span><br/>
+}<br/>
+<br/>
+<span class="c-keyword">const</span> <span class="c-func">createOrbit</span> = (<span class="c-param">planet</span>: <span class="c-type">Planet</span>): <span class="c-type">void</span> <span class="c-op">=></span> {<br/>
+&nbsp;&nbsp;<span class="c-keyword">const</span> canvas = document.<span class="c-func">getElementById</span>(<span class="c-string">'canvas'</span>)<br/>
+&nbsp;&nbsp;<span class="c-keyword">const</span> ctx = canvas?.<span class="c-func">getContext</span>(<span class="c-string">'2d'</span>)<br/>
+&nbsp;&nbsp;<span class="c-keyword">if</span> (!ctx) <span class="c-keyword">return</span><br/>
+&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;ctx.<span class="c-func">beginPath</span>()<br/>
+&nbsp;&nbsp;ctx.<span class="c-func">arc</span>(<span class="c-num">400</span>, <span class="c-num">300</span>, planet.distance, <span class="c-num">0</span>, Math.PI <span class="c-op">*</span> <span class="c-num">2</span>)<br/>
+&nbsp;&nbsp;ctx.strokeStyle = planet.color<br/>
+&nbsp;&nbsp;ctx.<span class="c-func">stroke</span>()<br/>
+}<br/>
+      </div>
+      <div class="ai-sidebar">
+        <div class="ai-header">
+          <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
+            <path d="M16 3C10 3 6 7.5 6 12C6 16 8.5 18.5 11 20L11 25L16 23L21 25L21 20C23.5 18.5 26 16 26 12C26 7.5 22 3 16 3Z" fill="#cba6f7"/>
+            <circle cx="12" cy="12" r="1.5" fill="#1e1e2e"/>
+            <circle cx="20" cy="12" r="1.5" fill="#1e1e2e"/>
+          </svg>
+          KITSUNE AI
+        </div>
+        <div class="ai-msg ai-msg-user">Add collision detection between planets</div>
+        <div class="ai-msg ai-msg-kitsune">
+          I'll add a <code style="color:var(--yellow);background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px">checkCollision()</code> function using circle-to-circle distance formula...
+          <div class="chat-code">
+            function checkCollision(<br/>
+            &nbsp;&nbsp;a: Planet, b: Planet<br/>
+            ): boolean {<br/>
+            &nbsp;&nbsp;const dx = a.x - b.x<br/>
+            &nbsp;&nbsp;const dy = a.y - b.y<br/>
+            &nbsp;&nbsp;const dist = Math.hypot(dx,dy)<br/>
+            &nbsp;&nbsp;return dist &lt; a.r + b.r<br/>
+            }
+          </div>
+        </div>
+        <div class="ai-typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features">
+  <div class="container">
+    <p class="section-label">Everything you need</p>
+    <h2>Built for the way<br/>developers actually work</h2>
+    <p class="section-sub">
+      Monaco editor core, lightning-fast file search, Git integration, SQL explorer,
+      and a full AI suite — all in one app that starts in under a second.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card c-mauve" data-fade>
+        <div class="feature-icon fi-mauve">🦊</div>
+        <div class="feature-title">Kitsune Agent Mode</div>
+        <div class="feature-desc">Give Kitsune a task and walk away. It reads your whole project, plans, writes files, runs code, and iterates until done — like having a junior dev on call.</div>
+      </div>
+
+      <div class="feature-card c-blue" data-fade>
+        <div class="feature-icon fi-blue">⚡</div>
+        <div class="feature-title">Monaco Editor Core</div>
+        <div class="feature-desc">The same engine powering VS Code. Full IntelliSense, multi-cursor, bracket matching, and Catppuccin dark/light themes out of the box.</div>
+      </div>
+
+      <div class="feature-card c-green" data-fade>
+        <div class="feature-icon fi-green">🌐</div>
+        <div class="feature-title">Multi-Provider AI</div>
+        <div class="feature-desc">Claude 3.5, Gemini 2.5, GPT-4o, or 100% offline with Ollama. Switch per-conversation. Your keys, your data.</div>
+      </div>
+
+      <div class="feature-card c-peach" data-fade>
+        <div class="feature-icon fi-peach">🔍</div>
+        <div class="feature-title">Find &amp; Replace Across Files</div>
+        <div class="feature-desc">Regex-powered search with multi-file replace, preview diffs before applying, and per-file apply/skip controls.</div>
+      </div>
+
+      <div class="feature-card c-sky" data-fade>
+        <div class="feature-icon fi-sky">🌿</div>
+        <div class="feature-title">Git Integration</div>
+        <div class="feature-desc">Stage, commit, view diffs, and let Kitsune write your commit message from the staged diff — directly in the sidebar.</div>
+      </div>
+
+      <div class="feature-card c-yellow" data-fade>
+        <div class="feature-icon fi-yellow">🎨</div>
+        <div class="feature-title">Color Picker &amp; Vision</div>
+        <div class="feature-desc">Click any hex/rgb/hsl value in code to open a live color picker. Paste screenshots — Kitsune sees them and understands your UI.</div>
+      </div>
+
+      <div class="feature-card c-mauve" data-fade>
+        <div class="feature-icon fi-mauve">📊</div>
+        <div class="feature-title">Symbol Outline</div>
+        <div class="feature-desc">Jump to any function, class, or variable. Active symbol tracks your cursor. Supports TS, Python, Go, Rust, Java, CSS and more.</div>
+      </div>
+
+      <div class="feature-card c-blue" data-fade>
+        <div class="feature-icon fi-blue">🗄️</div>
+        <div class="feature-title">SQLite Explorer</div>
+        <div class="feature-desc">Browse, query, and edit SQLite databases without leaving the IDE. Run custom SQL and inspect results in a grid view.</div>
+      </div>
+
+      <div class="feature-card c-green" data-fade>
+        <div class="feature-icon fi-green">📦</div>
+        <div class="feature-title">Package Manager</div>
+        <div class="feature-desc">Search, install, and uninstall npm packages from a visual UI. One-click add to your project without touching a terminal.</div>
+      </div>
+
+      <div class="feature-card c-peach" data-fade>
+        <div class="feature-icon fi-peach">🌊</div>
+        <div class="feature-title">Visual Flow Editor</div>
+        <div class="feature-desc">Drag-and-drop node graph builder for designing data flows, API pipelines, and logic diagrams — export as JSON or code.</div>
+      </div>
+
+      <div class="feature-card c-sky" data-fade>
+        <div class="feature-icon fi-sky">🕹️</div>
+        <div class="feature-title">HTTP Client</div>
+        <div class="feature-desc">Built-in REST/GraphQL client. Save requests, inspect responses, and test APIs without switching to Insomnia or Postman.</div>
+      </div>
+
+      <div class="feature-card c-yellow" data-fade>
+        <div class="feature-icon fi-yellow">⏱️</div>
+        <div class="feature-title">Time-Travel Debugger</div>
+        <div class="feature-desc">Record and replay code execution step-by-step. Inspect variable states at any point in time — no more console.log archaeology.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── KITSUNE HIGHLIGHT ── -->
+<section id="kitsune" class="kitsune-section">
+  <div class="kitsune-inner" style="padding: 6rem 1.5rem;">
+    <div data-fade>
+      <p class="section-label">Meet your AI copilot</p>
+      <h2>Kitsune doesn't<br/>just autocomplete.<br/>It <span style="color:var(--mauve)">thinks</span>.</h2>
+      <p class="section-sub" style="margin-bottom:2.5rem">
+        Kitsune reads your entire project structure, understands context across files,
+        and can take autonomous actions — creating, editing, and running code on your behalf.
+      </p>
+      <div class="kitsune-points">
+        <div class="kp">
+          <div class="kp-icon fi-mauve">🧠</div>
+          <div>
+            <div class="kp-title">Full context awareness</div>
+            <div class="kp-desc">Kitsune reads every file in your opened folder and keeps it all in context — no manual file attaching needed.</div>
+          </div>
+        </div>
+        <div class="kp">
+          <div class="kp-icon fi-blue">🤖</div>
+          <div>
+            <div class="kp-title">Autonomous agent mode</div>
+            <div class="kp-desc">Let Kitsune create files, write code, run shell commands, and iterate until your task is complete. You watch it work in real time.</div>
+          </div>
+        </div>
+        <div class="kp">
+          <div class="kp-icon fi-green">👁️</div>
+          <div>
+            <div class="kp-title">Vision — paste screenshots</div>
+            <div class="kp-desc">Paste a screenshot of a UI, diagram, or error message — Kitsune sees it, understands it, and acts on it.</div>
+          </div>
+        </div>
+        <div class="kp">
+          <div class="kp-icon fi-yellow">📡</div>
+          <div>
+            <div class="kp-title">Live token &amp; context analytics</div>
+            <div class="kp-desc">See exactly how many tokens you've used, how many remain in the context window, and Kitsune's per-message timing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kitsune-chat" data-fade>
+      <div class="chat-header">
+        <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+          <path d="M16 3C10 3 6 7.5 6 12C6 16 8.5 18.5 11 20L11 25L16 23L21 25L21 20C23.5 18.5 26 16 26 12C26 7.5 22 3 16 3Z" fill="#cba6f7"/>
+          <circle cx="12" cy="12" r="1.5" fill="#1e1e2e"/>
+          <circle cx="20" cy="12" r="1.5" fill="#1e1e2e"/>
+          <path d="M13 16Q16 18.5 19 16" stroke="#1e1e2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        </svg>
+        KITSUNE AGENT · claude-3-5-sonnet
+      </div>
+      <div class="chat-messages">
+        <div class="chat-bubble chat-user">
+          Build me a full React to-do app with local storage persistence
+        </div>
+        <div class="chat-bubble chat-ai">
+          On it! I'll scaffold the full project structure.<br/><br/>
+          <strong style="color:var(--mauve)">📁 Creating files...</strong>
+          <div class="chat-code">
+            ✓ src/App.tsx<br/>
+            ✓ src/components/TodoList.tsx<br/>
+            ✓ src/components/TodoItem.tsx<br/>
+            ✓ src/hooks/useLocalStorage.ts<br/>
+            ✓ src/types/index.ts<br/>
+            ✓ src/index.css
+          </div>
+        </div>
+        <div class="chat-bubble chat-ai">
+          All 6 files written. The app uses <code style="color:var(--yellow);background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px">useLocalStorage</code> hook to persist todos across sessions. Open <code style="color:var(--green);background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px">App.tsx</code> to get started!
+        </div>
+        <div class="chat-bubble chat-user">
+          Add drag-to-reorder
+        </div>
+        <div class="ai-typing" style="max-width:85%">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── AI PROVIDERS ── -->
+<section id="providers">
+  <div class="container">
+    <p class="section-label">Your keys, your choice</p>
+    <h2>Works with every major AI</h2>
+    <p class="section-sub">
+      Bring your own API keys for premium models, or run 100% offline with Ollama.
+      Switch models mid-conversation. No lock-in.
+    </p>
+    <div class="providers-grid" data-fade>
+      <div class="provider-card">
+        <div class="provider-logo" style="background:rgba(203,166,247,.1)">🌸</div>
+        <div>
+          <div class="provider-name">Claude</div>
+          <div class="provider-sub">Anthropic · claude-3.5-sonnet</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-logo" style="background:rgba(137,180,250,.1)">🔷</div>
+        <div>
+          <div class="provider-name">Gemini</div>
+          <div class="provider-sub">Google · gemini-2.5-flash</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-logo" style="background:rgba(166,227,161,.1)">🟢</div>
+        <div>
+          <div class="provider-name">GPT-4o</div>
+          <div class="provider-sub">OpenAI · gpt-4o-mini</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-logo" style="background:rgba(166,227,161,.08)">🦙</div>
+        <div>
+          <div class="provider-name">Ollama</div>
+          <div class="provider-sub">Local · qwen2.5-coder</div>
+        </div>
+        <div class="free-tag">FREE</div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-logo" style="background:rgba(249,226,175,.1)">⭐</div>
+        <div>
+          <div class="provider-name">More soon</div>
+          <div class="provider-sub">Mistral, Grok, Cohere...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DOWNLOAD ── -->
+<section id="download" class="download-section">
+  <div class="container">
+    <p class="section-label" style="justify-content:center;display:flex">Download</p>
+    <h2>Ready to ship something great?</h2>
+    <p style="color:var(--subtext1);margin:0.75rem auto 0;max-width:480px">
+      Free forever. No account required. Installs in seconds.
+    </p>
+    <div class="dl-version" style="justify-content:center;margin-top:1rem">
+      Latest release: <code>v1.0.0</code>
+    </div>
+    <div class="download-cards">
+      <a
+        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-Setup-1.0.0.exe"
+        class="dl-card"
+      >
+        <div class="dl-icon">🪟</div>
+        <div class="dl-os">Windows</div>
+        <div class="dl-fmt">.exe installer · x64</div>
+      </a>
+      <a
+        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.dmg"
+        class="dl-card"
+      >
+        <div class="dl-icon">🍎</div>
+        <div class="dl-os">macOS</div>
+        <div class="dl-fmt">.dmg · Intel &amp; Apple Silicon</div>
+      </a>
+      <a
+        href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.0.0/Parallax-IDE-1.0.0.AppImage"
+        class="dl-card"
+      >
+        <div class="dl-icon">🐧</div>
+        <div class="dl-os">Linux</div>
+        <div class="dl-fmt">.AppImage · x64</div>
+      </a>
+    </div>
+    <p style="margin-top:2rem;font-size:0.8rem;color:var(--overlay0)">
+      View all releases and source code on
+      <a href="https://github.com/parallax-ide/parallax-ide/releases" style="color:var(--mauve)">GitHub Releases</a>
+    </p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-links">
+    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank">GitHub</a>
+    <a href="https://github.com/parallax-ide/parallax-ide/releases" target="_blank">Releases</a>
+    <a href="https://github.com/parallax-ide/parallax-ide/issues" target="_blank">Issues</a>
+    <a href="https://github.com/parallax-ide/parallax-ide/blob/main/LICENSE" target="_blank">License</a>
+  </div>
+  <p class="footer-copy">
+    Built with <span>♥</span> using Electron · React · Monaco · Catppuccin ·
+    Powered by <span>Kitsune AI</span>
+  </p>
+</footer>
+
+<script>
+  // Scroll fade-in animation
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
+    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+  )
+  document.querySelectorAll('[data-fade]').forEach(el => observer.observe(el))
+
+  // Smooth download analytics placeholder
+  document.querySelectorAll('.dl-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const os = card.querySelector('.dl-os')?.textContent
+      console.log(`Download: ${os}`)
+    })
+  })
+</script>
+</body>
+</html>
