@@ -46,14 +46,8 @@ export function TerminalPanel() {
 
     // Already mounted → focus + refit
     if (terminalsRef.current.has(activeId)) {
-      const term = terminalsRef.current.get(activeId)!
       const fit = fitAddonsRef.current.get(activeId)!
-      setTimeout(() => {
-        fit.fit()
-        // Focus the actual textarea xterm uses internally
-        term.focus()
-        ;(term as any)._core?.textarea?.focus()
-      }, 60)
+      setTimeout(() => { fit.fit(); focusTerminal(activeId) }, 60)
       return
     }
 
@@ -96,10 +90,12 @@ export function TerminalPanel() {
       term.loadAddon(new WebLinksAddon())
       term.open(el)
       fitAddon.fit()
-      term.focus()
 
       terminalsRef.current.set(activeId, term)
       fitAddonsRef.current.set(activeId, fitAddon)
+
+      // Focus after a tick so xterm's textarea is in DOM
+      setTimeout(() => focusTerminal(activeId), 80)
 
       // Pipe user input → shell
       const termId = activeId // capture in closure
@@ -159,27 +155,29 @@ export function TerminalPanel() {
 
   // ── Switch tab ───────────────────────────────────────────────────────
   const switchTab = (id: string) => {
-    if (id === activeId) {
-      // Already active — just focus
-      terminalsRef.current.get(id)?.focus()
-      return
-    }
+    if (id === activeId) { focusTerminal(id); return }
     setActiveId(id)
     setTimeout(() => {
       fitAddonsRef.current.get(id)?.fit()
-      terminalsRef.current.get(id)?.focus()
+      focusTerminal(id)
     }, 60)
   }
 
-  // ── Click on terminal area → focus ───────────────────────────────────
-  const handleClick = () => {
-    if (!activeId) return
-    const term = terminalsRef.current.get(activeId)
-    if (term) {
-      term.focus()
-      ;(term as any)._core?.textarea?.focus()
+  // ── Focus the actual xterm textarea in DOM ──────────────────────────
+  const focusTerminal = (id?: string) => {
+    const targetId = id ?? activeId
+    if (!targetId) return
+    // xterm renders a hidden <textarea> — find and focus it directly
+    const el = document.getElementById(`xterm-${targetId}`)
+    const textarea = el?.querySelector('textarea') as HTMLTextAreaElement | null
+    if (textarea) {
+      textarea.focus()
+    } else {
+      terminalsRef.current.get(targetId)?.focus()
     }
   }
+
+  const handleClick = () => focusTerminal()
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#1e1e2e' }}>
@@ -246,8 +244,14 @@ export function TerminalPanel() {
         )}
       </div>
 
-      {/* xterm containers — use visibility instead of display:none so xterm stays sized */}
-      <div ref={containerRef} className="flex-1 relative overflow-hidden" onClick={handleClick}>
+      {/* xterm containers */}
+      <div
+        ref={containerRef}
+        className="flex-1 relative overflow-hidden"
+        onClick={handleClick}
+        onFocus={handleClick}
+        tabIndex={-1}
+      >
         {tabs.map(tab => (
           <div
             key={tab.id}
