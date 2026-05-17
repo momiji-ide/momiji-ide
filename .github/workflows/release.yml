@@ -22,43 +22,22 @@ jobs:
       - name: Install Python setuptools (fixes distutils on Python 3.12+)
         run: pip install setuptools
 
-      - name: Install dependencies (skip scripts to avoid node-pty failure)
+      - name: Install dependencies (skip native build scripts)
         run: npm ci --ignore-scripts
 
-      - name: Patch winpty.gyp (skip GetCommitHash.bat which fails on CI)
-        shell: pwsh
-        run: |
-          $ptyPath = "node_modules\node-pty\deps\winpty\src"
+      - name: Patch winpty.gyp for CI (skip GetCommitHash.bat)
+        run: node scripts/patch-node-pty.js
 
-          # Patch winpty.gyp — hardcode commit hash, skip bat scripts
-          $gyp = Get-Content "$ptyPath\winpty.gyp" -Raw
-          $gyp = $gyp -replace [regex]::Escape("<!(cmd /c `"cd shared && GetCommitHash.bat`")"), "none"
-          $gyp = $gyp -replace [regex]::Escape("<!(cmd /c `"cd shared && UpdateGenVersion.bat <(WINPTY_COMMIT_HASH)`")"), "gen"
-          Set-Content "$ptyPath\winpty.gyp" $gyp
-
-          # Create gen/GenVersion.h manually
-          New-Item -ItemType Directory -Path "$ptyPath\gen" -Force | Out-Null
-          $header = @"
-          // AUTO-GENERATED (CI patch)
-          const char GenVersion_Version[] = "0.4.4-dev";
-          const char GenVersion_Commit[] = "none";
-          "@
-          Set-Content "$ptyPath\gen\GenVersion.h" $header
-
-          Write-Host "winpty.gyp patched OK"
-
-      - name: Rebuild node-pty for Electron
+      - name: Rebuild node-pty for Electron (Windows)
         run: npx electron-rebuild -f -w node-pty
-        env:
-          npm_config_msvs_version: "2022"
 
-      - name: Build
+      - name: Build renderer + main
         run: npm run build
 
       - name: Package (Windows)
         run: npm run dist -- --win --publish never
 
-      - name: Upload Windows installer to Release
+      - name: Upload Windows artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -77,19 +56,19 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies (skip scripts)
+      - name: Install dependencies (skip native build scripts)
         run: npm ci --ignore-scripts
 
       - name: Rebuild node-pty for Electron (macOS)
         run: npx electron-rebuild -f -w node-pty
 
-      - name: Build
+      - name: Build renderer + main
         run: npm run build
 
       - name: Package (macOS)
         run: npm run dist -- --mac --publish never
 
-      - name: Upload macOS installer to Release
+      - name: Upload macOS artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -116,19 +95,19 @@ jobs:
             rpm fakeroot dpkg \
             libx11-dev libxkbfile-dev libsecret-1-dev
 
-      - name: Install dependencies (skip scripts)
+      - name: Install dependencies (skip native build scripts)
         run: npm ci --ignore-scripts
 
       - name: Rebuild node-pty for Electron (Linux)
         run: npx electron-rebuild -f -w node-pty
 
-      - name: Build
+      - name: Build renderer + main
         run: npm run build
 
       - name: Package (Linux)
         run: npm run dist -- --linux --publish never
 
-      - name: Upload Linux installer to Release
+      - name: Upload Linux artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
