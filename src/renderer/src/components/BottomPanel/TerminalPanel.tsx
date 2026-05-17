@@ -8,7 +8,9 @@ import '@xterm/xterm/css/xterm.css'
 interface TermTab { id: string; title: string; running: boolean; exited: boolean }
 let tabCounter = 0
 
-const SHELL = { win32: 'cmd.exe', darwin: '/bin/zsh', linux: '/bin/bash' }
+const isWin = navigator.userAgent.includes('Windows')
+const SHELL_CMD  = isWin ? 'cmd'  : 'bash'
+const SHELL_ARGS = (cmd: string) => isWin ? ['/c', cmd] : ['-c', cmd]
 
 export function TerminalPanel() {
   const currentFolder  = useAppStore(s => s.currentFolder)
@@ -130,8 +132,8 @@ export function TerminalPanel() {
     const term = terminalsRef.current.get(activeId)
     if (!term) return
 
-    const shell = SHELL[process.platform as keyof typeof SHELL] ?? 'bash'
-    const args  = process.platform === 'win32' ? ['/c', cmd] : ['-c', cmd]
+    const shell = SHELL_CMD
+    const args  = SHELL_ARGS(cmd)
     const cwd   = cwdRef.current || undefined
 
     // Echo command
