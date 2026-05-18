@@ -65,7 +65,7 @@ export const useAppStore = create<AppStore>()(
       settings: defaultSettings,
       aiProviders: [
         { id: 'claude',     name: 'Claude (Anthropic)', apiKey: '', model: 'claude-sonnet-4-5',        enabled: false },
-        { id: 'gemini',     name: 'Gemini (Google)',    apiKey: '', model: 'gemini-2.5-flash-preview-05-20', enabled: false },
+        { id: 'gemini',     name: 'Gemini (Google)',    apiKey: '', model: 'gemini-3.1-flash-lite',           enabled: false },
         { id: 'openai',     name: 'GPT (OpenAI)',       apiKey: '', model: 'gpt-4o-mini',               enabled: false },
         { id: 'groq',       name: 'Groq (Free)',        apiKey: '', model: 'llama-3.3-70b-versatile',   enabled: false },
         { id: 'openrouter', name: 'OpenRouter',         apiKey: '', model: 'meta-llama/llama-3.3-70b-instruct:free', enabled: false },
