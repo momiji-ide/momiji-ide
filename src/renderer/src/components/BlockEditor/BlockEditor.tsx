@@ -11,9 +11,10 @@ type SyncMode   = 'blocks-primary' | 'code-primary'
 type Level      = 'beginner' | 'intermediate' | 'advanced'
 
 export function BlockEditor() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null)
-  const { settings, openTab } = useAppStore()
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const splitWrapRef  = useRef<HTMLDivElement>(null)
+  const workspaceRef  = useRef<Blockly.WorkspaceSvg | null>(null)
+  const { settings, openTab, aiProviders, toggleBottomPanel, showBottomPanel, currentFolder } = useAppStore()
 
   const [code, setCode]         = useState('// Drag blocks from the toolbox to generate code\n')
   const [lang, setLang]         = useState<Lang>('javascript')
@@ -22,6 +23,8 @@ export function BlockEditor() {
   const [ready, setReady]       = useState(false)
   const [level, setLevel]       = useState<Level>('beginner')
   const [showTemplates, setShowTemplates] = useState(false)
+  const [splitRatio, setSplitRatio] = useState(55)    // % width for Blockly panel
+  const [aiConverting, setAiConverting] = useState(false)
 
   const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
@@ -186,6 +189,140 @@ export function BlockEditor() {
     }
   }
 
+  // ─── Resizable split drag ─────────────────────────────────────────
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const wrap = splitWrapRef.current
+    if (!wrap) return
+    const startX   = e.clientX
+    const startRatio = splitRatio
+
+    const onMove = (me: MouseEvent) => {
+      const delta   = me.clientX - startX
+      const newRatio = Math.max(25, Math.min(75, startRatio + (delta / wrap.offsetWidth) * 100))
+      setSplitRatio(newRatio)
+      // Resize Blockly canvas after layout shift
+      if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+    }
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [splitRatio])
+
+  // ─── Run generated code ───────────────────────────────────────────
+  const handleRun = useCallback(async () => {
+    if (!code.trim() || code.startsWith('//')) { toast.warning('Add some blocks first!'); return }
+
+    const ext      = lang === 'python' ? 'py' : 'js'
+    const fname    = `blocks_output.${ext}`
+    const tmpPath  = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/${fname}`
+    const command  = lang === 'python' ? (settings.pythonPath || 'python') : 'node'
+
+    try {
+      await window.api.fs.writeFile(tmpPath, code)
+    } catch {
+      toast.error('Could not write temp file. Open a folder first.')
+      return
+    }
+
+    if (!showBottomPanel) toggleBottomPanel()
+    window.dispatchEvent(new CustomEvent('bottomPanel:switchTab', { detail: { tab: 'output' } }))
+
+    setTimeout(async () => {
+      window.dispatchEvent(new CustomEvent('runner:start', {
+        detail: { processId: 'runner-main', command, args: [tmpPath], cwd: currentFolder ?? '', label: fname, fileName: fname }
+      }))
+      await window.api.process.run('runner-main', command, [tmpPath], currentFolder ?? '')
+    }, 150)
+
+    toast.info(`▶ Running ${fname}…`)
+  }, [code, lang, showBottomPanel, toggleBottomPanel, settings.pythonPath, currentFolder])
+
+  // ─── Kitsune: convert code → blocks ──────────────────────────────
+  const handleAIToBlocks = useCallback(async () => {
+    if (!code.trim() || code.startsWith('//')) { toast.warning('Write some code first!'); return }
+    const provider = aiProviders.find(p => p.enabled && (p.apiKey || p.id === 'ollama'))
+    if (!provider) { toast.error('Enable an AI provider in Settings first'); return }
+
+    setAiConverting(true)
+    toast.info('Kitsune is converting code to blocks…')
+
+    const prompt = `Convert this ${lang} code to a Blockly workspace XML string.
+Only return the XML — no explanation, no markdown fences.
+Use standard Blockly block types (controls_repeat_ext, math_number, text_print, variables_set, etc.).
+
+Code:
+\`\`\`${lang}
+${code}
+\`\`\``
+
+    try {
+      let xml = ''
+
+      if (provider.id === 'claude') {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': provider.apiKey, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: provider.model, max_tokens: 2048, system: 'You are a Blockly XML generator. Return only valid Blockly XML, nothing else.', messages: [{ role: 'user', content: prompt }] })
+        })
+        const d = await r.json()
+        xml = d.content?.[0]?.text ?? ''
+      } else if (provider.id === 'gemini') {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent?key=${provider.apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+        })
+        const d = await r.json()
+        xml = d.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+      } else {
+        // OpenAI-compat (groq, openai, deepseek, mistral, openrouter, ollama)
+        const base = provider.baseUrl || (
+          provider.id === 'groq' ? 'https://api.groq.com/openai' :
+          provider.id === 'openrouter' ? 'https://openrouter.ai/api' :
+          provider.id === 'deepseek' ? 'https://api.deepseek.com' :
+          provider.id === 'mistral' ? 'https://api.mistral.ai' :
+          'https://api.openai.com'
+        )
+        const r = await fetch(`${base}/v1/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.apiKey}` },
+          body: JSON.stringify({ model: provider.model, max_tokens: 2048, messages: [
+            { role: 'system', content: 'You are a Blockly XML generator. Return only valid Blockly XML, nothing else.' },
+            { role: 'user', content: prompt }
+          ]})
+        })
+        const d = await r.json()
+        xml = d.choices?.[0]?.message?.content ?? ''
+      }
+
+      // Strip markdown fences if AI added them
+      xml = xml.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim()
+
+      if (!xml.includes('<block') && !xml.includes('<xml')) {
+        toast.error('AI returned invalid XML. Try simpler code.')
+        return
+      }
+
+      const ws = workspaceRef.current
+      if (!ws) return
+      ws.clear()
+      const dom = Blockly.utils.xml.textToDom(xml.startsWith('<xml') ? xml : `<xml>${xml}</xml>`)
+      Blockly.Xml.domToWorkspace(dom, ws)
+      setSyncMode('blocks-primary')
+      setBlockCount(ws.getAllBlocks(false).length)
+      toast.success(`Converted! ${ws.getAllBlocks(false).length} blocks created 🦊`)
+    } catch (err: any) {
+      toast.error('Conversion failed: ' + (err.message ?? 'unknown error'))
+    } finally {
+      setAiConverting(false)
+    }
+  }, [code, lang, aiProviders])
+
   // ─── Template loader ──────────────────────────────────────────────
   const loadTemplate = useCallback((templateFn: (ws: Blockly.WorkspaceSvg) => void) => {
     const ws = workspaceRef.current
@@ -289,9 +426,16 @@ export function BlockEditor() {
           </button>
         ))}
 
+        {/* Run */}
+        <button onClick={handleRun}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+          style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
+          ▶ Run
+        </button>
+
         <button onClick={handleOpenInEditor}
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-          style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
+          style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
           Open in Editor →
         </button>
       </div>
@@ -313,30 +457,63 @@ export function BlockEditor() {
         </div>
       )}
 
-      {/* Dual view */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Dual view — resizable split */}
+      <div ref={splitWrapRef} className="flex flex-1 overflow-hidden" style={{ userSelect: 'none' }}>
 
         {/* LEFT: Blockly */}
-        <div style={{ flex: '0 0 55%', borderRight: '2px solid var(--border)', position: 'relative' }}>
+        <div style={{ flex: `0 0 ${splitRatio}%`, position: 'relative', overflow: 'hidden' }}>
           <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
         </div>
 
+        {/* DRAG HANDLE */}
+        <div
+          onMouseDown={handleDragStart}
+          style={{
+            width: 6, flexShrink: 0, cursor: 'col-resize',
+            background: 'var(--border)',
+            borderLeft: '1px solid var(--border)',
+            borderRight: '1px solid var(--border)',
+            transition: 'background 0.15s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-mauve)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--border)')}
+          title="Drag to resize"
+        >
+          <div style={{ width: 2, height: 32, background: 'var(--bg-surface2)', borderRadius: 2 }} />
+        </div>
+
         {/* RIGHT: Monaco code output */}
-        <div className="flex flex-col" style={{ flex: '0 0 45%' }}>
+        <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Code header */}
-          <div className="flex items-center justify-between px-3 flex-shrink-0"
+          <div className="flex items-center gap-2 px-3 flex-shrink-0"
             style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: '36px' }}>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-                {lang === 'python' ? 'Python' : 'JavaScript'} Output
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+              {lang === 'python' ? 'Python' : 'JavaScript'} Output
+            </span>
+            {syncMode === 'blocks-primary' && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse"
+                style={{ background: 'var(--accent-green)', color: 'var(--bg-base)', fontSize: 10 }}>
+                ● live
               </span>
-              {syncMode === 'blocks-primary' && (
-                <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse"
-                  style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
-                  ● live
-                </span>
-              )}
-            </div>
+            )}
+            <div className="flex-1" />
+            {/* AI → Blocks button */}
+            {syncMode === 'code-primary' && (
+              <button
+                onClick={handleAIToBlocks}
+                disabled={aiConverting}
+                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-all"
+                style={{
+                  background: aiConverting ? 'var(--bg-surface1)' : 'var(--accent-mauve)22',
+                  border: '1px solid var(--accent-mauve)55',
+                  color: aiConverting ? 'var(--text-subtle)' : 'var(--accent-mauve)',
+                  opacity: aiConverting ? 0.7 : 1,
+                }}
+                title="Let Kitsune convert this code back to blocks">
+                {aiConverting ? '⟳ Converting…' : '🦊 → Blocks'}
+              </button>
+            )}
             <button
               onClick={() => navigator.clipboard.writeText(code).then(() => toast.success('Copied!'))}
               className="text-xs px-2 py-0.5 rounded"
