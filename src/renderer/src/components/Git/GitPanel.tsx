@@ -1,548 +1,369 @@
-import { useState, useEffect, useCallback } from 'react'
+/**
+ * GitPanel — Source control sidebar
+ * Stage · Unstage · Diff · Commit · Push/Pull · Branch switcher · AI commit msg
+ */
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAppStore } from '../../store/appStore'
-import type { AIProvider } from '../../types'
 
-async function callAIForCommit(providers: AIProvider[], diff: string): Promise<string> {
-  const provider = providers.find(p => p.enabled && p.apiKey)
-  if (!provider) return ''
+interface GitFile { status: string; staged: boolean; path: string }
+interface Commit   { hash: string; subject: string; author: string; date: string }
 
-  const prompt = `Write a concise git commit message for this diff. Format: short subject line (max 72 chars), then optionally a blank line and bullet points for details. Only output the commit message, nothing else.\n\n${diff.slice(0, 6000)}`
-
-  if (provider.id === 'claude') {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': provider.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: provider.model, max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
-    })
-    const data = await resp.json()
-    return data.content?.[0]?.text ?? ''
-  } else if (provider.id === 'gemini') {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent?key=${provider.apiKey}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
-    })
-    const data = await resp.json()
-    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-  } else {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.apiKey}` },
-      body: JSON.stringify({ model: provider.model, max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
-    })
-    const data = await resp.json()
-    return data.choices?.[0]?.message?.content ?? ''
+function StatusBadge({ s }: { s: string }) {
+  const map: Record<string, [string, string]> = {
+    M: ['M', 'var(--accent-yellow)'], A: ['A', 'var(--accent-green)'],
+    D: ['D', 'var(--accent-red)'],   R: ['R', 'var(--accent-blue)'],
+    '??': ['U', 'var(--text-subtle)'],
   }
+  const [label, color] = map[s] ?? [s, 'var(--text-subtle)']
+  return <span style={{ color, fontSize: 10, fontWeight: 700, fontFamily: 'monospace', width: 14, textAlign: 'center', flexShrink: 0 }}>{label}</span>
 }
 
-interface GitStatus {
-  branch: string
-  staged: string[]
-  unstaged: string[]
-  untracked: string[]
-  ahead: number
-  behind: number
+function DiffViewer({ diff }: { diff: string }) {
+  return (
+    <div className="overflow-auto" style={{ flex: 1, background: 'var(--bg-crust)', fontFamily: 'monospace', fontSize: 10 }}>
+      {diff.split('\n').map((line, i) => {
+        const add = line.startsWith('+') && !line.startsWith('+++')
+        const del = line.startsWith('-') && !line.startsWith('---')
+        const hdr = line.startsWith('@@')
+        return (
+          <div key={i} className="px-2 leading-5 whitespace-pre-wrap break-all" style={{
+            background: add ? 'rgba(166,227,161,.12)' : del ? 'rgba(243,139,168,.12)' : hdr ? 'rgba(137,180,250,.08)' : 'transparent',
+            color:      add ? 'var(--accent-green)'  : del ? 'var(--accent-red)'      : hdr ? 'var(--accent-blue)'     : 'var(--text-subtle)',
+          }}>{line || ' '}</div>
+        )
+      })}
+    </div>
+  )
 }
 
-interface GitLog {
-  hash: string
-  message: string
-  author: string
-  date: string
+function FileRow({ file, active, onToggle, onDiff, onDiscard }: {
+  file: GitFile; active: boolean
+  onToggle(): void; onDiff(): void; onDiscard(): void
+}) {
+  const parts = file.path.replace(/\\/g, '/').split('/')
+  const name  = parts.pop() ?? file.path
+  const dir   = parts.join('/')
+  return (
+    <div className="group flex items-center gap-1.5 px-3 py-1 cursor-pointer select-none"
+      onClick={onDiff}
+      style={{ background: active ? 'var(--bg-surface0)' : 'transparent' }}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(69,71,90,.5)' }}
+      onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
+      <input type="checkbox" checked={file.staged}
+        onChange={e => { e.stopPropagation(); onToggle() }}
+        onClick={e => e.stopPropagation()}
+        style={{ accentColor: 'var(--accent-green)', flexShrink: 0 }} />
+      <StatusBadge s={file.status} />
+      <span className="flex-1 truncate text-xs" title={file.path} style={{ color: 'var(--text)' }}>
+        {name}
+        {dir && <span style={{ color: 'var(--text-subtle)', marginLeft: 4, fontSize: 10 }}>{dir}</span>}
+      </span>
+      {!file.staged && (
+        <button onClick={e => { e.stopPropagation(); onDiscard() }} title="Discard changes"
+          className="opacity-0 group-hover:opacity-100 px-1 rounded"
+          style={{ color: 'var(--accent-red)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 }}>↺</button>
+      )}
+    </div>
+  )
 }
-
-type GitTab = 'changes' | 'log' | 'diff'
 
 export function GitPanel() {
   const { currentFolder, aiProviders } = useAppStore()
-  const [status, setStatus] = useState<GitStatus | null>(null)
-  const [log, setLog] = useState<GitLog[]>([])
-  const [commitMsg, setCommitMsg] = useState('')
-  const [activeTab, setActiveTab] = useState<GitTab>('changes')
-  const [loading, setLoading] = useState(false)
-  const [generatingMsg, setGeneratingMsg] = useState(false)
-  const [isGitRepo, setIsGitRepo] = useState(false)
-  const [output, setOutput] = useState('')
-  const [diffContent, setDiffContent] = useState('')
-  const [diffFile, setDiffFile] = useState('')
-  const [branches, setBranches] = useState<string[]>([])
-  const [showBranchMenu, setShowBranchMenu] = useState(false)
-  const [newBranchName, setNewBranchName] = useState('')
-  const [showNewBranch, setShowNewBranch] = useState(false)
+  const [files,      setFiles]      = useState<GitFile[]>([])
+  const [branch,     setBranch]     = useState('')
+  const [branches,   setBranches]   = useState<string[]>([])
+  const [ahead,      setAhead]      = useState(0)
+  const [behind,     setBehind]     = useState(0)
+  const [commits,    setCommits]    = useState<Commit[]>([])
+  const [message,    setMessage]    = useState('')
+  const [diff,       setDiff]       = useState('')
+  const [diffFile,   setDiffFile]   = useState('')
+  const [pushing,    setPushing]    = useState(false)
+  const [pulling,    setPulling]    = useState(false)
+  const [committing, setCommitting] = useState(false)
+  const [genMsg,     setGenMsg]     = useState(false)
+  const [toast,      setToast]      = useState('')
+  const [tab,        setTab]        = useState<'changes'|'log'>('changes')
+  const [showBranch, setShowBranch] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setInterval>>()
 
-  const runGit = useCallback(async (args: string[]): Promise<string> => {
-    if (!currentFolder) return ''
-    const id = `git-${Date.now()}`
-    let result = ''
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
-    return new Promise((resolve) => {
-      const offOut = window.api.process.onStdout((pid, data) => {
-        if (pid === id) result += data
-      })
-      const offErr = window.api.process.onStderr((pid, data) => {
-        if (pid === id) result += data
-      })
-      const offExit = window.api.process.onExit((pid) => {
-        if (pid === id) {
-          offOut(); offErr(); offExit()
-          resolve(result)
-        }
-      })
-      window.api.process.run(id, 'git', args, currentFolder)
-    })
+  const refresh = useCallback(async () => {
+    if (!currentFolder) return
+    const r = await window.api.git.status(currentFolder)
+    if (!r.ok) return
+    setFiles(r.files); setBranch(r.branch); setAhead(r.ahead); setBehind(r.behind)
   }, [currentFolder])
 
-  const loadBranches = useCallback(async () => {
-    const out = await runGit(['branch', '--list'])
-    const list = out.split('\n').filter(Boolean).map(b => b.replace(/^\*?\s*/, '').trim()).filter(Boolean)
-    setBranches(list)
-  }, [runGit])
-
-  const loadStatus = useCallback(async () => {
-    if (!currentFolder) return
-    setLoading(true)
-
-    const statusOut = await runGit(['status', '--porcelain', '-b'])
-    if (!statusOut) { setIsGitRepo(false); setLoading(false); return }
-
-    setIsGitRepo(true)
-    const lines = statusOut.split('\n').filter(Boolean)
-    const branchLine = lines.find((l) => l.startsWith('##')) ?? '## main'
-    const branch = branchLine.replace('## ', '').split('...')[0] || 'main'
-
-    let ahead = 0, behind = 0
-    const trackMatch = branchLine.match(/\[ahead (\d+)/)
-    const behindMatch = branchLine.match(/behind (\d+)/)
-    if (trackMatch) ahead = +trackMatch[1]
-    if (behindMatch) behind = +behindMatch[1]
-
-    const staged: string[] = []
-    const unstaged: string[] = []
-    const untracked: string[] = []
-
-    for (const line of lines) {
-      if (line.startsWith('##')) continue
-      const xy = line.slice(0, 2)
-      const file = line.slice(3)
-      if (xy[0] !== ' ' && xy[0] !== '?') staged.push(file)
-      if (xy[1] === 'M' || xy[1] === 'D') unstaged.push(file)
-      if (xy === '??') untracked.push(file)
-    }
-
-    setStatus({ branch, staged, unstaged, untracked, ahead, behind })
-    setLoading(false)
-  }, [currentFolder, runGit])
-
-  const loadLog = useCallback(async () => {
-    const out = await runGit(['log', '--oneline', '--format=%h|%s|%an|%ar', '-20'])
-    const entries: GitLog[] = out.split('\n').filter(Boolean).map((line) => {
-      const [hash, message, author, date] = line.split('|')
-      return { hash: hash?.trim(), message: message?.trim(), author: author?.trim(), date: date?.trim() }
-    })
-    setLog(entries)
-  }, [runGit])
+  useEffect(() => {
+    refresh()
+    timerRef.current = setInterval(refresh, 5000)
+    return () => clearInterval(timerRef.current)
+  }, [refresh])
 
   useEffect(() => {
-    loadStatus()
-    loadLog()
-    loadBranches()
-  }, [currentFolder, loadStatus, loadLog, loadBranches])
+    if (tab !== 'log' || !currentFolder) return
+    window.api.git.log(currentFolder).then(r => { if (r.ok) setCommits(r.commits) })
+  }, [tab, currentFolder])
 
-  const handleStage = async (file: string) => {
-    await runGit(['add', file])
-    loadStatus()
+  const loadBranches = () => {
+    if (!currentFolder) return
+    window.api.git.branches(currentFolder).then(r => { if (r.ok) setBranches(r.branches) })
   }
 
-  const handleUnstage = async (file: string) => {
-    await runGit(['reset', 'HEAD', file])
-    loadStatus()
+  const openDiff = async (file: GitFile) => {
+    if (!currentFolder) return
+    if (diffFile === file.path) { setDiffFile(''); setDiff(''); return }
+    const r = await window.api.git.diff(currentFolder, file.path, file.staged)
+    setDiff(r.diff || '(binary or no diff)'); setDiffFile(file.path)
   }
 
-  const handleStageAll = async () => {
-    await runGit(['add', '-A'])
-    loadStatus()
+  const toggleStage = async (file: GitFile) => {
+    if (!currentFolder) return
+    file.staged
+      ? await window.api.git.unstage(currentFolder, file.path)
+      : await window.api.git.stage(currentFolder, file.path)
+    await refresh()
+  }
+  const stageAll   = async () => { if (currentFolder) { await window.api.git.stageAll(currentFolder);   await refresh() } }
+  const unstageAll = async () => { if (currentFolder) { await window.api.git.unstageAll(currentFolder); await refresh() } }
+
+  const discard = async (file: GitFile) => {
+    if (!currentFolder || !confirm(`Discard changes to "${file.path}"?`)) return
+    await window.api.git.discard(currentFolder, file.path)
+    if (diffFile === file.path) { setDiff(''); setDiffFile('') }
+    await refresh()
   }
 
-  const handleCommit = async () => {
-    if (!commitMsg.trim()) return
-    setOutput('')
-    const out = await runGit(['commit', '-m', commitMsg])
-    setOutput(out)
-    setCommitMsg('')
-    loadStatus()
-    loadLog()
+  const doCommit = async () => {
+    if (!currentFolder || !message.trim()) return
+    setCommitting(true)
+    const r = await window.api.git.commit(currentFolder, message.trim())
+    setCommitting(false)
+    if (r.ok) { setMessage(''); showToast('✅ Committed!'); await refresh() }
+    else showToast(`❌ ${r.error}`)
   }
 
-  const handlePull = async () => {
-    setOutput('Pulling...')
-    const out = await runGit(['pull'])
-    setOutput(out)
-    loadStatus()
+  const doPush = async () => {
+    if (!currentFolder) return; setPushing(true)
+    const r = await window.api.git.push(currentFolder); setPushing(false)
+    showToast(r.ok ? '✅ Pushed!' : `❌ ${r.error}`); await refresh()
+  }
+  const doPull = async () => {
+    if (!currentFolder) return; setPulling(true)
+    const r = await window.api.git.pull(currentFolder); setPulling(false)
+    showToast(r.ok ? '✅ Pulled!' : `❌ ${r.error}`); await refresh()
   }
 
-  const handleSwitchBranch = async (branch: string) => {
-    setShowBranchMenu(false)
-    setOutput(`Switching to ${branch}...`)
-    const out = await runGit(['checkout', branch])
-    setOutput(out)
-    loadStatus()
-    loadLog()
-  }
+  const generateMessage = async () => {
+    if (!currentFolder) return
+    const provider = aiProviders.find(p => p.enabled && p.apiKey && ['claude','gemini','openai'].includes(p.id))
+    if (!provider) { showToast('❌ No AI provider enabled'); return }
+    const stagedFiles = files.filter(f => f.staged)
+    if (!stagedFiles.length) { showToast('Stage some files first'); return }
 
-  const handleCreateBranch = async () => {
-    if (!newBranchName.trim()) return
-    setOutput(`Creating branch ${newBranchName}...`)
-    const out = await runGit(['checkout', '-b', newBranchName.trim()])
-    setOutput(out)
-    setNewBranchName('')
-    setShowNewBranch(false)
-    loadStatus()
-    loadBranches()
-  }
+    let combinedDiff = ''
+    for (const f of stagedFiles.slice(0, 5)) {
+      const r = await window.api.git.diff(currentFolder, f.path, true)
+      if (r.diff) combinedDiff += `\n--- ${f.path} ---\n${r.diff.slice(0, 800)}`
+    }
+    const prompt = `Write a concise git commit message (max 72 chars, imperative mood) for these staged changes:\n${combinedDiff}\n\nRespond with ONLY the commit message, no quotes, no explanation.`
 
-  const handleShowDiff = async (file: string) => {
-    const out = await runGit(['diff', 'HEAD', '--', file])
-    setDiffContent(out || await runGit(['diff', '--cached', '--', file]))
-    setDiffFile(file)
-    setActiveTab('diff')
-  }
-
-  const handlePush = async () => {
-    setOutput('Pushing...')
-    const out = await runGit(['push'])
-    setOutput(out)
-    loadStatus()
-  }
-
-  const handleAICommitMsg = async () => {
-    setGeneratingMsg(true)
+    setGenMsg(true)
     try {
-      const diff = await runGit(['diff', '--staged']) || await runGit(['diff', 'HEAD', '--stat'])
-      if (!diff.trim()) { setGeneratingMsg(false); return }
-      const msg = await callAIForCommit(aiProviders, diff)
-      if (msg.trim()) setCommitMsg(msg.trim())
-    } catch {}
-    setGeneratingMsg(false)
+      let text = ''
+      if (provider.id === 'claude') {
+        const d = await (await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': provider.apiKey, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: provider.model, max_tokens: 100, messages: [{ role: 'user', content: prompt }] })
+        })).json()
+        text = d.content?.[0]?.text?.trim() ?? ''
+      } else if (provider.id === 'gemini') {
+        const d = await (await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent?key=${provider.apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 100 } })
+        })).json()
+        text = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? ''
+      } else {
+        const d = await (await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.apiKey}` },
+          body: JSON.stringify({ model: provider.model, max_tokens: 100, messages: [{ role: 'user', content: prompt }] })
+        })).json()
+        text = d.choices?.[0]?.message?.content?.trim() ?? ''
+      }
+      if (text) setMessage(text.replace(/^["']|["']$/g, '').slice(0, 200))
+      else showToast('❌ AI returned empty')
+    } catch (e: any) { showToast(`❌ ${e.message}`) }
+    setGenMsg(false)
   }
 
-  if (!currentFolder) {
-    return (
-      <EmptyState icon="📁" title="No folder open" desc="Open a folder to use Git integration" />
-    )
-  }
+  if (!currentFolder) return (
+    <div className="flex flex-col items-center justify-center h-full gap-2 p-4 text-center">
+      <span style={{ fontSize: 32 }}>🌿</span>
+      <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>No folder open</p>
+      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Open a project to use Git</p>
+    </div>
+  )
 
-  if (!isGitRepo && !loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 p-4 text-center">
-        <span className="text-4xl">🔧</span>
-        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Not a Git repository</p>
-        <button
-          onClick={async () => { await runGit(['init']); loadStatus() }}
-          className="px-4 py-2 rounded text-xs font-medium transition-all"
-          style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}
-        >
-          Initialize Git Repository
-        </button>
-      </div>
-    )
-  }
+  const staged   = files.filter(f => f.staged)
+  const unstaged = files.filter(f => !f.staged)
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative" style={{ fontSize: 12 }}>
+
       {/* Header */}
-      <div
-        className="px-3 py-2 flex-shrink-0 flex items-center justify-between"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-          🔀 Git
-        </span>
-        <div className="flex items-center gap-1 relative">
-          {status && (
-            <div className="relative">
-              <button
-                onClick={() => setShowBranchMenu(v => !v)}
-                className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded transition-colors"
-                style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)', border: '1px solid var(--border)' }}
-                title="Switch branch">
-                ⎇ {status.branch} ▾
-              </button>
-              {showBranchMenu && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowBranchMenu(false)} />
-                  <div className="absolute right-0 z-50 mt-1 py-1 rounded-lg shadow-2xl"
-                    style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', minWidth: 160, top: '100%' }}>
-                    <p className="px-2 py-0.5 text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>Switch branch</p>
-                    {branches.map(b => (
-                      <button key={b} onClick={() => handleSwitchBranch(b)}
-                        className="w-full text-left px-3 py-1 text-xs transition-colors"
-                        style={{ color: b === status.branch ? 'var(--accent-green)' : 'var(--text)', background: 'transparent' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface1)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        {b === status.branch ? '✓ ' : '  '}{b}
-                      </button>
-                    ))}
-                    <div className="my-1 mx-2" style={{ height: 1, background: 'var(--border)' }} />
-                    {showNewBranch ? (
-                      <div className="px-2 py-1 flex gap-1">
-                        <input autoFocus value={newBranchName} onChange={e => setNewBranchName(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && handleCreateBranch()}
-                          placeholder="branch-name"
-                          className="flex-1 px-1.5 py-0.5 rounded text-xs outline-none"
-                          style={{ background: 'var(--bg-crust)', color: 'var(--text)', border: '1px solid var(--border)', minWidth: 0 }} />
-                        <button onClick={handleCreateBranch}
-                          className="text-xs px-1.5 rounded" style={{ background: 'var(--accent-blue)', color: 'white' }}>✓</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setShowNewBranch(true)}
-                        className="w-full text-left px-3 py-1 text-xs transition-colors"
-                        style={{ color: 'var(--accent-green)', background: 'transparent' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface1)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        + New branch
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          <button onClick={() => { loadStatus(); loadLog(); loadBranches() }}
-            className="text-xs px-1 py-0.5 rounded" title="Refresh"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}>
-            ↻
-          </button>
-        </div>
+      <div className="flex-shrink-0 px-3 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+        <span style={{ fontSize: 14 }}>🌿</span>
+        <span className="font-black text-xs uppercase tracking-widest flex-1" style={{ color: 'var(--accent-green)' }}>Source Control</span>
+        <button onClick={refresh} title="Refresh"
+          style={{ color: 'var(--text-subtle)', background: 'var(--bg-surface0)', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>⟳</button>
       </div>
 
+      {/* Branch + Push/Pull */}
+      <div className="flex-shrink-0 px-2 py-1.5 flex items-center gap-1" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-surface0)' }}>
+        <span style={{ color: 'var(--accent-blue)', fontSize: 13, flexShrink: 0 }}>⎇</span>
+        <button onClick={() => { setShowBranch(v => !v); if (!showBranch) loadBranches() }}
+          className="flex-1 text-left text-xs font-semibold truncate"
+          style={{ color: 'var(--text)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          {branch || '—'}
+        </button>
+        {ahead  > 0 && <span style={{ color: 'var(--accent-green)',  fontSize: 10, flexShrink: 0 }}>↑{ahead}</span>}
+        {behind > 0 && <span style={{ color: 'var(--accent-yellow)', fontSize: 10, flexShrink: 0 }}>↓{behind}</span>}
+        <button onClick={doPull} disabled={pulling}
+          style={{ color: 'var(--text-subtle)', background: 'var(--bg-crust)', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+          {pulling ? '…' : '↓ Pull'}
+        </button>
+        <button onClick={doPush} disabled={pushing}
+          style={{ color: 'var(--text-subtle)', background: 'var(--bg-crust)', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+          {pushing ? '…' : '↑ Push'}
+        </button>
+      </div>
+
+      {/* Branch switcher */}
+      {showBranch && (
+        <div className="flex-shrink-0 overflow-y-auto" style={{ maxHeight: 150, borderBottom: '1px solid var(--border)', background: 'var(--bg-crust)' }}>
+          {branches.length === 0
+            ? <p style={{ color: 'var(--text-subtle)', fontSize: 11, padding: '8px 12px' }}>Loading…</p>
+            : branches.map(b => (
+              <button key={b} onClick={async () => {
+                if (!currentFolder) return
+                const r = await window.api.git.checkout(currentFolder, b)
+                if (r.ok) { showToast(`Switched to ${b}`); setShowBranch(false); await refresh() }
+                else showToast(`❌ ${r.error}`)
+              }}
+                className="w-full text-left px-3 py-1 text-xs"
+                style={{ color: b === branch ? 'var(--accent-green)' : 'var(--text-muted)', background: b === branch ? 'var(--bg-surface0)' : 'transparent', border: 'none', cursor: 'pointer' }}>
+                {b === branch ? '✓  ' : '   '}{b}
+              </button>
+            ))
+          }
+        </div>
+      )}
+
       {/* Tabs */}
-      <div className="flex flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-        {(['changes', 'log', 'diff'] as const).map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)}
-            className="flex-1 py-1.5 text-xs transition-colors capitalize"
-            style={{
-              color: activeTab === t ? 'var(--accent-blue)' : 'var(--text-muted)',
-              borderBottom: activeTab === t ? '2px solid var(--accent-blue)' : '2px solid transparent'
-            }}>
-            {t}
+      <div className="flex-shrink-0 flex" style={{ borderBottom: '1px solid var(--border)' }}>
+        {(['changes', 'log'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} className="flex-1 py-1.5 text-xs font-semibold"
+            style={{ color: tab === t ? 'var(--accent-green)' : 'var(--text-subtle)', borderBottom: tab === t ? '2px solid var(--accent-green)' : '2px solid transparent', background: 'none', border: 'none', cursor: 'pointer' }}>
+            {t === 'changes' ? `Changes (${files.length})` : 'Log'}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {activeTab === 'changes' && status && (
-          <div className="p-2 flex flex-col gap-3">
-            {/* Sync buttons */}
-            <div className="flex gap-1">
-              <button onClick={handlePull}
-                className="flex-1 py-1 rounded text-xs font-medium transition-all"
-                style={{ background: 'var(--bg-surface0)', color: 'var(--text)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-surface1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-surface0)')}>
-                ↓ Pull {status.behind > 0 ? `(${status.behind})` : ''}
-              </button>
-              <button onClick={handlePush}
-                className="flex-1 py-1 rounded text-xs font-medium transition-all"
-                style={{ background: 'var(--bg-surface0)', color: 'var(--text)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-surface1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-surface0)')}>
-                ↑ Push {status.ahead > 0 ? `(${status.ahead})` : ''}
-              </button>
-            </div>
+      {tab === 'changes' ? (
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-shrink-0 overflow-y-auto" style={{ maxHeight: diff ? '40%' : '60%' }}>
 
-            {/* Staged files */}
-            {status.staged.length > 0 && (
-              <FileSection title={`Staged (${status.staged.length})`} color="var(--accent-green)">
-                {status.staged.map((f) => (
-                  <FileRow key={f} file={f} color="var(--accent-green)" badge="A"
-                    onDiff={() => handleShowDiff(f)}
-                    action={{ label: 'Unstage', onClick: () => handleUnstage(f) }} />
-                ))}
-              </FileSection>
+            {/* Staged */}
+            {staged.length > 0 && (
+              <>
+                <div className="flex items-center px-3 py-1" style={{ background: 'var(--bg-crust)' }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent-green)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Staged ({staged.length})</span>
+                  <button onClick={unstageAll} style={{ marginLeft: 'auto', color: 'var(--text-subtle)', background: 'var(--bg-surface0)', border: 'none', cursor: 'pointer', padding: '1px 6px', borderRadius: 4, fontSize: 10 }}>Unstage all</button>
+                </div>
+                {staged.map(f => <FileRow key={'s'+f.path} file={f} active={diffFile===f.path} onToggle={() => toggleStage(f)} onDiff={() => openDiff(f)} onDiscard={() => discard(f)} />)}
+              </>
             )}
 
             {/* Unstaged */}
-            {(status.unstaged.length > 0 || status.untracked.length > 0) && (
-              <FileSection
-                title={`Changes (${status.unstaged.length + status.untracked.length})`}
-                color="var(--accent-yellow)"
-                headerAction={{ label: 'Stage All', onClick: handleStageAll }}
-              >
-                {status.unstaged.map((f) => (
-                  <FileRow key={f} file={f} color="var(--accent-yellow)" badge="M"
-                    onDiff={() => handleShowDiff(f)}
-                    action={{ label: 'Stage', onClick: () => handleStage(f) }} />
-                ))}
-                {status.untracked.map((f) => (
-                  <FileRow key={f} file={f} color="var(--text-subtle)" badge="U"
-                    action={{ label: 'Stage', onClick: () => handleStage(f) }} />
-                ))}
-              </FileSection>
+            {unstaged.length > 0 && (
+              <>
+                <div className="flex items-center px-3 py-1" style={{ background: 'var(--bg-crust)' }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-subtle)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Changes ({unstaged.length})</span>
+                  <button onClick={stageAll} style={{ marginLeft: 'auto', color: 'var(--text-subtle)', background: 'var(--bg-surface0)', border: 'none', cursor: 'pointer', padding: '1px 6px', borderRadius: 4, fontSize: 10 }}>Stage all</button>
+                </div>
+                {unstaged.map(f => <FileRow key={'u'+f.path} file={f} active={diffFile===f.path} onToggle={() => toggleStage(f)} onDiff={() => openDiff(f)} onDiscard={() => discard(f)} />)}
+              </>
             )}
 
-            {/* Commit */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Commit message</span>
-                <button onClick={handleAICommitMsg} disabled={generatingMsg}
-                  className="text-xs px-2 py-0.5 rounded flex items-center gap-1 transition-all"
-                  style={{ background: 'var(--accent-mauve)22', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44' }}>
-                  {generatingMsg ? '⟳ Generating…' : '✨ AI Write'}
-                </button>
+            {files.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-8 gap-2" style={{ color: 'var(--text-subtle)' }}>
+                <span style={{ fontSize: 28 }}>✨</span>
+                <p className="text-xs">Working tree clean</p>
               </div>
-              <textarea
-                value={commitMsg}
-                onChange={(e) => setCommitMsg(e.target.value)}
-                placeholder="Commit message..."
-                rows={2}
-                className="w-full px-2 py-1.5 rounded text-xs resize-none outline-none"
-                style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)' }}
-              />
-              <button
-                onClick={handleCommit}
-                disabled={!commitMsg.trim() || status.staged.length === 0}
-                className="w-full py-1.5 rounded text-xs font-medium transition-all"
-                style={{
-                  background: commitMsg.trim() && status.staged.length > 0 ? 'var(--accent-blue)' : 'var(--bg-surface0)',
-                  color: commitMsg.trim() && status.staged.length > 0 ? 'var(--bg-base)' : 'var(--text-muted)'
-                }}
-              >
-                ✓ Commit {status.staged.length > 0 ? `(${status.staged.length} files)` : ''}
+            )}
+          </div>
+
+          {/* Diff */}
+          {diff && (
+            <div className="flex flex-col overflow-hidden flex-1" style={{ borderTop: '1px solid var(--border)', minHeight: 80 }}>
+              <div className="flex items-center px-2 py-1 flex-shrink-0" style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}>
+                <code className="text-xs flex-1 truncate" style={{ color: 'var(--accent-blue)' }}>{diffFile}</code>
+                <button onClick={() => { setDiff(''); setDiffFile('') }} style={{ color: 'var(--text-subtle)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+              </div>
+              <DiffViewer diff={diff} />
+            </div>
+          )}
+
+          {/* Commit */}
+          <div className="flex-shrink-0 p-2 flex flex-col gap-1.5" style={{ borderTop: '1px solid var(--border)' }}>
+            <div className="flex gap-1">
+              <textarea value={message} onChange={e => setMessage(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) doCommit() }}
+                placeholder="Commit message (Ctrl+Enter)…" rows={2}
+                className="flex-1 px-2 py-1.5 rounded text-xs resize-none outline-none"
+                style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)', fontFamily: 'inherit' }} />
+              <button onClick={generateMessage} disabled={genMsg} title="Generate with Kitsune AI"
+                className="self-stretch px-2 rounded flex items-center justify-center text-sm"
+                style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--accent-mauve)', flexShrink: 0 }}>
+                {genMsg ? '…' : '🦊'}
               </button>
             </div>
-
-            {output && (
-              <pre className="text-xs p-2 rounded whitespace-pre-wrap"
-                style={{ background: 'var(--bg-crust)', color: 'var(--accent-green)', fontFamily: 'monospace' }}>
-                {output}
-              </pre>
-            )}
-
-            {status.staged.length === 0 && status.unstaged.length === 0 && status.untracked.length === 0 && (
-              <p className="text-xs text-center py-4" style={{ color: 'var(--text-subtle)' }}>
-                ✓ Working tree clean
-              </p>
-            )}
+            <button onClick={doCommit} disabled={committing || !message.trim() || staged.length === 0}
+              style={{
+                background: (message.trim() && staged.length > 0) ? 'var(--accent-green)' : 'var(--bg-surface0)',
+                color:      (message.trim() && staged.length > 0) ? 'var(--bg-base)'      : 'var(--text-subtle)',
+                border: 'none', cursor: 'pointer', borderRadius: 6, padding: '6px', fontSize: 11, fontWeight: 700, width: '100%'
+              }}>
+              {committing ? 'Committing…' : staged.length === 0 ? 'Stage files to commit' : `✓ Commit ${staged.length} file${staged.length !== 1 ? 's' : ''}`}
+            </button>
           </div>
-        )}
-
-        {activeTab === 'diff' && (
-          <div className="flex flex-col h-full">
-            <div className="px-2 py-1 flex items-center gap-2 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-              <span className="text-xs font-medium truncate" style={{ color: 'var(--accent-yellow)' }}>
-                {diffFile || 'No file selected'}
-              </span>
-              {!diffFile && <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>Click a changed file</span>}
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {diffContent ? (
-                <div className="font-mono text-xs" style={{ fontFamily: 'monospace' }}>
-                  {diffContent.split('\n').map((line, i) => {
-                    let bg = 'transparent', color = 'var(--text-muted)'
-                    if (line.startsWith('+') && !line.startsWith('+++')) { bg = '#a6e3a115'; color = 'var(--accent-green)' }
-                    else if (line.startsWith('-') && !line.startsWith('---')) { bg = '#f38ba815'; color = 'var(--accent-red)' }
-                    else if (line.startsWith('@@')) { bg = '#89b4fa10'; color = 'var(--accent-blue)' }
-                    else if (line.startsWith('diff') || line.startsWith('index')) { color = 'var(--text-subtle)' }
-                    return (
-                      <div key={i} className="px-2 py-px" style={{ background: bg, color, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                        {line || ' '}
-                      </div>
-                    )
-                  })}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto">
+          {commits.length === 0
+            ? <div className="flex items-center justify-center h-20 text-xs" style={{ color: 'var(--text-subtle)' }}>No commits yet</div>
+            : commits.map(c => (
+              <div key={c.hash} className="px-3 py-2" style={{ borderBottom: '1px solid rgba(69,71,90,.3)' }}>
+                <div className="flex items-start gap-2">
+                  <code style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10, flexShrink: 0 }}>{c.hash}</code>
+                  <span style={{ color: 'var(--text)', fontSize: 11 }}>{c.subject}</span>
                 </div>
-              ) : (
-                <p className="text-xs text-center py-8" style={{ color: 'var(--text-subtle)' }}>
-                  No diff — click a modified file in Changes tab
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'log' && (
-          <div className="p-2">
-            {log.length === 0 ? (
-              <p className="text-xs text-center py-4" style={{ color: 'var(--text-subtle)' }}>No commits yet</p>
-            ) : (
-              log.map((entry) => (
-                <div key={entry.hash}
-                  className="flex flex-col gap-0.5 py-2 border-b"
-                  style={{ borderColor: 'var(--border)' }}>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs px-1 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)' }}>
-                      {entry.hash}
-                    </code>
-                    <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>{entry.date}</span>
-                  </div>
-                  <p className="text-xs" style={{ color: 'var(--text)' }}>{entry.message}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>by {entry.author}</p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function FileSection({ title, color, children, headerAction }: {
-  title: string; color: string; children: React.ReactNode
-  headerAction?: { label: string; onClick: () => void }
-}) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold" style={{ color }}>{title}</p>
-        {headerAction && (
-          <button onClick={headerAction.onClick}
-            className="text-xs px-1.5 py-0.5 rounded transition-colors"
-            style={{ color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)' }}>
-            {headerAction.label}
-          </button>
-        )}
-      </div>
-      {children}
-    </div>
-  )
-}
-
-function FileRow({ file, color, badge, action, onDiff }: {
-  file: string; color: string; badge: string
-  action: { label: string; onClick: () => void }
-  onDiff?: () => void
-}) {
-  return (
-    <div className="flex items-center gap-2 py-1 group rounded px-1"
-      style={{}}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-surface0)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
-      <span className="text-xs font-bold w-4 flex-shrink-0" style={{ color }}>{badge}</span>
-      <span className="text-xs flex-1 truncate cursor-pointer" style={{ color: 'var(--text)' }}
-        onClick={onDiff} title={onDiff ? 'Click to view diff' : undefined}>{file}</span>
-      {onDiff && (
-        <button onClick={onDiff}
-          className="text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'var(--accent-blue)' }} title="View diff">
-          ⟨/⟩
-        </button>
+                <p style={{ color: 'var(--text-subtle)', fontSize: 10, marginTop: 2 }}>{c.author} · {c.date}</p>
+              </div>
+            ))
+          }
+        </div>
       )}
-      <button
-        onClick={action.onClick}
-        className="text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ background: 'var(--bg-surface1)', color: 'var(--text-muted)' }}>
-        {action.label}
-      </button>
-    </div>
-  )
-}
 
-function EmptyState({ icon, title, desc }: { icon: string; title: string; desc: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full gap-3 text-center p-4">
-      <span className="text-4xl">{icon}</span>
-      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
-      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+      {/* Toast */}
+      {toast && (
+        <div className="absolute bottom-3 left-2 right-2 px-3 py-2 rounded-lg text-xs font-semibold text-center"
+          style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--border)', zIndex: 50, pointerEvents: 'none' }}>
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

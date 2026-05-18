@@ -88,6 +88,21 @@ const api = {
       return () => ipcRenderer.removeListener('process:exit', handler)
     }
   },
+  git: {
+    status:     (cwd: string)                       => ipcRenderer.invoke('git:status',     cwd),
+    diff:       (cwd: string, file: string, staged: boolean) => ipcRenderer.invoke('git:diff', cwd, file, staged),
+    stage:      (cwd: string, file: string)         => ipcRenderer.invoke('git:stage',      cwd, file),
+    unstage:    (cwd: string, file: string)         => ipcRenderer.invoke('git:unstage',    cwd, file),
+    stageAll:   (cwd: string)                       => ipcRenderer.invoke('git:stageAll',   cwd),
+    unstageAll: (cwd: string)                       => ipcRenderer.invoke('git:unstageAll', cwd),
+    commit:     (cwd: string, message: string)      => ipcRenderer.invoke('git:commit',     cwd, message),
+    push:       (cwd: string)                       => ipcRenderer.invoke('git:push',       cwd),
+    pull:       (cwd: string)                       => ipcRenderer.invoke('git:pull',       cwd),
+    branches:   (cwd: string)                       => ipcRenderer.invoke('git:branches',   cwd),
+    checkout:   (cwd: string, branch: string)       => ipcRenderer.invoke('git:checkout',   cwd, branch),
+    log:        (cwd: string)                       => ipcRenderer.invoke('git:log',        cwd),
+    discard:    (cwd: string, file: string)         => ipcRenderer.invoke('git:discard',    cwd, file),
+  },
   terminal: {
     create: (id: string, cwd?: string) => ipcRenderer.invoke('terminal:create', id, cwd),
     write: (id: string, data: string) => ipcRenderer.invoke('terminal:write', id, data),

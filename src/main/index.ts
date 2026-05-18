@@ -567,6 +567,110 @@ function setupIpcHandlers(): void {
   ipcMain.handle('terminal:getCwd', async () => {
     return process.env.USERPROFILE || process.env.HOME || '/'
   })
+
+  // ── Git handlers ──────────────────────────────────────────────────────────
+  function git(args: string[], cwd: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const proc = spawn('git', args, { cwd, windowsHide: true })
+      let out = '', err = ''
+      proc.stdout.on('data', d => { out += d })
+      proc.stderr.on('data', d => { err += d })
+      proc.on('close', code => code === 0 ? resolve(out.trim()) : reject(new Error(err.trim() || out.trim())))
+    })
+  }
+
+  ipcMain.handle('git:status', async (_, cwd: string) => {
+    try {
+      const raw = await git(['status', '--porcelain', '-u'], cwd)
+      const branch = await git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd).catch(() => 'HEAD')
+      const ahead = await git(['rev-list', '--count', '@{u}..HEAD'], cwd).catch(() => '0')
+      const behind = await git(['rev-list', '--count', 'HEAD..@{u}'], cwd).catch(() => '0')
+      const files = raw.split('\n').filter(Boolean).map(line => ({
+        status: line.slice(0, 2).trim(),
+        staged: line[0] !== ' ' && line[0] !== '?',
+        path: line.slice(3),
+      }))
+      return { ok: true, branch, ahead: parseInt(ahead), behind: parseInt(behind), files }
+    } catch (e: any) {
+      return { ok: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('git:diff', async (_, cwd: string, filePath: string, staged: boolean) => {
+    try {
+      const args = staged
+        ? ['diff', '--cached', '--', filePath]
+        : ['diff', '--', filePath]
+      const diff = await git(args, cwd)
+      return { ok: true, diff }
+    } catch (e: any) {
+      return { ok: false, diff: '' }
+    }
+  })
+
+  ipcMain.handle('git:stage', async (_, cwd: string, filePath: string) => {
+    try { await git(['add', '--', filePath], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:unstage', async (_, cwd: string, filePath: string) => {
+    try { await git(['restore', '--staged', '--', filePath], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:stageAll', async (_, cwd: string) => {
+    try { await git(['add', '-A'], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:unstageAll', async (_, cwd: string) => {
+    try { await git(['restore', '--staged', '.'], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:commit', async (_, cwd: string, message: string) => {
+    try { await git(['commit', '-m', message], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:push', async (_, cwd: string) => {
+    try { const out = await git(['push'], cwd); return { ok: true, output: out } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:pull', async (_, cwd: string) => {
+    try { const out = await git(['pull'], cwd); return { ok: true, output: out } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:branches', async (_, cwd: string) => {
+    try {
+      const raw = await git(['branch', '-a', '--format=%(refname:short)'], cwd)
+      const branches = raw.split('\n').filter(Boolean)
+      return { ok: true, branches }
+    } catch (e: any) { return { ok: false, branches: [] } }
+  })
+
+  ipcMain.handle('git:checkout', async (_, cwd: string, branch: string) => {
+    try { await git(['checkout', branch], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
+
+  ipcMain.handle('git:log', async (_, cwd: string) => {
+    try {
+      const raw = await git(['log', '--oneline', '-20', '--pretty=format:%H|%s|%an|%ar'], cwd)
+      const commits = raw.split('\n').filter(Boolean).map(line => {
+        const [hash, subject, author, date] = line.split('|')
+        return { hash: hash?.slice(0, 7), subject, author, date }
+      })
+      return { ok: true, commits }
+    } catch (e: any) { return { ok: false, commits: [] } }
+  })
+
+  ipcMain.handle('git:discard', async (_, cwd: string, filePath: string) => {
+    try { await git(['checkout', '--', filePath], cwd); return { ok: true } }
+    catch (e: any) { return { ok: false, error: e.message } }
+  })
 }
 
 interface FileNode {
