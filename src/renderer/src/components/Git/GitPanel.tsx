@@ -359,7 +359,7 @@ Respond in this exact format:
       <div className="flex-shrink-0 flex items-stretch" style={{ borderBottom: '1px solid var(--border)' }}>
         {(['changes', 'log', 'review'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className="flex-1 py-1.5 text-xs font-semibold"
-            style={{ color: tab === t ? 'var(--accent-green)' : 'var(--text-subtle)', borderBottom: tab === t ? '2px solid var(--accent-green)' : '2px solid transparent', background: 'none', border: 'none', cursor: 'pointer' }}>
+            style={{ color: tab === t ? 'var(--accent-green)' : 'var(--text-subtle)', borderBottom: tab === t ? '2px solid var(--accent-green)' : '2px solid transparent', borderTop: 'none', borderLeft: 'none', borderRight: 'none', background: 'none', cursor: 'pointer' }}>
             {t === 'changes' ? `Changes (${files.length})` : t === 'log' ? 'Log' : '🦊 Review'}
           </button>
         ))}
