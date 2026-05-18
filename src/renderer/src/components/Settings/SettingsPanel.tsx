@@ -298,27 +298,46 @@ export function SettingsPanel() {
   )
 }
 
-const PROVIDER_MODELS: Record<string, { value: string; label: string; tier: 'free' | 'paid' }[]> = {
+// Model presets shown as quick-pick chips (not exhaustive — user can type any ID)
+const PROVIDER_MODELS: Record<string, { value: string; label: string; sublabel: string; tier: 'free' | 'paid' }[]> = {
   claude: [
-    { value: 'claude-haiku-4-5',    label: 'Claude Haiku 4.5 — fastest',   tier: 'paid' },
-    { value: 'claude-sonnet-4-5',   label: 'Claude Sonnet 4.5 — balanced',  tier: 'paid' },
-    { value: 'claude-sonnet-4-6',   label: 'Claude Sonnet 4.6 — latest',    tier: 'paid' },
-    { value: 'claude-opus-4-5',     label: 'Claude Opus 4.5 — most capable',tier: 'paid' },
+    { value: 'claude-haiku-4-5',  label: 'Haiku 4.5',  sublabel: 'fastest & cheap',  tier: 'paid' },
+    { value: 'claude-sonnet-4-5', label: 'Sonnet 4.5', sublabel: 'recommended ⭐',   tier: 'paid' },
+    { value: 'claude-opus-4-5',   label: 'Opus 4.5',   sublabel: 'most capable',     tier: 'paid' },
   ],
   gemini: [
-    { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview — latest ✨', tier: 'free' },
-    { value: 'gemini-2.0-flash',       label: 'Gemini 2.0 Flash',                   tier: 'free' },
-    { value: 'gemini-2.0-flash-exp',   label: 'Gemini 2.0 Flash Exp — experimental',tier: 'free' },
-    { value: 'gemini-1.5-flash',       label: 'Gemini 1.5 Flash',                   tier: 'free' },
-    { value: 'gemini-1.5-flash-8b',    label: 'Gemini 1.5 Flash 8B — faster',       tier: 'free' },
-    { value: 'gemini-1.5-pro',         label: 'Gemini 1.5 Pro — most capable',      tier: 'free' },
+    { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: 'free, 500 RPD ⭐',  tier: 'free' },
+    { value: 'gemini-3-flash',        label: 'Gemini 3 Flash',        sublabel: 'free, 20 RPD',     tier: 'free' },
+    { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash', sublabel: 'BYOK',        tier: 'paid' },
+    { value: 'gemini-2.5-pro-preview-05-06',   label: 'Gemini 2.5 Pro',   sublabel: 'BYOK',        tier: 'paid' },
   ],
   openai: [
-    { value: 'gpt-4o-mini',   label: 'GPT-4o Mini — cheapest',    tier: 'paid' },
-    { value: 'gpt-4o',        label: 'GPT-4o — fast & smart',      tier: 'paid' },
-    { value: 'gpt-4-turbo',   label: 'GPT-4 Turbo — most capable', tier: 'paid' },
-    { value: 'o1-mini',       label: 'o1-mini — reasoning',         tier: 'paid' },
-  ]
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'cheap & fast ⭐', tier: 'paid' },
+    { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'flagship',        tier: 'paid' },
+    { value: 'o3-mini',     label: 'o3 Mini',     sublabel: 'reasoning',       tier: 'paid' },
+  ],
+  groq: [
+    { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B',  sublabel: 'free, ultra fast ⭐', tier: 'free' },
+    { value: 'llama-3.1-8b-instant',    label: 'Llama 3.1 8B',   sublabel: 'free, fastest',      tier: 'free' },
+    { value: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1', sublabel: 'free, reasoning', tier: 'free' },
+    { value: 'qwen-qwq-32b',            label: 'Qwen QwQ 32B',   sublabel: 'free, reasoning',   tier: 'free' },
+  ],
+  openrouter: [
+    { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B',  sublabel: 'FREE ⭐', tier: 'free' },
+    { value: 'deepseek/deepseek-r1:free',              label: 'DeepSeek R1',    sublabel: 'FREE',   tier: 'free' },
+    { value: 'google/gemma-3-27b-it:free',             label: 'Gemma 3 27B',   sublabel: 'FREE',   tier: 'free' },
+    { value: 'qwen/qwq-32b:free',                      label: 'Qwen QwQ 32B',  sublabel: 'FREE',   tier: 'free' },
+    { value: 'anthropic/claude-sonnet-4-5',            label: 'Claude Sonnet', sublabel: 'paid',   tier: 'paid' },
+  ],
+  deepseek: [
+    { value: 'deepseek-chat',    label: 'DeepSeek V3',  sublabel: '$0.014/M ⭐', tier: 'paid' },
+    { value: 'deepseek-reasoner',label: 'DeepSeek R1',  sublabel: 'reasoning',   tier: 'paid' },
+  ],
+  mistral: [
+    { value: 'mistral-small-latest', label: 'Mistral Small',  sublabel: 'fast ⭐', tier: 'paid' },
+    { value: 'codestral-latest',     label: 'Codestral',      sublabel: 'code',    tier: 'paid' },
+    { value: 'mistral-large-latest', label: 'Mistral Large',  sublabel: 'capable', tier: 'paid' },
+  ],
 }
 
 const PROVIDER_LINKS: Record<string, { label: string; url: string; free?: boolean }> = {
@@ -524,33 +543,89 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
         </div>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Model</label>
-        {models.length > 0 && (
-          <select
-            value={isCustomModel ? '__custom__' : provider.model}
-            onChange={(e) => {
-              if (e.target.value !== '__custom__') onUpdate({ ...provider, model: e.target.value })
-            }}
-            className="px-2 py-1.5 rounded text-xs outline-none w-full"
-            style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}>
-            {models.map(m => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-            {isCustomModel && <option value="__custom__">{provider.model} (custom)</option>}
-          </select>
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Model</label>
+
+        {/* Primary: custom model ID input (like Cline) */}
+        <div className="flex flex-col gap-1">
+          <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+            Type any model ID — or pick from presets below
+          </p>
+          <div className="flex gap-1 items-center">
+            <input
+              type="text"
+              value={provider.model}
+              onChange={(e) => onUpdate({ ...provider, model: e.target.value })}
+              placeholder={
+                provider.id === 'claude' ? 'claude-sonnet-4-5'
+                : provider.id === 'gemini' ? 'gemini-3.1-flash-lite'
+                : provider.id === 'openai' ? 'gpt-4o-mini'
+                : provider.id === 'groq' ? 'llama-3.3-70b-versatile'
+                : provider.id === 'openrouter' ? 'meta-llama/llama-3.3-70b-instruct:free'
+                : provider.id === 'deepseek' ? 'deepseek-chat'
+                : provider.id === 'mistral' ? 'mistral-small-latest'
+                : 'model-id'
+              }
+              className="flex-1 px-2 py-1.5 rounded text-xs outline-none font-mono"
+              style={{ background: 'var(--bg-base)', color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)66', fontSize: 11 }}
+            />
+            {isCustomModel && (
+              <span className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
+                style={{ background: 'var(--accent-mauve)22', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44', fontSize: 9 }}>
+                custom
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Context window info */}
+        {provider.model && (
+          <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10, fontFamily: 'monospace' }}>
+            {provider.model.includes('gemini-3') ? '↔ Context: 1M tokens'
+              : provider.model.includes('gemini-2.5-pro') ? '↔ Context: 2M tokens'
+              : provider.model.includes('gemini') ? '↔ Context: 1M tokens'
+              : provider.model.includes('claude') ? '↔ Context: 200K tokens'
+              : provider.model.includes('llama-3.3') ? '↔ Context: 128K tokens'
+              : provider.model.includes('gpt-4o') ? '↔ Context: 128K tokens'
+              : provider.model.includes('deepseek') ? '↔ Context: 64K tokens'
+              : provider.model.includes('mistral-large') ? '↔ Context: 128K tokens'
+              : provider.model.includes('openrouter') || provider.model.includes(':free') ? '↔ Context: varies by model'
+              : ''}
+          </p>
         )}
-        {/* Custom model input */}
-        <input
-          type="text"
-          value={provider.model}
-          onChange={(e) => onUpdate({ ...provider, model: e.target.value })}
-          placeholder="or type a custom model ID..."
-          className="px-2 py-1 rounded text-xs outline-none font-mono"
-          style={{ background: 'var(--bg-base)', color: 'var(--text-subtle)', border: '1px dashed var(--border)', fontSize: 10 }}
-        />
+
+        {/* Preset quick-pick chips */}
+        {models.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <p className="text-xs uppercase font-semibold tracking-wider" style={{ color: 'var(--text-subtle)', fontSize: 9 }}>
+              Quick select
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {models.map(m => {
+                const isActive = provider.model === m.value
+                return (
+                  <button key={m.value}
+                    onClick={() => onUpdate({ ...provider, model: m.value })}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
+                    style={{
+                      background: isActive ? 'var(--accent-blue)' : 'var(--bg-crust)',
+                      color: isActive ? 'white' : 'var(--text-muted)',
+                      border: `1px solid ${isActive ? 'var(--accent-blue)' : 'var(--border)'}`,
+                      fontSize: 10,
+                    }}>
+                    {isActive && <span>✓ </span>}
+                    <span className="font-semibold">{m.label}</span>
+                    <span style={{ opacity: 0.7, fontSize: 9 }}>{m.sublabel}</span>
+                    {m.tier === 'free' && !isActive && (
+                      <span style={{ background: 'var(--accent-green)33', color: 'var(--accent-green)', borderRadius: 3, padding: '0 3px', fontSize: 8, fontWeight: 700 }}>FREE</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Fetch available models (Gemini only) */}
         {provider.id === 'gemini' && provider.apiKey && (
           <FetchGeminiModels apiKey={provider.apiKey} onSelect={m => onUpdate({ ...provider, model: m })} />
