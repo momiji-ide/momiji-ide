@@ -3,6 +3,7 @@ import MonacoEditor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
+import { ImageViewer, isImageFile } from './ImageViewer'
 import { ParallaxLogo } from '../Logo/ParallaxLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import kitsuneCharImg from '../../assets/kitsune-char.png'
@@ -62,11 +63,64 @@ export function CodeEditor() {
   const [inlineEnabled, setInlineEnabled] = useState(true)
   const inlineCompletion = useInlineCompletion(editorRef, monacoRef)
 
+  // Git Blame
+  const [blameMode, setBlameMode] = useState(false)
+  const [blameData, setBlameData] = useState<{ line: number; hash: string; author: string; date: string; summary: string }[]>([])
+  const blameDecsRef = useRef<string[]>([])
+
   useEffect(() => {
     const handler = () => setInlineEnabled(inlineCompletion.toggle())
     window.addEventListener('kitsune:toggleInline', handler)
     return () => window.removeEventListener('kitsune:toggleInline', handler)
   }, [inlineCompletion])
+
+  // ── Git Blame toggle ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = () => setBlameMode(v => !v)
+    window.addEventListener('editor:toggleBlame', handler)
+    return () => window.removeEventListener('editor:toggleBlame', handler)
+  }, [])
+
+  useEffect(() => {
+    const ed = editorRef.current
+    const mo = monacoRef.current
+    if (!ed || !mo) return
+
+    // Clear existing blame decorations
+    blameDecsRef.current = ed.deltaDecorations(blameDecsRef.current, [])
+
+    if (!blameMode || !activeTab?.filePath || activeTab.filePath.startsWith('__')) return
+
+    const { currentFolder } = useAppStore.getState()
+    if (!currentFolder) return
+
+    window.api.git.blame(currentFolder, activeTab.filePath).then(r => {
+      if (!r.ok || !r.lines?.length) return
+      setBlameData(r.lines)
+
+      // Inject blame as inline text after each line number
+      const decos: editor.IModelDeltaDecoration[] = r.lines.map(b => ({
+        range: new mo.Range(b.line, 1, b.line, 1),
+        options: {
+          before: {
+            content: ` ${(b.author || 'Unknown').slice(0, 12).padEnd(12)}  ${(b.date || '').slice(0, 11).padEnd(11)}  ${b.hash || '???????'} `,
+            inlineClassName: 'blame-gutter-text',
+          },
+          zIndex: 1,
+        }
+      }))
+
+      // Inject CSS once
+      if (!document.getElementById('blame-style')) {
+        const s = document.createElement('style')
+        s.id = 'blame-style'
+        s.textContent = `.blame-gutter-text { color: #585b70; font-size: 11px; font-family: monospace; background: #11111b; padding: 0 4px; border-right: 1px solid #313244; user-select: none; white-space: pre; }`
+        document.head.appendChild(s)
+      }
+
+      blameDecsRef.current = ed.deltaDecorations([], decos)
+    })
+  }, [blameMode, activeTabId]) // eslint-disable-line
 
   // Color picker state
   const [colorPicker, setColorPicker] = useState<{ color: string; x: number; y: number; line: number; col: number; original: string } | null>(null)
@@ -561,6 +615,11 @@ export function CodeEditor() {
 
   if (!activeTab) {
     return <WelcomeScreen />
+  }
+
+  // Image files: show viewer instead of Monaco
+  if (isImageFile(activeTab.filePath)) {
+    return <ImageViewer filePath={activeTab.filePath} />
   }
 
   // Markdown: split view editor + preview

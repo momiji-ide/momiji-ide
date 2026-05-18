@@ -176,7 +176,7 @@ export function EditorToolbar() {
         <button
           onClick={() => setSplitTabId(splitTabId ? null : (activeTabId ?? null))}
           className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
-          title={splitTabId ? 'Close split view' : 'Split editor (open file in right pane)'}
+          title={splitTabId ? 'Close split view' : 'Split editor'}
           style={{
             background: splitTabId ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
             color: splitTabId ? 'white' : 'var(--text-muted)',
@@ -184,6 +184,20 @@ export function EditorToolbar() {
           }}>
           ⫴
         </button>
+
+        {/* Git Blame toggle */}
+        {activeTab && !activeTab.filePath.startsWith('__') && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('editor:toggleBlame'))}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+            title="Toggle Git Blame"
+            id="blame-btn"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-green)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent-green)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)' }}>
+            🔍 Blame
+          </button>
+        )}
 
         {/* HTML Preview button */}
         {isHtml && (
