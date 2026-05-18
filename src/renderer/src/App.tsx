@@ -19,7 +19,19 @@ import { CodeScreenshot } from './components/Editor/CodeScreenshot'
 import { RegexPlayground } from './components/Playground/RegexPlayground'
 
 export default function App() {
-  const { settings, showBottomPanel, bottomPanelHeight, activePanel } = useAppStore()
+  const { settings, showBottomPanel, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt } = useAppStore()
+
+  // ── Global handler for right-click "Ask Kitsune" — always mounted ──────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { prompt } = (e as CustomEvent).detail as { prompt: string }
+      if (!prompt) return
+      setActivePanel('ai')         // open sidebar to AI panel (sets showSidebar:true)
+      setPendingAIPrompt(prompt)   // AIPanel picks this up when it mounts
+    }
+    window.addEventListener('kitsune:askWithPrompt', handler)
+    return () => window.removeEventListener('kitsune:askWithPrompt', handler)
+  }, [setActivePanel, setPendingAIPrompt])
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('parallax:onboarding-done')
