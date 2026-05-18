@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { MomijiLogo } from '../Logo/MomijiLogo'
 
 interface Props {
   onCommandPalette: () => void
@@ -36,8 +36,8 @@ export function TitleBar({ onCommandPalette }: Props) {
     >
       {/* Left: Logo */}
       <div className="no-drag flex items-center gap-2 px-3 flex-shrink-0">
-        <ParallaxLogo size={18} />
-        <span className="font-black text-xs select-none tracking-widest" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.12em' }}>PARALLAX</span>
+        <MomijiLogo size={18} />
+        <span className="brand-text">MOMIJI</span>
       </div>
 
       {/* Center: Command palette button (acts as search) */}

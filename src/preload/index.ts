@@ -105,6 +105,9 @@ const api = {
     log:        (cwd: string)                       => ipcRenderer.invoke('git:log',        cwd),
     discard:    (cwd: string, file: string)         => ipcRenderer.invoke('git:discard',    cwd, file),
   },
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
+  },
   terminal: {
     create: (id: string, cwd?: string) => ipcRenderer.invoke('terminal:create', id, cwd),
     write: (id: string, data: string) => ipcRenderer.invoke('terminal:write', id, data),

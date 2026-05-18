@@ -12,7 +12,7 @@ interface Snippet {
   createdAt: number
 }
 
-const STORAGE_KEY = 'parallax:snippets'
+const STORAGE_KEY = 'momiji:snippets'
 
 function loadSnippets(): Snippet[] {
   try {

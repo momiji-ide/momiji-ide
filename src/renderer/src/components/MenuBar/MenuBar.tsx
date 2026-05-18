@@ -259,13 +259,13 @@ export function MenuBar() {
         {
           label: '🦊 Kitsune Setup Wizard',
           action: () => {
-            localStorage.removeItem('parallax:onboarding-done')
+            localStorage.removeItem('momiji:onboarding-done')
             window.location.reload()
           }
         },
         { separator: true, label: '' },
         {
-          label: 'About Parallax IDE',
+          label: 'About Momiji IDE',
           action: () => window.dispatchEvent(new CustomEvent('app:showAbout'))
         }
       ]

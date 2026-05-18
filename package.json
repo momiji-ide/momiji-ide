@@ -1,7 +1,7 @@
 {
-  "name": "parallax-ide",
-  "version": "1.1.0",
-  "description": "Parallax IDE — Code from every angle, powered by Kitsune AI",
+  "name": "momiji-ide",
+  "version": "1.2.0",
+  "description": "Momiji IDE — AI-native IDE platform powered by Kitsune AI 🍁",
   "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {

@@ -121,7 +121,7 @@ export function LivePreview() {
     const script = `<script>
 (function() {
   const send = (type, args) => {
-    window.parent.postMessage({ __parallax_console__: true, type, text: args.map(a => {
+    window.parent.postMessage({ __momiji_console__: true, type, text: args.map(a => {
       try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a) } catch { return String(a) }
     }).join(' ') }, '*')
   }
@@ -170,7 +170,7 @@ export function LivePreview() {
   // ── Capture console messages from iframe ─────────────────────────────
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (!e.data?.__parallax_console__) return
+      if (!e.data?.__momiji_console__) return
       setConsoleMsgs(prev => [...prev.slice(-99), {
         type: e.data.type, text: e.data.text, ts: Date.now()
       }])

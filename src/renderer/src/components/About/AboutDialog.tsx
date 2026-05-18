@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 
 interface Props { onClose: () => void }
@@ -54,11 +54,11 @@ const AUTHORS = [
 ]
 
 const LINKS = [
-  { icon: '🌐', label: 'Website', desc: 'parallax-ide.github.io/parallax-ide', url: 'https://parallax-ide.github.io/parallax-ide' },
-  { icon: '💻', label: 'GitHub', desc: 'github.com/parallax-ide/parallax-ide', url: 'https://github.com/parallax-ide/parallax-ide' },
-  { icon: '📥', label: 'Download / Releases', desc: 'Latest installers for Windows, macOS, Linux', url: 'https://github.com/parallax-ide/parallax-ide/releases' },
-  { icon: '🐛', label: 'Report a Bug', desc: 'github.com/parallax-ide/parallax-ide/issues', url: 'https://github.com/parallax-ide/parallax-ide/issues' },
-  { icon: '🦊', label: 'Kitsune AI', desc: 'Powered by Claude · Gemini · GPT · Ollama', url: 'https://github.com/parallax-ide/parallax-ide' },
+  { icon: '🌐', label: 'Website', desc: 'momiji-ide.github.io/momiji-ide', url: 'https://momiji-ide.github.io/momiji-ide' },
+  { icon: '💻', label: 'GitHub', desc: 'github.com/momiji-ide/momiji-ide', url: 'https://github.com/momiji-ide/momiji-ide' },
+  { icon: '📥', label: 'Download / Releases', desc: 'Latest installers for Windows, macOS, Linux', url: 'https://github.com/momiji-ide/momiji-ide/releases' },
+  { icon: '🐛', label: 'Report a Bug', desc: 'github.com/momiji-ide/momiji-ide/issues', url: 'https://github.com/momiji-ide/momiji-ide/issues' },
+  { icon: '🦊', label: 'Kitsune AI', desc: 'Powered by Claude · Gemini · GPT · Ollama', url: 'https://github.com/momiji-ide/momiji-ide' },
 ]
 
 export function AboutDialog({ onClose }: Props) {
@@ -107,10 +107,10 @@ export function AboutDialog({ onClose }: Props) {
           style={{ width: 220, background: 'var(--bg-mantle)', borderRight: '1px solid var(--border)' }}>
 
           <div className="flex flex-col items-center gap-4 text-center">
-            <ParallaxLogo size={56} />
+            <MomijiLogo size={56} />
             <div>
               <h1 className="text-xl font-black tracking-widest" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.15em' }}>
-                PARALLAX
+                MOMIJI
               </h1>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)' }}>Code from every angle</p>
             </div>
@@ -211,9 +211,9 @@ export function AboutDialog({ onClose }: Props) {
                 </div>
                 <div className="mt-5 flex flex-col gap-1.5">
                   {[
-                    { icon: '🌐', label: 'GitHub', url: 'https://github.com/parallax-ide/parallax-ide' },
-                    { icon: '🐛', label: 'Report an issue', url: 'https://github.com/parallax-ide/parallax-ide/issues' },
-                    { icon: '⭐', label: 'Star on GitHub', url: 'https://github.com/parallax-ide/parallax-ide' },
+                    { icon: '🌐', label: 'GitHub', url: 'https://github.com/momiji-ide/momiji-ide' },
+                    { icon: '🐛', label: 'Report an issue', url: 'https://github.com/momiji-ide/momiji-ide/issues' },
+                    { icon: '⭐', label: 'Star on GitHub', url: 'https://github.com/momiji-ide/momiji-ide' },
                   ].map(l => (
                     <button key={l.label} onClick={() => window.open(l.url, '_blank')}
                       className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg"
@@ -240,7 +240,7 @@ export function AboutDialog({ onClose }: Props) {
                 ))}
                 <div className="mt-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                   <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-                    Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} · © 2025 Parallax IDE · All Rights Reserved
+                    Electron {(window.navigator.userAgent.match(/Electron\/([\d.]+)/)?.[1]) ?? '?'} · © 2025 Momiji IDE · All Rights Reserved
                   </p>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function AboutDialog({ onClose }: Props) {
                   </button>
                 ))}
                 <p className="text-xs text-center mt-3" style={{ color:'var(--overlay0)' }}>
-                  © 2025 Parallax IDE · Haikal Hakim Baiqunni · All Rights Reserved
+                  © 2025 Momiji IDE · Haikal Hakim Baiqunni · All Rights Reserved
                 </p>
               </div>
             )}

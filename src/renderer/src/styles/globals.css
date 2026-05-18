@@ -2,52 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Parallax IDE × Kitsune AI — CSS Variables ── */
-:root {
-  --bg-base: #1e1e2e;
-  --bg-mantle: #181825;
-  --bg-crust: #11111b;
-  --bg-surface0: #313244;
-  --bg-surface1: #45475a;
-  --bg-surface2: #585b70;
-  --bg-overlay0: #6c7086;
-  --bg-overlay1: #7f849c;
-  --text: #cdd6f4;
-  --text-muted: #a6adc8;
-  --text-subtle: #7f849c;
-  --accent-blue: #89b4fa;
-  --accent-mauve: #cba6f7;
-  --accent-green: #a6e3a1;
-  --accent-red: #f38ba8;
-  --accent-yellow: #f9e2af;
-  --accent-peach: #fab387;
-  --accent-teal: #94e2d5;
-  --accent-sapphire: #74c7ec;
-  --border: #313244;
+/* ── Brand fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;600;700;900&display=swap');
+
+/* ── Momiji brand text — orange gradient ── */
+.brand-text {
+  font-family: 'Space Grotesk', 'Outfit', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #f97316 0%, #fb923c 55%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
 }
 
-/* ── Catppuccin Latte (light) ── */
+[data-theme="light"] .brand-text {
+  background: linear-gradient(120deg, #ea580c 0%, #f97316 60%, #d97706 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ── Momiji IDE — Dark (Catppuccin Mocha base + orange accent) ── */
+:root {
+  /* Backgrounds — keep cool dark, orange pops against it */
+  --bg-base:    #1a1412;
+  --bg-mantle:  #141210;
+  --bg-crust:   #0f0d0b;
+  --bg-surface0: #2d2420;
+  --bg-surface1: #3d3128;
+  --bg-surface2: #514035;
+  --bg-overlay0: #6b5547;
+  --bg-overlay1: #856b5e;
+
+  /* Text */
+  --text:       #e8ddd5;
+  --text-muted: #b8a89e;
+  --text-subtle: #8a7068;
+
+  /* 🍁 Orange accent family — Momiji palette */
+  --accent-mauve:    #f97316;   /* PRIMARY brand — orange */
+  --accent-peach:    #fb923c;   /* secondary — light orange */
+  --accent-yellow:   #fbbf24;   /* amber/warm highlight */
+  --accent-sapphire: #ea580c;   /* deep orange */
+
+  /* Keep semantic colors readable */
+  --accent-blue:  #7dd3fc;   /* info — sky blue */
+  --accent-green: #86efac;   /* success */
+  --accent-red:   #fca5a5;   /* error */
+  --accent-teal:  #5eead4;   /* teal for variety */
+
+  --border: #2d2420;
+
+  /* Glow for orange elements */
+  --glow-orange: 0 0 12px rgba(249,115,22,0.35);
+}
+
+/* ── Momiji IDE — Light (warm ivory + deep orange) ── */
 [data-theme="light"] {
-  --bg-base: #eff1f5;
-  --bg-mantle: #e6e9ef;
-  --bg-crust: #dce0e8;
-  --bg-surface0: #ccd0da;
-  --bg-surface1: #bcc0cc;
-  --bg-surface2: #acb0be;
-  --bg-overlay0: #9ca0b0;
-  --bg-overlay1: #8c8fa1;
-  --text: #4c4f69;
-  --text-muted: #5c5f77;
-  --text-subtle: #6c6f85;
-  --accent-blue: #1e66f5;
-  --accent-mauve: #8839ef;
-  --accent-green: #40a02b;
-  --accent-red: #d20f39;
-  --accent-yellow: #df8e1d;
-  --accent-peach: #fe640b;
-  --accent-teal: #179299;
-  --accent-sapphire: #209fb5;
-  --border: #ccd0da;
+  --bg-base:    #fdf8f3;
+  --bg-mantle:  #f5ede3;
+  --bg-crust:   #ecddd0;
+  --bg-surface0: #e2cfc0;
+  --bg-surface1: #d4bfad;
+  --bg-surface2: #c4ae9c;
+  --bg-overlay0: #a8917f;
+  --bg-overlay1: #8c7565;
+
+  --text:       #2d1f14;
+  --text-muted: #5c4030;
+  --text-subtle: #8a6550;
+
+  --accent-mauve:    #ea580c;
+  --accent-peach:    #f97316;
+  --accent-yellow:   #d97706;
+  --accent-sapphire: #c2410c;
+
+  --accent-blue:  #0369a1;
+  --accent-green: #166534;
+  --accent-red:   #b91c1c;
+  --accent-teal:  #0f766e;
+
+  --border: #e2cfc0;
+  --glow-orange: 0 0 8px rgba(234,88,12,0.2);
 }
 
 /* ── Reset ── */
@@ -73,7 +112,7 @@ html, body, #root {
 ::-webkit-scrollbar-corner { background: transparent; }
 
 /* ── Selection ── */
-::selection { background: color-mix(in srgb, var(--accent-blue) 35%, transparent); }
+::selection { background: color-mix(in srgb, var(--accent-mauve) 30%, transparent); }
 
 /* ── Drag region ── */
 .drag-region { -webkit-app-region: drag; }

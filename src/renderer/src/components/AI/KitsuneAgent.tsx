@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { ModelSelector } from './ModelSelector'
+import { AgentManager, BUILTIN_AGENTS } from './AgentManager'
 import kitsuneNormal  from '../../assets/kitsune-normal.png'
 import kitsuneHappy   from '../../assets/kitsune-happy.png'
 import kitsuneConfuse from '../../assets/kitsune-confuse.png'
@@ -197,13 +198,25 @@ function ActivityRow({ item }: { item: ActivityItem }) {
 
 // ─── Main Agent component ─────────────────────────────────────────────────────
 export function KitsuneAgent() {
-  const { aiProviders, currentFolder, fileTree, updateTabContent, markTabClean, openTab } = useAppStore()
+  const { aiProviders, currentFolder, fileTree, updateTabContent, markTabClean, openTab, customAgents } = useAppStore()
   const [task, setTask] = useState('')
   const [running, setRunning] = useState(false)
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [pendingWrites, setPendingWrites] = useState<{ path: string; content: string; resolve: (v: boolean) => void }[]>([])
   const [finalMessage, setFinalMessage] = useState('')
   const [autoApprove, setAutoApprove] = useState(false)
+
+  // ── Agent selection ─────────────────────────────────────────────────────────
+  const [selectedAgentId, setSelectedAgentId] = useState(BUILTIN_AGENTS[0].id)
+  const allAgents = [...BUILTIN_AGENTS, ...customAgents]
+  const selectedAgent = allAgents.find(a => a.id === selectedAgentId) ?? BUILTIN_AGENTS[0]
+
+  const buildAgentSystemPrompt = () => {
+    const base = selectedAgent.systemPrompt
+    const folder = `\n\nProject folder: ${currentFolder ?? '(no folder open)'}`
+    const workflow = `\n\nYou MUST use tools to complete tasks — do not just describe what you'd do, actually do it.\n\nWorkflow:\n1. Start with list_directory to understand the project\n2. Read relevant files with read_file before editing\n3. Write/create files with write_file\n4. Verify with read_file if needed\n5. Give a final summary of what was done\n\nNever skip tool calls. Always execute, don't describe.`
+    return base + folder + workflow
+  }
   // Stats
   const [statsTokensIn,  setStatsTokensIn]  = useState(0)
   const [statsTokensOut, setStatsTokensOut] = useState(0)
@@ -337,19 +350,7 @@ export function KitsuneAgent() {
 
   // ── Claude agentic loop ───────────────────────────────────────────────────
   const runClaudeAgent = async (provider: typeof aiProviders[0], taskText: string, images: typeof pastedImages) => {
-    const sysPrompt = `You are Kitsune, an autonomous coding agent inside Parallax IDE.
-Project folder: ${currentFolder}
-
-You MUST use tools to complete tasks — do not just describe what you'd do, actually do it.
-
-Workflow:
-1. Start with list_directory to understand the project
-2. Read relevant files with read_file before editing
-3. Write/create files with write_file
-4. Verify with read_file if needed
-5. Give a final summary of what was done
-
-Never skip tool calls. Always execute, don't describe.`
+    const sysPrompt = buildAgentSystemPrompt()
 
     // Build first message — include images if any were pasted
     const firstContent: any[] = [
@@ -401,19 +402,7 @@ Never skip tool calls. Always execute, don't describe.`
 
   // ── Gemini agentic loop ───────────────────────────────────────────────────
   const runGeminiAgent = async (provider: typeof aiProviders[0], taskText: string, images: typeof pastedImages) => {
-    const sysPrompt = `You are Kitsune, an autonomous coding agent inside Parallax IDE.
-Project folder: ${currentFolder}
-
-IMPORTANT: You MUST use the provided tools to complete tasks. Do NOT just describe what you would do — actually DO it using tools.
-
-Required workflow:
-1. ALWAYS call list_directory first to see the project structure
-2. Read relevant files with read_file before editing
-3. Write files with write_file
-4. Verify by reading back if needed
-5. Only after completing all tool calls, give a final summary
-
-Never skip tool calls. If the task involves creating files, you must call write_file.`
+    const sysPrompt = buildAgentSystemPrompt()
 
     // Build first message — include images if any were pasted
     const firstParts: any[] = [
@@ -479,7 +468,7 @@ Never skip tool calls. If the task involves creating files, you must call write_
   // ── Ollama agentic loop (OpenAI-compatible tool calling) ─────────────────
   const runOllamaAgent = async (provider: typeof aiProviders[0], taskText: string) => {
     const base = provider.baseUrl ?? 'http://localhost:11434'
-    const sysPrompt = `You are Kitsune, an autonomous coding agent. Project folder: ${currentFolder}. Use the provided tools to read, write, list, and search files. Always explore structure first, then read before editing. Summarize changes when done.`
+    const sysPrompt = buildAgentSystemPrompt()
 
     const tools = CLAUDE_TOOLS.map(t => ({
       type: 'function',
@@ -633,6 +622,13 @@ Never skip tool calls. If the task involves creating files, you must call write_
           </label>
         </div>
       </div>
+
+      {/* Agent selector — horizontal chips + selected info */}
+      <AgentManager
+        selectedId={selectedAgentId}
+        onSelect={setSelectedAgentId}
+        compact
+      />
 
       {/* No provider warning */}
       {enabledProviders.length === 0 ? (

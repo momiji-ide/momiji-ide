@@ -41,6 +41,18 @@ export interface AIProvider {
   baseUrl?: string   // for Ollama / custom endpoints
 }
 
+export interface AgentConfig {
+  id: string
+  name: string
+  emoji: string
+  color: string          // accent color (CSS var or hex)
+  description: string
+  systemPrompt: string
+  tools: string[]        // allowed tool names, [] = all
+  providerId?: string    // preferred provider id
+  isBuiltIn?: boolean    // built-in agents can't be deleted
+}
+
 export type ActivityBarItem =
   | 'explorer'
   | 'search'

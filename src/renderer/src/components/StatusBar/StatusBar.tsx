@@ -1,5 +1,5 @@
 import { useAppStore } from '../../store/appStore'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { MomijiLogo } from '../Logo/MomijiLogo'
 import { useState, useEffect, useCallback } from 'react'
 import { PythonPicker } from './PythonPicker'
 
@@ -45,9 +45,9 @@ export function StatusBar({ onCommandPalette }: Props) {
       >
         {/* Left */}
         <div className="flex items-center gap-0.5">
-          <StatusBtn onClick={() => {}} title="Parallax IDE">
-            <ParallaxLogo size={12} />
-            <span className="font-bold tracking-widest" style={{ letterSpacing: '0.1em' }}>PARALLAX</span>
+          <StatusBtn onClick={() => {}} title="Momiji IDE">
+            <MomijiLogo size={12} />
+            <span className="font-bold tracking-widest" style={{ letterSpacing: '0.1em' }}>MOMIJI</span>
           </StatusBtn>
 
           {activeTab && (

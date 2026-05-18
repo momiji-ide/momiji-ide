@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parallax IDE — Code smarter with Kitsune AI</title>
-  <meta name="description" content="Parallax IDE is a blazing-fast, AI-powered desktop code editor with Kitsune — your intelligent coding companion that reads, writes, and reasons through your entire codebase." />
-  <meta property="og:title" content="Parallax IDE" />
+  <title>Momiji IDE — Code sharper with Kitsune AI</title>
+  <meta name="description" content="Momiji IDE is a blazing-fast, AI-powered desktop code editor with Kitsune — your intelligent coding companion that reads, writes, and reasons through your entire codebase." />
+  <meta property="og:title" content="Momiji IDE" />
   <meta property="og:description" content="AI-powered desktop code editor with Kitsune AI. Free forever." />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231e1e2e'/><text y='24' x='4' font-size='22'>🦊</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f0d0b'/><text y='24' x='4' font-size='22'>🍁</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:        #1e1e2e;
-      --bg-crust:  #11111b;
-      --bg-mantle: #181825;
-      --surface0:  #313244;
-      --surface1:  #45475a;
+      --bg:        #1a1412;
+      --bg-crust:  #0f0d0b;
+      --bg-mantle: #141210;
+      --surface0:  #2d2420;
+      --surface1:  #3d3128;
       --surface2:  #585b70;
       --overlay0:  #6c7086;
       --text:      #cdd6f4;
       --subtext1:  #bac2de;
       --subtext0:  #a6adc8;
-      --lavender:  #b4befe;
+      --lavender:  #fb923c;
       --blue:      #89b4fa;
       --sapphire:  #74c7ec;
       --sky:       #89dceb;
@@ -31,7 +33,7 @@
       --peach:     #fab387;
       --maroon:    #eba0ac;
       --red:       #f38ba8;
-      --mauve:     #cba6f7;
+      --mauve:     #f97316;
       --pink:      #f5c2e7;
       --flamingo:  #f2cdcd;
     }
@@ -60,7 +62,10 @@
     .nav-logo {
       display: flex; align-items: center; gap: 10px;
       font-weight: 900; font-size: 0.85rem; letter-spacing: 0.14em;
-      color: var(--mauve); text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(120deg,#f97316,#fb923c,#fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; text-decoration: none;
     }
     .nav-logo img { flex-shrink: 0; }
     .nav-links { display: flex; align-items: center; gap: 1.5rem; }
@@ -84,8 +89,9 @@
       text-align: center;
       padding: 7rem 1.5rem 4rem;
       background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(203,166,247,.12) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(137,180,250,.08) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(249,115,22,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(234,88,12,.10) 0%, transparent 50%),
+        radial-gradient(ellipse 30% 30% at 80% 50%, rgba(251,191,36,.06) 0%, transparent 50%),
         var(--bg-crust);
       position: relative; overflow: hidden;
     }
@@ -99,8 +105,8 @@
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
-      background: rgba(203,166,247,.12); color: var(--mauve);
-      border: 1px solid rgba(203,166,247,.25);
+      background: rgba(249,115,22,.15); color: var(--mauve);
+      border: 1px solid rgba(249,115,22,.25);
       margin-bottom: 1.5rem; letter-spacing: 0.04em;
     }
 
@@ -131,11 +137,11 @@
     }
     .btn-primary {
       background: var(--mauve); color: var(--bg-crust);
-      box-shadow: 0 0 24px rgba(203,166,247,.3);
+      box-shadow: 0 0 24px rgba(249,115,22,.3);
     }
     .btn-primary:hover {
       background: var(--lavender);
-      box-shadow: 0 0 36px rgba(203,166,247,.5);
+      box-shadow: 0 0 36px rgba(249,115,22,.5);
       transform: translateY(-1px);
     }
     .btn-secondary {
@@ -161,7 +167,7 @@
       max-width: 900px; width: 100%; margin: 4rem auto 0;
       border-radius: 12px; overflow: hidden;
       border: 1px solid var(--surface0);
-      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(203,166,247,.06);
+      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(249,115,22,.06);
     }
     .editor-topbar {
       background: var(--bg-crust); padding: 0 14px;
@@ -256,14 +262,14 @@
       max-width: 85%;
     }
     .ai-msg-kitsune {
-      background: rgba(203,166,247,.08); color: var(--text);
-      border: 1px solid rgba(203,166,247,.15);
+      background: rgba(249,115,22,.08); color: var(--text);
+      border: 1px solid rgba(249,115,22,.15);
       border-radius: 8px 8px 8px 2px; max-width: 100%;
     }
     .ai-typing {
       display: flex; gap: 4px; padding: 7px 9px;
-      background: rgba(203,166,247,.06); border-radius: 8px;
-      border: 1px solid rgba(203,166,247,.1); width: fit-content;
+      background: rgba(249,115,22,.06); border-radius: 8px;
+      border: 1px solid rgba(249,115,22,.1); width: fit-content;
     }
     .ai-typing span {
       width: 5px; height: 5px; border-radius: 50%;
@@ -335,7 +341,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 1.25rem; margin-bottom: 1rem;
     }
-    .fi-mauve  { background: rgba(203,166,247,.12); }
+    .fi-mauve  { background: rgba(249,115,22,.15); }
     .fi-blue   { background: rgba(137,180,250,.12); }
     .fi-green  { background: rgba(166,227,161,.12); }
     .fi-peach  { background: rgba(250,179,135,.12); }
@@ -386,8 +392,8 @@
     }
     .chat-ai {
       align-self: flex-start;
-      background: rgba(203,166,247,.08); color: var(--text);
-      border: 1px solid rgba(203,166,247,.15);
+      background: rgba(249,115,22,.08); color: var(--text);
+      border: 1px solid rgba(249,115,22,.15);
       border-radius: 10px 10px 10px 2px;
     }
     .chat-code {
@@ -436,7 +442,7 @@
     /* ── DOWNLOAD ── */
     .download-section {
       background:
-        radial-gradient(ellipse 60% 80% at 50% 120%, rgba(203,166,247,.1) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 50% 120%, rgba(249,115,22,.1) 0%, transparent 60%),
         var(--bg-crust);
       text-align: center;
       border-top: 1px solid var(--surface0);
@@ -453,7 +459,7 @@
       transition: all .2s;
     }
     .dl-card:hover {
-      border-color: var(--mauve); background: rgba(203,166,247,.06);
+      border-color: var(--mauve); background: rgba(249,115,22,.06);
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0,0,0,.3);
     }
@@ -531,23 +537,23 @@
 <!-- ── NAV ── -->
 <nav>
   <a class="nav-logo" href="#">
-    <img src="logo-parallax.png" width="22" height="22" alt="Parallax" style="object-fit:contain" />
-    PARALLAX
+    <img src="logo-momiji.png" width="22" height="22" alt="Momiji" style="object-fit:contain" />
+    MOMIJI
   </a>
   <div class="nav-links">
     <a href="#features" class="hide-sm">Features</a>
     <a href="#meet-kitsune" class="hide-sm" style="color: #fb923c;">Kitsune AI</a>
     <a href="#download">Download</a>
-    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank" class="hide-sm">GitHub</a>
-    <a href="#download" class="nav-cta">Get Parallax →</a>
+    <a href="https://github.com/momiji-ide/momiji-ide" target="_blank" class="hide-sm">GitHub</a>
+    <a href="#download" class="nav-cta">Get Momiji →</a>
   </div>
 </nav>
 
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="badge">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#cba6f7"/></svg>
-    v1.1.0 — Now Available Free
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#f97316"/></svg>
+    v1.2.0 — Now Available Free
   </div>
 
   <h1>
@@ -557,9 +563,9 @@
   </h1>
 
   <p class="hero-sub">
-    Parallax IDE is a blazing-fast desktop code editor with a built-in AI that
+    Momiji IDE is a blazing-fast desktop code editor with a built-in AI that
     reads, writes, and reasons through your entire codebase — powered by Claude,
-    Gemini, GPT, or 100% local Ollama.
+    Gemini, Groq, DeepSeek, Mistral, or 100% local Ollama. <strong>Free to start.</strong>
   </p>
 
   <div class="hero-actions">
@@ -570,7 +576,7 @@
       </svg>
       Download Free
     </a>
-    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank" class="btn btn-secondary">
+    <a href="https://github.com/momiji-ide/momiji-ide" target="_blank" class="btn btn-secondary">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
         <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
       </svg>
@@ -592,7 +598,7 @@
       <div class="dot dot-red"></div>
       <div class="dot dot-amber"></div>
       <div class="dot dot-green"></div>
-      <div class="editor-titlebar-text">Parallax IDE — solar-system.ts</div>
+      <div class="editor-titlebar-text">Momiji IDE — solar-system.ts</div>
     </div>
     <div class="editor-tab-bar">
       <div class="editor-tab active">
@@ -635,7 +641,8 @@
         </div>
         <div class="ai-tabs">
           <div class="ai-tab active">● Chat</div>
-          <div class="ai-tab">Agent</div>
+          <div class="ai-tab">🤖 Agent</div>
+          <div class="ai-tab">🧠 Memory</div>
         </div>
         <div class="ai-body">
           <div class="ai-msg ai-msg-user">Add collision detection</div>
@@ -671,74 +678,74 @@
     <div class="features-grid">
       <div class="feature-card c-mauve" data-fade>
         <div class="feature-icon fi-mauve">🦊</div>
-        <div class="feature-title">Kitsune Agent Mode</div>
-        <div class="feature-desc">Give Kitsune a task and walk away. It reads your whole project, plans, writes files, runs code, and iterates until done — like having a junior dev on call.</div>
+        <div class="feature-title">Agent Management</div>
+        <div class="feature-desc">7 built-in agents: Code Reviewer, Test Writer, Doc Writer, Security, Refactor, Bug Hunter. Create custom agents with your own prompts, roles, and tool access.</div>
+      </div>
+
+      <div class="feature-card c-peach" data-fade>
+        <div class="feature-icon fi-peach">🧠</div>
+        <div class="feature-title">Kitsune Project Memory</div>
+        <div class="feature-desc">Write your stack, conventions, and preferences once. Kitsune reads <code>.momiji/kitsune-memory.md</code> automatically and auto-detects your tech stack from project files.</div>
       </div>
 
       <div class="feature-card c-blue" data-fade>
         <div class="feature-icon fi-blue">⚡</div>
         <div class="feature-title">Monaco Editor Core</div>
-        <div class="feature-desc">The same engine powering VS Code. Full IntelliSense, multi-cursor, bracket matching, and Catppuccin dark/light themes out of the box.</div>
+        <div class="feature-desc">The same engine powering VS Code. Full IntelliSense, multi-cursor, bracket matching, and Momiji dark/light themes with warm orange accents.</div>
       </div>
 
       <div class="feature-card c-green" data-fade>
         <div class="feature-icon fi-green">🌐</div>
-        <div class="feature-title">Multi-Provider AI</div>
-        <div class="feature-desc">Claude 3.5, Gemini 2.5, GPT-4o, or 100% offline with Ollama. Switch per-conversation. Your keys, your data.</div>
-      </div>
-
-      <div class="feature-card c-peach" data-fade>
-        <div class="feature-icon fi-peach">🔍</div>
-        <div class="feature-title">Find &amp; Replace Across Files</div>
-        <div class="feature-desc">Regex-powered search with multi-file replace, preview diffs before applying, and per-file apply/skip controls.</div>
+        <div class="feature-title">8 AI Providers</div>
+        <div class="feature-desc">Claude, Gemini, GPT, Groq (free!), OpenRouter (free models), DeepSeek, Mistral, or 100% local Ollama. Switch anytime. Keys stay on your machine.</div>
       </div>
 
       <div class="feature-card c-sky" data-fade>
-        <div class="feature-icon fi-sky">🌿</div>
-        <div class="feature-title">Git Integration</div>
-        <div class="feature-desc">Stage, commit, view diffs, and let Kitsune write your commit message from the staged diff — directly in the sidebar.</div>
+        <div class="feature-icon fi-sky">📄</div>
+        <div class="feature-title">Universal File Viewer</div>
+        <div class="feature-desc">PDF viewer, Image viewer with zoom, Hex viewer for binaries (25+ format detection). Open anything without leaving the IDE.</div>
       </div>
 
       <div class="feature-card c-yellow" data-fade>
-        <div class="feature-icon fi-yellow">🎨</div>
-        <div class="feature-title">Color Picker &amp; Vision</div>
-        <div class="feature-desc">Click any hex/rgb/hsl value in code to open a live color picker. Paste screenshots — Kitsune sees them and understands your UI.</div>
+        <div class="feature-icon fi-yellow">🌿</div>
+        <div class="feature-title">Git + Blame</div>
+        <div class="feature-desc">Stage, commit, diff — all in sidebar. Inline git blame shows author, date, and commit hash per line. AI writes your commit message from staged diff.</div>
       </div>
 
       <div class="feature-card c-mauve" data-fade>
-        <div class="feature-icon fi-mauve">📊</div>
-        <div class="feature-title">Symbol Outline</div>
-        <div class="feature-desc">Jump to any function, class, or variable. Active symbol tracks your cursor. Supports TS, Python, Go, Rust, Java, CSS and more.</div>
+        <div class="feature-icon fi-mauve">🔍</div>
+        <div class="feature-title">Command Palette</div>
+        <div class="feature-desc">Ctrl+P for fuzzy file search with recent files. Type <code>&gt; command</code> to run any action. Keyboard-first, instant results.</div>
       </div>
 
       <div class="feature-card c-blue" data-fade>
-        <div class="feature-icon fi-blue">🗄️</div>
-        <div class="feature-title">SQLite Explorer</div>
-        <div class="feature-desc">Browse, query, and edit SQLite databases without leaving the IDE. Run custom SQL and inspect results in a grid view.</div>
+        <div class="feature-icon fi-blue">✍️</div>
+        <div class="feature-title">Inline AI Completions</div>
+        <div class="feature-desc">Copilot-style ghost text as you type, powered by your chosen AI provider. Tab to accept, Esc to dismiss. Toggle on/off instantly.</div>
       </div>
 
       <div class="feature-card c-green" data-fade>
-        <div class="feature-icon fi-green">📦</div>
-        <div class="feature-title">Package Manager</div>
-        <div class="feature-desc">Search, install, and uninstall npm packages from a visual UI. One-click add to your project without touching a terminal.</div>
+        <div class="feature-icon fi-green">🎨</div>
+        <div class="feature-title">Color Picker &amp; Vision</div>
+        <div class="feature-desc">Click any hex/rgb/hsl value in code to edit live. Paste screenshots — Kitsune sees and understands your UI, errors, and designs.</div>
       </div>
 
       <div class="feature-card c-peach" data-fade>
-        <div class="feature-icon fi-peach">🌊</div>
-        <div class="feature-title">Visual Flow Editor</div>
-        <div class="feature-desc">Drag-and-drop node graph builder for designing data flows, API pipelines, and logic diagrams — export as JSON or code.</div>
+        <div class="feature-icon fi-peach">🗄️</div>
+        <div class="feature-title">SQLite Explorer</div>
+        <div class="feature-desc">Browse, query, and edit SQLite databases without leaving the IDE. Run custom SQL, inspect results in a grid view.</div>
       </div>
 
       <div class="feature-card c-sky" data-fade>
-        <div class="feature-icon fi-sky">🕹️</div>
-        <div class="feature-title">HTTP Client</div>
-        <div class="feature-desc">Built-in REST/GraphQL client. Save requests, inspect responses, and test APIs without switching to Insomnia or Postman.</div>
+        <div class="feature-icon fi-sky">🧩</div>
+        <div class="feature-title">Block &amp; Flow Editor</div>
+        <div class="feature-desc">Beginner-friendly Blockly block coding with Beginner/Intermediate/Advanced toolboxes. Visual Flow Editor for node-graph programming.</div>
       </div>
 
       <div class="feature-card c-yellow" data-fade>
-        <div class="feature-icon fi-yellow">⏱️</div>
-        <div class="feature-title">Time-Travel Debugger</div>
-        <div class="feature-desc">Record and replay code execution step-by-step. Inspect variable states at any point in time — no more console.log archaeology.</div>
+        <div class="feature-icon fi-yellow">🛠️</div>
+        <div class="feature-title">Full Toolbox</div>
+        <div class="feature-desc">Canvas Playground, Regex Playground, Code Screenshot, HTTP Client, Package Manager (npm/pip/cargo), TODO Scanner, Snippet Manager, and more.</div>
       </div>
     </div>
   </div>
@@ -789,7 +796,7 @@
     <div class="kitsune-chat" data-fade>
       <div class="chat-header">
         <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
-          <path d="M16 3C10 3 6 7.5 6 12C6 16 8.5 18.5 11 20L11 25L16 23L21 25L21 20C23.5 18.5 26 16 26 12C26 7.5 22 3 16 3Z" fill="#cba6f7"/>
+          <path d="M16 3C10 3 6 7.5 6 12C6 16 8.5 18.5 11 20L11 25L16 23L21 25L21 20C23.5 18.5 26 16 26 12C26 7.5 22 3 16 3Z" fill="#f97316"/>
           <circle cx="12" cy="12" r="1.5" fill="#1e1e2e"/>
           <circle cx="20" cy="12" r="1.5" fill="#1e1e2e"/>
           <path d="M13 16Q16 18.5 19 16" stroke="#1e1e2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
@@ -837,7 +844,7 @@
     </p>
     <div class="providers-grid" data-fade>
       <div class="provider-card">
-        <div class="provider-logo" style="background:rgba(203,166,247,.1)">🌸</div>
+        <div class="provider-logo" style="background:rgba(249,115,22,.1)">🌸</div>
         <div>
           <div class="provider-name">Claude</div>
           <div class="provider-sub">Anthropic · claude-3.5-sonnet</div>
@@ -885,7 +892,7 @@
       <div data-fade style="position:relative; display:flex; justify-content:center;">
         <!-- soft glow -->
         <div style="position:absolute;inset:-20px;pointer-events:none;
-          background:radial-gradient(ellipse 70% 70% at 50% 60%,rgba(251,146,60,.15) 0%,rgba(203,166,247,.07) 50%,transparent 70%);"></div>
+          background:radial-gradient(ellipse 70% 70% at 50% 60%,rgba(251,146,60,.15) 0%,rgba(249,115,22,.07) 50%,transparent 70%);"></div>
 
         <img
           src="kitsune-char.png"
@@ -969,11 +976,11 @@
       Free forever. No account required. Installs in seconds.
     </p>
     <div class="dl-version" style="justify-content:center;margin-top:1rem">
-      Latest release: <code>v1.1.0</code>
+      Latest release: <code>v1.2.0</code>
     </div>
     <div class="download-cards">
       <!-- Windows -->
-      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-Setup-1.1.0.exe" class="dl-card">
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-Setup-1.1.0.exe" class="dl-card">
         <div class="dl-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
             <path d="M0 3.449L9.75 2.099v9.451H0m10.949-9.602L24 0v11.5H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-13.051-1.949" fill="#00adef"/>
@@ -983,7 +990,7 @@
         <div class="dl-fmt">.exe installer · x64</div>
       </a>
       <!-- macOS Intel -->
-      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0-x64.dmg" class="dl-card">
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.1.0-x64.dmg" class="dl-card">
         <div class="dl-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701"/>
@@ -993,7 +1000,7 @@
         <div class="dl-fmt">.dmg · x64</div>
       </a>
       <!-- macOS Apple Silicon -->
-      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0-arm64.dmg" class="dl-card">
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.1.0-arm64.dmg" class="dl-card">
         <div class="dl-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.701"/>
@@ -1003,7 +1010,7 @@
         <div class="dl-fmt">.dmg · Apple M1/M2/M3</div>
       </a>
       <!-- Linux -->
-      <a href="https://github.com/parallax-ide/parallax-ide/releases/download/v1.1.0/Parallax-IDE-1.1.0.AppImage" class="dl-card">
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.1.0.AppImage" class="dl-card">
         <div class="dl-icon">
           <svg width="38" height="40" viewBox="0 0 48 52" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="24" cy="34" rx="14" ry="16" fill="#111"/>
@@ -1027,7 +1034,7 @@
     </div>
     <p style="margin-top:2rem;font-size:0.8rem;color:var(--overlay0)">
       View all releases and source code on
-      <a href="https://github.com/parallax-ide/parallax-ide/releases" style="color:var(--mauve)">GitHub Releases</a>
+      <a href="https://github.com/momiji-ide/momiji-ide/releases" style="color:var(--mauve)">GitHub Releases</a>
     </p>
   </div>
 </section>
@@ -1035,10 +1042,10 @@
 <!-- ── FOOTER ── -->
 <footer>
   <div class="footer-links">
-    <a href="https://github.com/parallax-ide/parallax-ide" target="_blank">GitHub</a>
-    <a href="https://github.com/parallax-ide/parallax-ide/releases" target="_blank">Releases</a>
-    <a href="https://github.com/parallax-ide/parallax-ide/issues" target="_blank">Issues</a>
-    <a href="https://github.com/parallax-ide/parallax-ide/blob/main/LICENSE" target="_blank">License</a>
+    <a href="https://github.com/momiji-ide/momiji-ide" target="_blank">GitHub</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/releases" target="_blank">Releases</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/issues" target="_blank">Issues</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/blob/main/LICENSE" target="_blank">License</a>
   </div>
   <p class="footer-copy">
     Built with <span>♥</span> using Electron · React · Monaco · Catppuccin ·

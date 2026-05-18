@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kitsune AI — Character Demo</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: radial-gradient(ellipse at 35% 55%, #1e0d35 0%, #0c0c1a 65%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      overflow: hidden;
+    }
+
+    /* ── ambient glow behind character ── */
+    .glow {
+      position: absolute;
+      width: 320px; height: 500px;
+      background: radial-gradient(ellipse, rgba(255,130,40,0.13) 0%, transparent 70%);
+      top: 80px; left: 60px;
+      pointer-events: none;
+      animation: pulse 5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100%{ opacity:.7; transform:scale(1); }
+      50%    { opacity:1;  transform:scale(1.1); }
+    }
+
+    /* ════════════════════════════════════════
+       CHARACTER
+    ════════════════════════════════════════ */
+    .scene {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+    }
+
+    /* outer wrapper — drives the whole-body float */
+    .kitsune {
+      position: relative;
+      width: 440px;
+      height: 700px;
+      animation: float 4s ease-in-out infinite;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    @keyframes float {
+      0%,100%{ transform: translateY(0px); }
+      50%    { transform: translateY(-10px); }
+    }
+
+    /* every sprite layer */
+    .sp {
+      position: absolute;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+
+    /* ── layer order ── */
+    .l-tail    { z-index: 1; }
+    .l-leg     { z-index: 5; }
+    .l-body    { z-index: 10; }
+    .l-skirt   { z-index: 11; }
+    .l-head    { z-index: 20; }
+    .l-eyes    { z-index: 22; }  /* blink overlay */
+    .l-bubble  { z-index: 30; }
+
+    /* ── breathing on upper body ── */
+    .breathe {
+      position: absolute; inset: 0;
+      animation: breathe 2.8s ease-in-out infinite;
+      transform-origin: center 60%;
+    }
+    @keyframes breathe {
+      0%,100%{ transform: scaleY(1)    translateY(0px); }
+      45%    { transform: scaleY(1.012) translateY(-1px); }
+    }
+
+    /* ── tail animations (each tail fans a different way) ── */
+    .tail-a {
+      animation: tailA 2.7s ease-in-out infinite;
+      transform-origin: 70% 10%;
+    }
+    .tail-b {
+      animation: tailB 3.3s ease-in-out infinite;
+      transform-origin: 60% 10%;
+      animation-delay: -1.1s;
+    }
+    .tail-c {
+      animation: tailC 2.1s ease-in-out infinite;
+      transform-origin: 65% 10%;
+      animation-delay: -0.5s;
+    }
+    @keyframes tailA {
+      0%,100%{ transform: rotate(-8deg) translateX(-4px); }
+      50%    { transform: rotate(9deg)  translateX(5px); }
+    }
+    @keyframes tailB {
+      0%,100%{ transform: rotate(6deg); }
+      50%    { transform: rotate(-10deg); }
+    }
+    @keyframes tailC {
+      0%,100%{ transform: rotate(-5deg) translateY(3px); }
+      50%    { transform: rotate(11deg) translateY(-3px); }
+    }
+
+    /* ── head tracks mouse (set via JS) ── */
+    #head-wrap {
+      position: absolute; inset: 0;
+      transform-origin: 178px 80px;
+      will-change: transform;
+    }
+
+    /* ── eye blink ── */
+    #eye-layer {
+      transform-origin: center center;
+      will-change: transform;
+      transition: transform 0.06s ease;
+    }
+
+    /* ── expression fade ── */
+    .swap { transition: opacity 0.15s ease; }
+    .swap.fade { opacity: 0; }
+
+    /* ── speech bubble ── */
+    #bubble {
+      position: absolute;
+      top: -50px; left: 50%; transform: translateX(-50%);
+      background: rgba(20,12,40,0.93);
+      border: 1px solid rgba(255,140,50,0.5);
+      border-radius: 10px;
+      padding: 7px 14px;
+      color: #ffd080;
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+      z-index: 30;
+    }
+    #bubble.show { opacity: 1; }
+    #bubble::after {
+      content:'';
+      position:absolute; bottom:-7px; left:50%;
+      transform:translateX(-50%);
+      border:4px solid transparent;
+      border-top-color:rgba(255,140,50,0.5);
+    }
+
+    /* ════════════════════════════════════════
+       PANEL
+    ════════════════════════════════════════ */
+    .panel {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,140,50,0.22);
+      border-radius: 14px;
+      padding: 18px 14px;
+      min-width: 155px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      backdrop-filter: blur(10px);
+    }
+    .p-title {
+      color: #ff9030;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,140,50,0.18);
+      padding-bottom: 7px;
+      margin-bottom: 2px;
+    }
+    .p-label {
+      color: rgba(255,170,70,0.6);
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+    .btn {
+      background: transparent;
+      border: 1px solid rgba(255,140,50,0.28);
+      color: rgba(255,175,80,0.82);
+      padding: 6px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      font: 11px/1 inherit;
+      text-align: left;
+      transition: all 0.14s;
+    }
+    .btn:hover  { background:rgba(255,140,50,0.16); transform:translateX(3px); border-color:rgba(255,140,50,0.55); }
+    .btn.active { background:rgba(255,140,50,0.28); border-color:#ff9030; color:#fff; }
+  </style>
+</head>
+<body>
+<div class="scene">
+  <div class="glow"></div>
+
+  <!-- ══════════════════════════════════
+       CHARACTER RIG
+  ══════════════════════════════════ -->
+  <div class="kitsune" id="kitsune" onclick="onClickChar()">
+    <div id="bubble">やあ！何か聞いてね ✨</div>
+
+    <!-- whole-body float is on .kitsune itself -->
+
+    <!-- ── TAILS (behind everything, left side) ── -->
+    <!--
+      tail_01 (177×210): contains 2 tails — main orange+white (left) + partial gray (right)
+      tail_02 (179×210): 3 gray+orange tails
+      We show them behind body, fanned out, clipped via overflow on wrapper
+    -->
+    <div style="position:absolute; left:0; top:280px; width:185px; height:220px;
+                overflow:hidden; z-index:1;">
+      <img class="sp tail-a"
+           src="kitsune_parts/tail_01.png"
+           style="left:-8px; top:0; width:185px;">
+    </div>
+
+    <div style="position:absolute; left:25px; top:260px; width:185px; height:220px;
+                overflow:hidden; z-index:1; opacity:0.9;">
+      <img class="sp tail-b"
+           src="kitsune_parts/tail_02.png"
+           style="left:0; top:0; width:175px;">
+    </div>
+
+    <div style="position:absolute; left:12px; top:295px; width:180px; height:200px;
+                overflow:hidden; z-index:1; opacity:0.85; transform:scaleX(-1);">
+      <img class="sp tail-c"
+           src="kitsune_parts/tail_01.png"
+           style="left:-5px; top:5px; width:175px;">
+    </div>
+
+    <!-- ── LEGS ── -->
+    <img class="sp l-leg"
+         src="kitsune_parts/leg_upper_L.png"
+         style="left:128px; top:448px; width:56px;">
+    <img class="sp l-leg"
+         src="kitsune_parts/leg_upper_R.png"
+         style="left:190px; top:448px; width:60px;">
+
+    <img class="sp l-leg"
+         src="kitsune_parts/leg_lower_L.png"
+         style="left:126px; top:548px; width:60px;">
+    <img class="sp l-leg"
+         src="kitsune_parts/leg_lower_R.png"
+         style="left:188px; top:548px; width:60px;">
+
+    <img class="sp l-leg"
+         src="kitsune_parts/boot_L.png"
+         style="left:112px; top:618px; width:88px;">
+    <img class="sp l-leg"
+         src="kitsune_parts/boot_R.png"
+         style="left:180px; top:616px; width:84px;">
+
+    <!-- ── UPPER BODY (breathe group) ── -->
+    <div class="breathe">
+      <!-- jacket_body: 193×300 — front of the jacket, no arms needed -->
+      <img class="sp l-body"
+           src="kitsune_parts/jacket_body.png"
+           style="left:92px; top:145px; width:188px;">
+
+      <!-- skirt_full: 215×198 — lower body, overlaps bottom of jacket -->
+      <img class="sp l-skirt"
+           src="kitsune_parts/skirt_full.png"
+           style="left:78px; top:355px; width:208px;">
+    </div>
+
+    <!-- ── HEAD GROUP (mouse-tracked) ── -->
+    <div id="head-wrap">
+
+      <!-- face_0X: complete head including hair (140-147 × 142-158px)
+           Displayed slightly bigger for presence. Center at x≈178. -->
+      <img class="sp l-head swap"
+           id="face-img"
+           src="kitsune_parts/face_01_neutral.png"
+           style="left:98px; top:2px; width:162px;">
+
+      <!-- Eye blink overlay — sits over the eyes in the face image.
+           face is 162px wide starting at x=98.
+           Eyes in face appear ~55-72px from top, horizontally centered. -->
+      <img class="sp l-eyes"
+           id="eye-layer"
+           src="kitsune_parts/eyes_13_amber_open.png"
+           style="left:106px; top:62px; width:148px;">
+
+    </div><!-- /head-wrap -->
+
+  </div><!-- /kitsune -->
+
+  <!-- ══════════════════════════════════
+       CONTROL PANEL
+  ══════════════════════════════════ -->
+  <div class="panel">
+    <div class="p-title">🦊 Kitsune AI</div>
+
+    <div class="p-label">EXPRESSION</div>
+    <button class="btn active" onclick="setFace('neutral')">😐 neutral</button>
+    <button class="btn"        onclick="setFace('happy')">😄 happy</button>
+    <button class="btn"        onclick="setFace('blush')">😊 blush</button>
+    <button class="btn"        onclick="setFace('smirk')">😏 smirk</button>
+    <button class="btn"        onclick="setFace('sleepy')">😴 sleepy</button>
+    <button class="btn"        onclick="setFace('smile')">🌟 smile</button>
+
+    <div class="p-label">EYES</div>
+    <button class="btn active" onclick="setEyes('open')">✦ amber open</button>
+    <button class="btn"        onclick="setEyes('closed')">— closed</button>
+    <button class="btn"        onclick="setEyes('side')">→ side glance</button>
+    <button class="btn"        onclick="setEyes('pair')">◉ pair</button>
+
+    <div class="p-label">ANIM</div>
+    <button class="btn active" id="btn-anim" onclick="toggleAnim()">⏸ pause</button>
+  </div>
+</div><!-- /scene -->
+
+<script>
+  const BASE = 'kitsune_parts/';
+
+  const FACES = {
+    neutral: 'face_01_neutral.png',
+    happy:   'face_02_happy.png',
+    blush:   'face_03_blush.png',
+    smirk:   'face_04_smirk.png',
+    sleepy:  'face_05_sleepy.png',
+    smile:   'face_06_smile_big.png',
+  };
+
+  const EYES = {
+    open:   'eyes_13_amber_open.png',
+    closed: 'eyes_14_closed.png',
+    side:   'eyes_15_side_glance.png',
+    pair:   'eyes_19_amber_pair.png',
+  };
+
+  // ── face swap with fade ──────────────────────────────
+  function setFace(name) {
+    if (!FACES[name]) return;
+    const el = document.getElementById('face-img');
+    el.classList.add('fade');
+    setTimeout(() => {
+      el.src = BASE + FACES[name];
+      el.classList.remove('fade');
+    }, 130);
+    document.querySelectorAll('.panel .btn').forEach(b => {
+      const txt = b.textContent.trim().replace(/^.+ /, '');
+      b.classList.toggle('active', txt === name);
+    });
+  }
+
+  function setEyes(name) {
+    if (!EYES[name]) return;
+    document.getElementById('eye-layer').src = BASE + EYES[name];
+  }
+
+  // ── auto blink ───────────────────────────────────────
+  function doBlink() {
+    const el = document.getElementById('eye-layer');
+    const seq = [
+      [0, 'scaleY(0.06)'],
+      [75, 'scaleY(1)'],
+      [185, 'scaleY(0.06)'],
+      [255, 'scaleY(1)'],
+    ];
+    seq.forEach(([t, v]) =>
+      setTimeout(() => { el.style.transform = v; }, t)
+    );
+  }
+
+  function scheduleBlink() {
+    const d = 2600 + Math.random() * 4200;
+    setTimeout(() => { doBlink(); scheduleBlink(); }, d);
+  }
+  scheduleBlink();
+
+  // ── mouse head-tracking (smooth lerp) ────────────────
+  const headWrap = document.getElementById('head-wrap');
+  const charEl   = document.getElementById('kitsune');
+  let tRot = 0, tY = 0;
+  let cRot = 0, cY = 0;
+
+  document.addEventListener('mousemove', e => {
+    const r  = charEl.getBoundingClientRect();
+    const cx = r.left + r.width * 0.5;
+    const cy = r.top  + r.height * 0.22; // pivot near head
+    const dx = (e.clientX - cx) / (window.innerWidth * 0.4);
+    const dy = (e.clientY - cy) / (window.innerHeight * 0.4);
+    tRot = Math.max(-1, Math.min(1, dx)) * 3.5;
+    tY   = Math.max(-1, Math.min(1, dy)) * 3;
+  });
+
+  (function lerp() {
+    cRot += (tRot - cRot) * 0.06;
+    cY   += (tY   - cY)   * 0.06;
+    headWrap.style.transform =
+      `rotate(${cRot.toFixed(2)}deg) translateY(${cY.toFixed(2)}px)`;
+    requestAnimationFrame(lerp);
+  })();
+
+  // ── click: random expression + bubble ────────────────
+  const LINES = [
+    'やあ！何か聞いてね ✨',
+    'コード書いてる？手伝うよ！',
+    'バグ見つけた？任せて 🔍',
+    'ふふ、もっと頑張ろう 🦊',
+    'いつでも呼んでね！',
+    '今日も一緒に頑張ろう！',
+  ];
+  let lineI = 0;
+  const bubble = document.getElementById('bubble');
+  let bubTimer = null;
+
+  function onClickChar() {
+    bubble.textContent = LINES[lineI++ % LINES.length];
+    bubble.classList.add('show');
+    clearTimeout(bubTimer);
+    bubTimer = setTimeout(() => bubble.classList.remove('show'), 3200);
+
+    const keys = Object.keys(FACES);
+    setFace(keys[Math.floor(Math.random() * keys.length)]);
+  }
+
+  // ── pause / resume animations ─────────────────────────
+  let paused = false;
+  function toggleAnim() {
+    paused = !paused;
+    document.querySelectorAll('.kitsune, .kitsune *').forEach(el => {
+      el.style.animationPlayState = paused ? 'paused' : '';
+    });
+    const btn = document.getElementById('btn-anim');
+    btn.textContent = paused ? '▶ resume' : '⏸ pause';
+  }
+</script>
+</body>
+</html>
