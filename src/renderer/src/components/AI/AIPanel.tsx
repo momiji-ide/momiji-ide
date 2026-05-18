@@ -477,6 +477,31 @@ export function AIPanel() {
     return { text: data.choices[0].message.content as string, tokensIn: data.usage?.prompt_tokens, tokensOut: data.usage?.completion_tokens }
   }
 
+  // ── OpenAI-compatible wrapper — used by Groq, OpenRouter, DeepSeek, Mistral ──
+  const callOpenAICompat = async (provider: typeof aiProviders[0], userMessage: string, image: AttachedImage | null) => {
+    const ENDPOINTS: Record<string, string> = {
+      groq:       'https://api.groq.com/openai/v1/chat/completions',
+      openrouter: 'https://openrouter.ai/api/v1/chat/completions',
+      deepseek:   'https://api.deepseek.com/v1/chat/completions',
+      mistral:    'https://api.mistral.ai/v1/chat/completions',
+    }
+    const url = provider.baseUrl ? `${provider.baseUrl}/v1/chat/completions` : ENDPOINTS[provider.id]
+    if (!url) throw new Error(`Unknown provider: ${provider.id}`)
+    const history = messages.filter(m => !m.streaming).map(m => ({ role: m.role, content: m.content }))
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.apiKey}` }
+    if (provider.id === 'openrouter') {
+      headers['HTTP-Referer'] = 'https://parallax-ide.github.io'
+      headers['X-Title'] = 'Parallax IDE'
+    }
+    const resp = await fetch(url, {
+      method: 'POST', headers,
+      body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: buildSystemPrompt() }, ...history, { role: 'user', content: userMessage }] })
+    })
+    const data = await resp.json()
+    if (!resp.ok) throw new Error(data.error?.message ?? `${provider.name} error`)
+    return { text: data.choices?.[0]?.message?.content as string ?? '', tokensIn: data.usage?.prompt_tokens, tokensOut: data.usage?.completion_tokens }
+  }
+
   // ── Send ──────────────────────────────────────────────────────────────────
   // Keep a ref to the latest handleSend so event listeners always call fresh version
   const handleSendRef = useRef<(override?: string) => void>(() => {})
@@ -517,6 +542,11 @@ export function AIPanel() {
         if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))
       } else if (activeProvider.id === 'ollama') {
         const { text, tokensIn, tokensOut } = await callOllama(activeProvider, userMessage, imageSnapshot)
+        const elapsed = stopTimer()
+        setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
+        if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))
+      } else if (['groq','openrouter','deepseek','mistral'].includes(activeProvider.id)) {
+        const { text, tokensIn, tokensOut } = await callOpenAICompat(activeProvider, userMessage, imageSnapshot)
         const elapsed = stopTimer()
         setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
         if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))

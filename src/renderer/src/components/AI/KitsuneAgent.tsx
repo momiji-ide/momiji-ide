@@ -8,16 +8,27 @@ import kitsuneConfuse from '../../assets/kitsune-confuse.png'
 
 // ─── Context window sizes ─────────────────────────────────────────────────────
 const CONTEXT_WINDOWS: Record<string, number> = {
-  'claude-haiku-4-5': 200_000, 'claude-sonnet-4-5': 200_000, 'claude-sonnet-4-6': 200_000, 'claude-opus-4-5': 200_000,
-  'gemini-3-flash-preview': 1_048_576, 'gemini-2.0-flash': 1_048_576, 'gemini-2.0-flash-exp': 1_048_576,
-  'gemini-1.5-flash': 1_048_576, 'gemini-1.5-flash-8b': 1_048_576, 'gemini-1.5-pro': 2_097_152,
-  'gpt-4o': 128_000, 'gpt-4o-mini': 128_000,
+  // Claude
+  'claude-haiku-4-5': 200_000, 'claude-sonnet-4-5': 200_000, 'claude-opus-4-5': 200_000,
+  // Gemini
+  'gemini-2.5-flash-preview-05-20': 1_048_576, 'gemini-2.5-pro-preview-05-06': 2_000_000,
+  'gemini-2.0-flash': 1_048_576, 'gemini-2.0-flash-lite': 1_048_576,
+  // OpenAI
+  'gpt-4o': 128_000, 'gpt-4o-mini': 128_000, 'o3-mini': 200_000, 'o1-mini': 128_000,
+  // Groq
+  'llama-3.3-70b-versatile': 128_000, 'llama-3.1-8b-instant': 128_000,
+  'mixtral-8x7b-32768': 32_768, 'gemma2-9b-it': 8_192,
+  // DeepSeek
+  'deepseek-chat': 64_000, 'deepseek-reasoner': 64_000,
+  // Mistral
+  'mistral-small-latest': 32_000, 'mistral-large-latest': 128_000, 'codestral-latest': 32_000,
 }
 function getCtxWindow(model: string) {
   if (CONTEXT_WINDOWS[model]) return CONTEXT_WINDOWS[model]
   if (model.includes('gemini')) return 1_048_576
   if (model.includes('claude')) return 200_000
-  return 128_000
+  if (model.includes('llama') || model.includes('deepseek')) return 128_000
+  return 32_000
 }
 function fmtK(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M'
@@ -530,7 +541,19 @@ Never skip tool calls. If the task involves creating files, you must call write_
       if (activeProvider.id === 'claude') await runClaudeAgent(activeProvider, task, imageSnapshot)
       else if (activeProvider.id === 'gemini') await runGeminiAgent(activeProvider, task, imageSnapshot)
       else if (activeProvider.id === 'ollama') await runOllamaAgent(activeProvider, task)
-      else addAct({ type: 'error', result: 'Agent mode requires Claude, Gemini, or Ollama. Enable one in ⚙️ Settings.', status: 'error' })
+      else if (['groq','openrouter','deepseek','mistral','openai'].includes(activeProvider.id)) {
+        // OpenAI-compatible providers — use Ollama runner with custom base URL
+        const compat = {
+          ...activeProvider,
+          baseUrl: activeProvider.id === 'groq' ? 'https://api.groq.com/openai'
+            : activeProvider.id === 'openrouter' ? 'https://openrouter.ai/api'
+            : activeProvider.id === 'deepseek'   ? 'https://api.deepseek.com'
+            : activeProvider.id === 'mistral'    ? 'https://api.mistral.ai'
+            : 'https://api.openai.com',
+        }
+        await runOllamaAgent(compat, task)
+      }
+      else addAct({ type: 'error', result: 'No supported AI provider enabled. Configure one in ⚙️ Settings.', status: 'error' })
     } catch (e: any) {
       addAct({ type: 'error', result: `❌ ${e.message}`, status: 'error' })
     }
