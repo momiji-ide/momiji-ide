@@ -671,6 +671,32 @@ function setupIpcHandlers(): void {
     try { await git(['checkout', '--', filePath], cwd); return { ok: true } }
     catch (e: any) { return { ok: false, error: e.message } }
   })
+
+  ipcMain.handle('git:blame', async (_, cwd: string, filePath: string) => {
+    try {
+      const out = await git(['blame', '--porcelain', '--', filePath], cwd)
+      const result: { line: number; hash: string; author: string; date: string; summary: string }[] = []
+      const lines = out.split('\n')
+      let cur: any = {}
+      for (const line of lines) {
+        if (/^[0-9a-f]{40}\s/.test(line)) {
+          const parts = line.split(' ')
+          cur = { hash: parts[0].slice(0, 7), line: parseInt(parts[2]) }
+        } else if (line.startsWith('author '))      cur.author  = line.slice(7).trim()
+        else if (line.startsWith('author-time '))   cur.date    = new Date(parseInt(line.slice(12)) * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        else if (line.startsWith('summary '))       cur.summary = line.slice(8).trim()
+        else if (line.startsWith('\t')) { if (cur.hash) result.push({ ...cur }); cur = {} }
+      }
+      return { ok: true, lines: result }
+    } catch (e: any) { return { ok: false, lines: [] } }
+  })
+
+  ipcMain.handle('fs:readBinary', async (_, filePath: string) => {
+    try {
+      const buf = fs.readFileSync(filePath)
+      return { ok: true, base64: buf.toString('base64') }
+    } catch (e: any) { return { ok: false, base64: '' } }
+  })
 }
 
 interface FileNode {

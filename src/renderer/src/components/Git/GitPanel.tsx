@@ -8,6 +8,36 @@ import { useAppStore } from '../../store/appStore'
 interface GitFile { status: string; staged: boolean; path: string }
 interface Commit   { hash: string; subject: string; author: string; date: string }
 
+// Simple markdown renderer for review output
+function ReviewMarkdown({ text }: { text: string }) {
+  const lines = text.split('\n')
+  return (
+    <div style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--text)' }}>
+      {lines.map((line, i) => {
+        if (line.startsWith('## ')) {
+          const head = line.slice(3)
+          const color = head.includes('🔴') ? 'var(--accent-red)'
+            : head.includes('🟡') ? 'var(--accent-yellow)'
+            : head.includes('🟢') ? 'var(--accent-green)'
+            : head.includes('✅') ? 'var(--accent-teal)'
+            : 'var(--accent-mauve)'
+          return <h3 key={i} style={{ color, fontWeight: 700, fontSize: 12, marginTop: 14, marginBottom: 4, paddingBottom: 4, borderBottom: `1px solid ${color}44` }}>{head}</h3>
+        }
+        if (line.startsWith('- **')) {
+          const m = line.match(/^- \*\*(.+?)\*\*: (.+)/)
+          if (m) return <div key={i} style={{ marginLeft: 8, marginBottom: 4 }}>
+            <span style={{ color: 'var(--accent-yellow)', fontWeight: 600 }}>• {m[1]}:</span>
+            <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>{m[2]}</span>
+          </div>
+        }
+        if (line.startsWith('- ')) return <div key={i} style={{ marginLeft: 8, marginBottom: 2, color: 'var(--text-muted)' }}>• {line.slice(2)}</div>
+        if (line.trim() === '' ) return <div key={i} style={{ height: 6 }} />
+        return <p key={i} style={{ color: 'var(--text-muted)', marginBottom: 2 }}>{line}</p>
+      })}
+    </div>
+  )
+}
+
 function StatusBadge({ s }: { s: string }) {
   const map: Record<string, [string, string]> = {
     M: ['M', 'var(--accent-yellow)'], A: ['A', 'var(--accent-green)'],
@@ -82,8 +112,10 @@ export function GitPanel() {
   const [pulling,    setPulling]    = useState(false)
   const [committing, setCommitting] = useState(false)
   const [genMsg,     setGenMsg]     = useState(false)
+  const [reviewing,  setReviewing]  = useState(false)
+  const [review,     setReview]     = useState('')
   const [toast,      setToast]      = useState('')
-  const [tab,        setTab]        = useState<'changes'|'log'>('changes')
+  const [tab,        setTab]        = useState<'changes'|'log'|'review'>('changes')
   const [showBranch, setShowBranch] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval>>()
 
@@ -198,6 +230,68 @@ export function GitPanel() {
     setGenMsg(false)
   }
 
+  // ── AI Code Review ────────────────────────────────────────────────────────
+  const doReview = async () => {
+    if (!currentFolder) return
+    const provider = aiProviders.find(p => p.enabled && p.apiKey && ['claude','gemini','openai'].includes(p.id))
+    if (!provider) { showToast('❌ No AI provider enabled'); return }
+    if (!files.length) { showToast('No changes to review'); return }
+
+    setReviewing(true); setReview(''); setTab('review')
+
+    let combinedDiff = ''
+    for (const f of files.slice(0, 8)) {
+      const r = await window.api.git.diff(currentFolder, f.path, f.staged)
+      if (r.diff) combinedDiff += `\n=== ${f.staged ? '[STAGED]' : '[UNSTAGED]'} ${f.path} ===\n${r.diff.slice(0, 1500)}`
+    }
+
+    const prompt = `You are a senior software engineer doing a thorough code review. Analyze these git changes:
+
+${combinedDiff}
+
+Respond in this exact format:
+
+## 🔴 Critical Issues
+(bugs, security flaws, crashes — "- **issue**: explanation" or "None found.")
+
+## 🟡 Warnings
+(performance, code smells, bad practices)
+
+## 🟢 Suggestions
+(style, patterns, missing tests)
+
+## ✅ What's Good
+(positive aspects worth noting)
+
+## 📝 Summary
+(2-3 sentence overall assessment)`
+
+    try {
+      let text = ''
+      if (provider.id === 'claude') {
+        const d = await (await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': provider.apiKey, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: provider.model, max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+        })).json()
+        text = d.content?.[0]?.text?.trim() ?? ''
+      } else if (provider.id === 'gemini') {
+        const d = await (await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent?key=${provider.apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 2000 } })
+        })).json()
+        text = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? ''
+      } else {
+        const d = await (await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.apiKey}` },
+          body: JSON.stringify({ model: provider.model, max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+        })).json()
+        text = d.choices?.[0]?.message?.content?.trim() ?? ''
+      }
+      setReview(text || '❌ AI returned empty')
+    } catch (e: any) { setReview(`❌ ${e.message}`) }
+    setReviewing(false)
+  }
+
   if (!currentFolder) return (
     <div className="flex flex-col items-center justify-center h-full gap-2 p-4 text-center">
       <span style={{ fontSize: 32 }}>🌿</span>
@@ -262,13 +356,19 @@ export function GitPanel() {
       )}
 
       {/* Tabs */}
-      <div className="flex-shrink-0 flex" style={{ borderBottom: '1px solid var(--border)' }}>
-        {(['changes', 'log'] as const).map(t => (
+      <div className="flex-shrink-0 flex items-stretch" style={{ borderBottom: '1px solid var(--border)' }}>
+        {(['changes', 'log', 'review'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className="flex-1 py-1.5 text-xs font-semibold"
             style={{ color: tab === t ? 'var(--accent-green)' : 'var(--text-subtle)', borderBottom: tab === t ? '2px solid var(--accent-green)' : '2px solid transparent', background: 'none', border: 'none', cursor: 'pointer' }}>
-            {t === 'changes' ? `Changes (${files.length})` : 'Log'}
+            {t === 'changes' ? `Changes (${files.length})` : t === 'log' ? 'Log' : '🦊 Review'}
           </button>
         ))}
+        <button onClick={doReview} disabled={reviewing || !files.length}
+          className="px-2 py-1.5 text-xs font-bold flex-shrink-0"
+          title="AI Code Review — Kitsune reviews all your changes"
+          style={{ background: reviewing ? 'var(--bg-surface0)' : 'var(--accent-mauve)', color: reviewing ? 'var(--text-subtle)' : 'white', border: 'none', cursor: 'pointer', minWidth: 60 }}>
+          {reviewing ? '…' : '🦊 Review'}
+        </button>
       </div>
 
       {tab === 'changes' ? (
@@ -354,6 +454,35 @@ export function GitPanel() {
               </div>
             ))
           }
+        </div>
+      )}
+
+      {/* ── Review tab ── */}
+      {tab === 'review' && (
+        <div className="flex-1 overflow-y-auto">
+          {reviewing ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--text-subtle)' }}>
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' stroke='%23cba6f7' stroke-width='2' fill='none' stroke-dasharray='40 20'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='1s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/svg%3E"
+                style={{ width: 32, height: 32 }} alt="loading" />
+              <p className="text-xs animate-pulse" style={{ color: 'var(--accent-mauve)' }}>🦊 Kitsune is reviewing your code…</p>
+            </div>
+          ) : review ? (
+            <div className="p-3">
+              <ReviewMarkdown text={review} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full gap-3 p-4 text-center" style={{ color: 'var(--text-subtle)' }}>
+              <span style={{ fontSize: 36 }}>🦊</span>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>AI Code Review</p>
+              <p className="text-xs" style={{ maxWidth: 200, lineHeight: 1.6 }}>
+                Click <strong style={{ color: 'var(--accent-mauve)' }}>🦊 Review</strong> to have Kitsune analyze all your changes for bugs, security issues, and improvements.
+              </p>
+              <button onClick={doReview} disabled={!files.length}
+                style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', borderRadius: 6, padding: '6px 16px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
+                🦊 Start Review
+              </button>
+            </div>
+          )}
         </div>
       )}
 

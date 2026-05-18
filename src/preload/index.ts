@@ -24,7 +24,8 @@ const api = {
     delete: (targetPath: string) => ipcRenderer.invoke('fs:delete', targetPath),
     rename: (oldPath: string, newPath: string) => ipcRenderer.invoke('fs:rename', oldPath, newPath),
     stat: (filePath: string) => ipcRenderer.invoke('fs:stat', filePath),
-    watchDir: (dirPath: string) => ipcRenderer.invoke('fs:watchDir', dirPath),
+    watchDir:   (dirPath: string) => ipcRenderer.invoke('fs:watchDir', dirPath),
+    readBinary: (filePath: string) => ipcRenderer.invoke('fs:readBinary', filePath),
     onDirChanged: (callback: (dirPath: string) => void) => {
       ipcRenderer.on('fs:dirChanged', (_, dirPath) => callback(dirPath))
       return () => ipcRenderer.removeAllListeners('fs:dirChanged')
@@ -89,6 +90,7 @@ const api = {
     }
   },
   git: {
+    blame:      (cwd: string, file: string)         => ipcRenderer.invoke('git:blame',      cwd, file),
     status:     (cwd: string)                       => ipcRenderer.invoke('git:status',     cwd),
     diff:       (cwd: string, file: string, staged: boolean) => ipcRenderer.invoke('git:diff', cwd, file, staged),
     stage:      (cwd: string, file: string)         => ipcRenderer.invoke('git:stage',      cwd, file),
