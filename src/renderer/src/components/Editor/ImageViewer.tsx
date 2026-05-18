@@ -14,10 +14,20 @@ export function ImageViewer({ filePath }: { filePath: string }) {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    setSrc(''); setError(false); setZoom(1)
-    // Use file:// protocol directly — works in Electron renderer
-    const url = `file://${filePath.replace(/\\/g, '/')}`
-    setSrc(url)
+    setSrc(''); setError(false); setZoom(1); setInfo({ w: 0, h: 0, size: '' })
+    // Read as base64 via IPC — avoids Electron CSP blocking file:// in renderer
+    const ext = filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
+    const mime = ext === '.svg' ? 'image/svg+xml'
+      : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg'
+      : ext === '.gif' ? 'image/gif'
+      : ext === '.webp' ? 'image/webp'
+      : ext === '.ico' ? 'image/x-icon'
+      : ext === '.bmp' ? 'image/bmp'
+      : 'image/png'
+    window.api.fs.readBinary(filePath).then(r => {
+      if (r.ok && r.base64) setSrc(`data:${mime};base64,${r.base64}`)
+      else setError(true)
+    }).catch(() => setError(true))
   }, [filePath])
 
   const ext  = filePath.slice(filePath.lastIndexOf('.')).toLowerCase()

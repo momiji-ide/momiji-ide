@@ -79,8 +79,9 @@ export function BottomPanel({ height }: BottomPanelProps) {
               className="flex items-center gap-1.5 px-3 h-full text-xs whitespace-nowrap transition-colors"
               style={{
                 color: activeTab === tab.id ? 'var(--text)' : 'var(--text-muted)',
+                borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                 borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent',
-                background: 'transparent', border: 'none', cursor: 'pointer',
+                background: 'transparent', cursor: 'pointer',
               }}>
               {tab.label}
               {typeof tab.badge === 'number' && tab.badge > 0 && (
