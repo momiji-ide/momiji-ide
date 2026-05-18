@@ -327,20 +327,19 @@ export function AIPanel() {
   // ── Right-click "Ask Kitsune" from editor context menu ───────────────────
   useEffect(() => {
     const handler = (e: Event) => {
-      const { prompt } = (e as CustomEvent).detail
+      const { prompt } = (e as CustomEvent).detail as { prompt: string }
       if (!prompt) return
-      setInput(prompt)
-      setAiTab('chat')
-      // Also open the AI sidebar panel
+      // Open AI sidebar + switch to chat tab
       useAppStore.getState().setActivePanel('ai')
-      // Auto-send after a tick so the UI updates first
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('kitsune:autoSend'))
-      }, 100)
+      setAiTab('chat')
+      // Set input so user sees what was sent
+      setInput(prompt)
+      // Send directly via ref — bypasses stale closure, no timing issue
+      setTimeout(() => handleSendRef.current(prompt), 50)
     }
     window.addEventListener('kitsune:askWithPrompt', handler)
     return () => window.removeEventListener('kitsune:askWithPrompt', handler)
-  }, [])
+  }, []) // eslint-disable-line
 
   // ── Start / stop elapsed timer ────────────────────────────────────────────
   const startTimer = () => {
@@ -483,18 +482,16 @@ export function AIPanel() {
   }
 
   // ── Send ──────────────────────────────────────────────────────────────────
-  // Auto-send trigger from right-click actions
-  useEffect(() => {
-    const handler = () => { handleSend() }
-    window.addEventListener('kitsune:autoSend', handler)
-    return () => window.removeEventListener('kitsune:autoSend', handler)
-  }, []) // eslint-disable-line
+  // Keep a ref to the latest handleSend so event listeners always call fresh version
+  const handleSendRef = useRef<(override?: string) => void>(() => {})
 
-  const handleSend = useCallback(async () => {
-    if ((!input.trim() && !attachedImage) || isLoading || !activeProvider) return
-    const userMessage   = input.trim() || '(analyze this image)'
+  const handleSend = useCallback(async (overridePrompt?: string) => {
+    const textToSend = overridePrompt ?? input
+    if ((!textToSend.trim() && !attachedImage) || isLoading || !activeProvider) return
+    const userMessage   = textToSend.trim() || '(analyze this image)'
     const imageSnapshot = attachedImage
-    setInput(''); setAttachedImage(null)
+    if (!overridePrompt) setInput('')
+    setAttachedImage(null)
 
     setMessages(prev => [...prev, { role: 'user', content: userMessage, id: msgId++, image: imageSnapshot?.preview }])
     setIsLoading(true)
@@ -553,6 +550,9 @@ export function AIPanel() {
     setKitsuneExpr('happy')
     setTimeout(() => setKitsuneExpr('normal'), 3000)
   }, [input, attachedImage, isLoading, activeProvider, messages, activeTab])
+
+  // Keep ref in sync so event listeners always use latest closure
+  useEffect(() => { handleSendRef.current = handleSend }, [handleSend])
 
   const handleStop = () => { abortRef.current?.abort(); stopTimer(); setIsLoading(false); setKitsuneExpr('normal') }
 
