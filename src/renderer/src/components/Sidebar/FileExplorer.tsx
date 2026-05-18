@@ -3,6 +3,8 @@ import { useAppStore } from '../../store/appStore'
 import type { FileNode } from '../../types'
 import { FileIcon } from './FileIcon'
 import { addRecentFolder } from '../Editor/CodeEditor'
+import { isImageFile } from '../Editor/ImageViewer'
+import { isBinaryFile } from '../Editor/HexViewer'
 
 export function FileExplorer() {
   const { currentFolder, fileTree, setCurrentFolder, setFileTree, openTab } = useAppStore()
@@ -43,6 +45,12 @@ export function FileExplorer() {
         return next
       })
     } else {
+      // Binary/image files: open tab with empty content placeholder
+      // HexViewer / ImageViewer will read the raw bytes themselves via IPC
+      if (isImageFile(node.path) || isBinaryFile(node.path)) {
+        openTab(node.path, node.name, '')
+        return
+      }
       const result = await window.api.fs.readFile(node.path)
       if (result.content !== null) {
         openTab(node.path, node.name, result.content)

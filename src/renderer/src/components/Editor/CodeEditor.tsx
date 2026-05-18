@@ -4,6 +4,7 @@ import type { editor } from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { ImageViewer, isImageFile } from './ImageViewer'
+import { HexViewer, isBinaryFile } from './HexViewer'
 import { ParallaxLogo } from '../Logo/ParallaxLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import kitsuneCharImg from '../../assets/kitsune-char.png'
@@ -620,6 +621,11 @@ export function CodeEditor() {
   // Image files: show viewer instead of Monaco
   if (isImageFile(activeTab.filePath)) {
     return <ImageViewer filePath={activeTab.filePath} />
+  }
+
+  // Binary files: show hex viewer instead of garbled text
+  if (isBinaryFile(activeTab.filePath)) {
+    return <HexViewer filePath={activeTab.filePath} />
   }
 
   // Markdown: split view editor + preview
