@@ -12,41 +12,69 @@ interface ModelDef {
 
 const PROVIDER_MODELS: Record<string, ModelDef[]> = {
   claude: [
-    { value: 'claude-opus-4-5',   label: 'Opus 4.5',   sublabel: 'most capable',  shortcut: 1 },
-    { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6', sublabel: 'recommended',   shortcut: 2 },
-    { value: 'claude-sonnet-4-5', label: 'Sonnet 4.5', sublabel: 'balanced',      shortcut: 3 },
-    { value: 'claude-haiku-4-5',  label: 'Haiku 4.5',  sublabel: 'fastest',       shortcut: 4 },
+    { value: 'claude-opus-4-5',   label: 'Claude Opus 4.5',   sublabel: 'most capable',     shortcut: 1 },
+    { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5', sublabel: 'recommended ⭐',   shortcut: 2 },
+    { value: 'claude-haiku-4-5',  label: 'Claude Haiku 4.5',  sublabel: 'fastest & cheap',  shortcut: 3 },
   ],
   gemini: [
-    { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash',   sublabel: 'latest preview', shortcut: 1 },
-    { value: 'gemini-2.0-flash',       label: 'Gemini 2.0 Flash', sublabel: 'fast',            shortcut: 2 },
-    { value: 'gemini-1.5-pro',         label: 'Gemini 1.5 Pro',   sublabel: 'most capable',    shortcut: 3 },
-    { value: 'gemini-1.5-flash',       label: 'Gemini 1.5 Flash', sublabel: 'free tier',       shortcut: 4 },
+    { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash', sublabel: 'latest, free tier ⭐', shortcut: 1 },
+    { value: 'gemini-2.5-pro-preview-05-06',   label: 'Gemini 2.5 Pro',   sublabel: 'most capable',        shortcut: 2 },
+    { value: 'gemini-2.0-flash',               label: 'Gemini 2.0 Flash', sublabel: 'fast & free',         shortcut: 3 },
+    { value: 'gemini-2.0-flash-lite',          label: 'Gemini 2.0 Lite',  sublabel: 'lightweight',         shortcut: 4 },
   ],
   openai: [
-    { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'flagship',  shortcut: 1 },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'faster',    shortcut: 2 },
-    { value: 'o1-mini',     label: 'o1 Mini',     sublabel: 'reasoning', shortcut: 3 },
+    { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'flagship',        shortcut: 1 },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'fast & cheap ⭐', shortcut: 2 },
+    { value: 'o3-mini',     label: 'o3 Mini',     sublabel: 'reasoning',       shortcut: 3 },
+    { value: 'o1-mini',     label: 'o1 Mini',     sublabel: 'reasoning (old)', shortcut: 4 },
+  ],
+  groq: [
+    { value: 'llama-3.3-70b-versatile',    label: 'Llama 3.3 70B',    sublabel: 'free, ultra fast ⭐', shortcut: 1 },
+    { value: 'llama-3.1-8b-instant',       label: 'Llama 3.1 8B',     sublabel: 'free, fastest',      shortcut: 2 },
+    { value: 'mixtral-8x7b-32768',         label: 'Mixtral 8x7B',     sublabel: 'free, 32k ctx',      shortcut: 3 },
+    { value: 'gemma2-9b-it',               label: 'Gemma 2 9B',       sublabel: 'free, Google',       shortcut: 4 },
+    { value: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1',   sublabel: 'free, reasoning' },
+    { value: 'qwen-qwq-32b',               label: 'Qwen QwQ 32B',     sublabel: 'free, reasoning' },
+  ],
+  openrouter: [
+    { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B',    sublabel: 'FREE ⭐',     shortcut: 1 },
+    { value: 'deepseek/deepseek-r1:free',              label: 'DeepSeek R1',      sublabel: 'FREE, reason', shortcut: 2 },
+    { value: 'google/gemma-3-27b-it:free',             label: 'Gemma 3 27B',      sublabel: 'FREE',         shortcut: 3 },
+    { value: 'qwen/qwq-32b:free',                      label: 'Qwen QwQ 32B',     sublabel: 'FREE, reason', shortcut: 4 },
+    { value: 'anthropic/claude-sonnet-4-5',            label: 'Claude Sonnet 4.5',sublabel: 'paid, best' },
+    { value: 'openai/gpt-4o-mini',                     label: 'GPT-4o Mini',      sublabel: 'paid' },
+  ],
+  deepseek: [
+    { value: 'deepseek-chat',    label: 'DeepSeek Chat V3', sublabel: '$0.014/M tokens ⭐', shortcut: 1 },
+    { value: 'deepseek-reasoner',label: 'DeepSeek R1',     sublabel: 'reasoning model',     shortcut: 2 },
+  ],
+  mistral: [
+    { value: 'mistral-small-latest',  label: 'Mistral Small',  sublabel: 'fast & cheap ⭐', shortcut: 1 },
+    { value: 'mistral-medium-latest', label: 'Mistral Medium', sublabel: 'balanced',         shortcut: 2 },
+    { value: 'mistral-large-latest',  label: 'Mistral Large',  sublabel: 'most capable',    shortcut: 3 },
+    { value: 'codestral-latest',      label: 'Codestral',      sublabel: 'code specialist', shortcut: 4 },
   ],
   ollama: [
     { value: 'qwen2.5-coder:7b',  label: 'Qwen2.5 Coder 7B',  sublabel: 'best for code ⭐', shortcut: 1 },
-    { value: 'qwen2.5-coder:32b', label: 'Qwen2.5 Coder 32B', sublabel: 'GPT-4 level code',  shortcut: 2 },
-    { value: 'gemma3:12b',        label: 'Gemma 3 12B',        sublabel: 'Google, balanced',  shortcut: 3 },
-    { value: 'gemma3:27b',        label: 'Gemma 3 27B',        sublabel: 'Google, powerful',  shortcut: 4 },
-    { value: 'llama3.2:3b',       label: 'Llama 3.2 3B',       sublabel: 'lightweight' },
-    { value: 'llama3.3:70b',      label: 'Llama 3.3 70B',      sublabel: 'most capable' },
+    { value: 'qwen2.5-coder:32b', label: 'Qwen2.5 Coder 32B', sublabel: 'GPT-4 level',      shortcut: 2 },
+    { value: 'gemma3:12b',        label: 'Gemma 3 12B',        sublabel: 'Google, balanced', shortcut: 3 },
+    { value: 'llama3.3:70b',      label: 'Llama 3.3 70B',      sublabel: 'most capable',     shortcut: 4 },
     { value: 'deepseek-coder-v2', label: 'DeepSeek Coder V2',  sublabel: 'code specialist' },
-    { value: 'codellama:13b',     label: 'CodeLlama 13B',      sublabel: 'Meta code model' },
+    { value: 'phi4',              label: 'Phi-4',              sublabel: 'Microsoft, fast' },
     { value: 'mistral:7b',        label: 'Mistral 7B',         sublabel: 'fast & capable' },
-    { value: 'phi4',              label: 'Phi-4',              sublabel: 'Microsoft, punchy' },
+    { value: 'codellama:13b',     label: 'CodeLlama 13B',      sublabel: 'Meta code' },
   ]
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
-  claude: 'Claude',
-  gemini: 'Gemini',
-  openai: 'GPT',
-  ollama: 'Ollama',
+  claude:     'Claude',
+  gemini:     'Gemini',
+  openai:     'GPT',
+  groq:       'Groq',
+  openrouter: 'OpenRouter',
+  deepseek:   'DeepSeek',
+  mistral:    'Mistral',
+  ollama:     'Ollama',
 }
 
 // Fetch locally installed Ollama models
@@ -60,23 +88,40 @@ async function fetchOllamaModels(baseUrl: string): Promise<string[]> {
 }
 
 function shortModelLabel(model: string): string {
-  // Map full model IDs to short display names
   const SHORTS: Record<string, string> = {
-    'claude-opus-4-5':        'Opus 4.5',
-    'claude-sonnet-4-6':      'Sonnet 4.6',
-    'claude-sonnet-4-5':      'Sonnet 4.5',
-    'claude-haiku-4-5':       'Haiku 4.5',
-    'gemini-3-flash-preview': '3 Flash Preview',
-    'gemini-2.0-flash':       '2.0 Flash',
-    'gemini-2.0-flash-exp':   '2.0 Flash Exp',
-    'gemini-1.5-pro':         '1.5 Pro',
-    'gemini-1.5-flash':       '1.5 Flash',
-    'gemini-1.5-flash-8b':    '1.5 Flash 8B',
-    'gpt-4o':                 'GPT-4o',
-    'gpt-4o-mini':            'GPT-4o Mini',
-    'o1-mini':                'o1 Mini',
+    // Claude
+    'claude-opus-4-5':   'Opus 4.5',
+    'claude-sonnet-4-5': 'Sonnet 4.5',
+    'claude-haiku-4-5':  'Haiku 4.5',
+    // Gemini
+    'gemini-2.5-flash-preview-05-20': '2.5 Flash',
+    'gemini-2.5-pro-preview-05-06':   '2.5 Pro',
+    'gemini-2.0-flash':               '2.0 Flash',
+    'gemini-2.0-flash-lite':          '2.0 Lite',
+    // OpenAI
+    'gpt-4o': 'GPT-4o', 'gpt-4o-mini': 'GPT-4o Mini', 'o3-mini': 'o3 Mini', 'o1-mini': 'o1 Mini',
+    // Groq
+    'llama-3.3-70b-versatile': 'Llama 3.3 70B',
+    'llama-3.1-8b-instant': 'Llama 3.1 8B',
+    'mixtral-8x7b-32768': 'Mixtral 8x7B',
+    'gemma2-9b-it': 'Gemma 2 9B',
+    'deepseek-r1-distill-llama-70b': 'DeepSeek R1',
+    'qwen-qwq-32b': 'Qwen QwQ 32B',
+    // OpenRouter
+    'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 (free)',
+    'deepseek/deepseek-r1:free': 'DeepSeek R1 (free)',
+    'google/gemma-3-27b-it:free': 'Gemma 3 27B (free)',
+    'qwen/qwq-32b:free': 'QwQ 32B (free)',
+    // DeepSeek
+    'deepseek-chat': 'DeepSeek V3', 'deepseek-reasoner': 'DeepSeek R1',
+    // Mistral
+    'mistral-small-latest': 'Mistral Small', 'mistral-medium-latest': 'Mistral Medium',
+    'mistral-large-latest': 'Mistral Large', 'codestral-latest': 'Codestral',
   }
-  return SHORTS[model] ?? model.split('-').slice(-2).join(' ')
+  if (SHORTS[model]) return SHORTS[model]
+  // Fallback: last 2 dash-segments or last 20 chars
+  const parts = model.split(/[-/:]/)
+  return parts.slice(-2).join(' ').slice(0, 20)
 }
 
 interface Props {

@@ -321,11 +321,15 @@ const PROVIDER_MODELS: Record<string, { value: string; label: string; tier: 'fre
   ]
 }
 
-const PROVIDER_LINKS: Record<string, { label: string; url: string }> = {
-  claude: { label: 'Get Claude API key', url: 'https://console.anthropic.com/keys' },
-  gemini: { label: 'Get Gemini API key (free)', url: 'https://aistudio.google.com/apikey' },
-  openai: { label: 'Get OpenAI API key', url: 'https://platform.openai.com/api-keys' },
-  ollama: { label: 'Download Ollama (free, local)', url: 'https://ollama.com/download' },
+const PROVIDER_LINKS: Record<string, { label: string; url: string; free?: boolean }> = {
+  claude:     { label: 'Get Claude API key',          url: 'https://console.anthropic.com/keys' },
+  gemini:     { label: 'Get Gemini API key (free)',   url: 'https://aistudio.google.com/apikey',            free: true },
+  openai:     { label: 'Get OpenAI API key',          url: 'https://platform.openai.com/api-keys' },
+  groq:       { label: 'Get Groq API key (free)',     url: 'https://console.groq.com/keys',                 free: true },
+  openrouter: { label: 'Get OpenRouter key (free models)', url: 'https://openrouter.ai/keys',               free: true },
+  deepseek:   { label: 'Get DeepSeek API key (cheap)', url: 'https://platform.deepseek.com/api_keys' },
+  mistral:    { label: 'Get Mistral API key',         url: 'https://console.mistral.ai/api-keys' },
+  ollama:     { label: 'Download Ollama (free, local)', url: 'https://ollama.com/download',                 free: true },
 }
 
 function FetchGeminiModels({ apiKey, onSelect }: { apiKey: string; onSelect: (m: string) => void }) {
