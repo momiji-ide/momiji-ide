@@ -300,8 +300,8 @@ function ContextBar({ used, model }: { used: number; model: string }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function AIPanel() {
-  const { aiProviders, tabs, activeTabId, updateTabContent, markTabClean, updateAIProvider } = useAppStore()
-  const [aiTab, setAiTab] = useState<'chat' | 'agent'>('chat')
+  const { aiProviders, tabs, activeTabId, updateTabContent, markTabClean, updateAIProvider, currentFolder } = useAppStore()
+  const [aiTab, setAiTab] = useState<'chat' | 'agent' | 'memory'>('chat')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -313,6 +313,11 @@ export function AIPanel() {
   const [streamElapsed, setStreamElapsed] = useState(0)
   const [streamTokens, setStreamTokens]   = useState(0)
   const [contextUsed, setContextUsed]     = useState(0)
+  // ── Project Memory ────────────────────────────────────────────────────────
+  const [projectMemory, setProjectMemory] = useState('')
+  const [memoryDraft, setMemoryDraft]     = useState('')
+  const [memorySaved, setMemorySaved]     = useState(false)
+  const [autoContext, setAutoContext]      = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortRef       = useRef<AbortController | null>(null)
   const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -321,6 +326,55 @@ export function AIPanel() {
   const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
   const activeTab        = tabs.find(t => t.id === activeTabId)
+
+  // ── Load project memory + auto-detect stack when folder changes ───────────
+  useEffect(() => {
+    if (!currentFolder) { setProjectMemory(''); setMemoryDraft(''); setAutoContext(''); return }
+
+    // Load saved memory
+    const memPath = `${currentFolder}/.momiji/kitsune-memory.md`
+    window.api.fs.readFile(memPath).then(r => {
+      const content = r.content ?? ''
+      setProjectMemory(content)
+      setMemoryDraft(content)
+    }).catch(() => { setProjectMemory(''); setMemoryDraft('') })
+
+    // Auto-detect tech stack from project files
+    const detect = async () => {
+      const lines: string[] = []
+      const tryRead = async (rel: string) => {
+        try { const r = await window.api.fs.readFile(`${currentFolder}/${rel}`); return r.content ?? null }
+        catch { return null }
+      }
+      const pkg = await tryRead('package.json')
+      if (pkg) {
+        try {
+          const j = JSON.parse(pkg)
+          const deps = { ...j.dependencies, ...j.devDependencies }
+          const flags: string[] = []
+          if (deps['react'])       flags.push('React')
+          if (deps['next'])        flags.push('Next.js')
+          if (deps['vue'])         flags.push('Vue')
+          if (deps['svelte'])      flags.push('Svelte')
+          if (deps['typescript'])  flags.push('TypeScript')
+          if (deps['electron'])    flags.push('Electron')
+          if (deps['vite'])        flags.push('Vite')
+          if (deps['tailwindcss']) flags.push('Tailwind CSS')
+          if (deps['prisma'])      flags.push('Prisma')
+          if (deps['express'])     flags.push('Express')
+          if (deps['fastify'])     flags.push('Fastify')
+          if (flags.length) lines.push(`Stack: ${flags.join(', ')}`)
+          if (j.name) lines.push(`Project: ${j.name}`)
+        } catch {}
+      }
+      if (await tryRead('requirements.txt') || await tryRead('pyproject.toml')) lines.push('Stack: Python')
+      if (await tryRead('go.mod')) lines.push('Stack: Go')
+      if (await tryRead('Cargo.toml')) lines.push('Stack: Rust')
+      if (await tryRead('tsconfig.json')) { if (!lines.some(l => l.includes('TypeScript'))) lines.push('TypeScript') }
+      setAutoContext(lines.join('\n'))
+    }
+    detect()
+  }, [currentFolder])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
@@ -374,10 +428,23 @@ export function AIPanel() {
     }
   }, [])
 
+  // ── Save project memory to .momiji/kitsune-memory.md ───────────────────
+  const saveMemory = async () => {
+    if (!currentFolder) return
+    const dir = `${currentFolder}/.momiji`
+    await window.api.fs.createFolder(dir)
+    await window.api.fs.writeFile(`${dir}/kitsune-memory.md`, memoryDraft)
+    setProjectMemory(memoryDraft)
+    setMemorySaved(true)
+    setTimeout(() => setMemorySaved(false), 2000)
+  }
+
   // ── System prompt ─────────────────────────────────────────────────────────
   const buildSystemPrompt = () => {
-    let sys = `You are Kitsune AI, the intelligent coding assistant built into Parallax IDE. You are sharp, precise, and a little playful — like a clever fox. Be concise and helpful. Use markdown with code blocks. Always specify the language in code fences. When asked to fix/refactor/write code, output the COMPLETE updated function or file so it can be applied directly.`
-    if (activeTab) sys += `\n\nCurrent file: **${activeTab.fileName}** (${activeTab.language})\n\`\`\`${activeTab.language}\n${activeTab.content.slice(0, 4000)}\n\`\`\``
+    let sys = `You are Kitsune AI, the intelligent coding assistant built into Momiji IDE. You are sharp, precise, and a little playful — like a clever fox. Be concise and helpful. Use markdown with code blocks. Always specify the language in code fences. When asked to fix/refactor/write code, output the COMPLETE updated function or file so it can be applied directly.`
+    if (autoContext) sys += `\n\n## Project Info\n${autoContext}`
+    if (projectMemory.trim()) sys += `\n\n## Project Memory (user-defined context)\n${projectMemory}`
+    if (activeTab) sys += `\n\n## Current file: ${activeTab.fileName} (${activeTab.language})\n\`\`\`${activeTab.language}\n${activeTab.content.slice(0, 4000)}\n\`\`\``
     return sys
   }
 
@@ -490,8 +557,8 @@ export function AIPanel() {
     const history = messages.filter(m => !m.streaming).map(m => ({ role: m.role, content: m.content }))
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.apiKey}` }
     if (provider.id === 'openrouter') {
-      headers['HTTP-Referer'] = 'https://parallax-ide.github.io'
-      headers['X-Title'] = 'Parallax IDE'
+      headers['HTTP-Referer'] = 'https://momiji-ide.github.io'
+      headers['X-Title'] = 'Momiji IDE'
     }
     const resp = await fetch(url, {
       method: 'POST', headers,
@@ -644,9 +711,9 @@ export function AIPanel() {
             <button onClick={() => { setMessages([]); setContextUsed(0) }} className="text-xs px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>Clear</button>
           )}
         </div>
-        {/* Chat / Agent switcher */}
+        {/* Chat / Agent / Memory switcher */}
         <div className="flex">
-          {([['chat', '💬 Chat'], ['agent', '🤖 Agent']] as const).map(([id, label]) => (
+          {([['chat', '💬 Chat'], ['agent', '🤖 Agent'], ['memory', '🧠 Memory']] as const).map(([id, label]) => (
             <button key={id} onClick={() => setAiTab(id)}
               className="flex-1 py-1.5 text-xs font-semibold transition-colors"
               style={{ color: aiTab === id ? 'var(--accent-mauve)' : 'var(--text-muted)', borderBottom: aiTab === id ? '2px solid var(--accent-mauve)' : '2px solid transparent', background: 'transparent' }}>
@@ -658,6 +725,61 @@ export function AIPanel() {
 
       {/* Agent tab */}
       {aiTab === 'agent' && <KitsuneAgent />}
+
+      {/* Memory tab */}
+      {aiTab === 'memory' && (
+        <div className="flex flex-col flex-1 overflow-hidden p-3 gap-3">
+          {/* Auto-detected context */}
+          {autoContext && (
+            <div className="rounded-lg p-2.5" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
+              <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--accent-blue)' }}>⚡ Auto-detected</p>
+              {autoContext.split('\n').map((line, i) => (
+                <p key={i} className="text-xs" style={{ color: 'var(--text-muted)' }}>{line}</p>
+              ))}
+            </div>
+          )}
+
+          {/* User memory editor */}
+          <div className="flex flex-col flex-1 gap-2 min-h-0">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>📝 Project Context</p>
+              <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                {currentFolder ? '.momiji/kitsune-memory.md' : 'Open a folder first'}
+              </span>
+            </div>
+            <textarea
+              value={memoryDraft}
+              onChange={e => setMemoryDraft(e.target.value)}
+              disabled={!currentFolder}
+              placeholder={`Tell Kitsune about this project...\n\nExamples:\n- Tech stack: React + FastAPI + PostgreSQL\n- Coding style: functional, no classes\n- Avoid: lodash, moment.js\n- Always use TypeScript strict mode\n- API base URL: http://localhost:8000`}
+              className="flex-1 p-2.5 rounded-lg text-xs resize-none outline-none font-mono"
+              style={{
+                background: 'var(--bg-surface0)',
+                color: 'var(--text)',
+                border: '1px solid var(--border)',
+                opacity: currentFolder ? 1 : 0.5,
+                minHeight: 0,
+              }}
+            />
+            <button
+              onClick={saveMemory}
+              disabled={!currentFolder || memoryDraft === projectMemory}
+              className="py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={{
+                background: memorySaved ? 'var(--accent-green)' : (memoryDraft !== projectMemory && currentFolder) ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
+                color: (memorySaved || (memoryDraft !== projectMemory && currentFolder)) ? 'white' : 'var(--text-subtle)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              {memorySaved ? '✓ Saved!' : 'Save Memory'}
+            </button>
+          </div>
+
+          <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+            💡 Memory is included in every message as project context. Kitsune will know your stack, conventions, and preferences automatically.
+          </p>
+        </div>
+      )}
 
       {/* Chat tab — only renders when aiTab === 'chat' */}
       {aiTab === 'chat' && (enabledProviders.length === 0 ? (

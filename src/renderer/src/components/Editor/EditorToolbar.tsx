@@ -19,7 +19,7 @@ export function EditorToolbar() {
   // Load saved args when active tab changes
   useEffect(() => {
     if (activeTab) {
-      const saved = localStorage.getItem(`parallax:run-args:${activeTab.filePath}`) ?? ''
+      const saved = localStorage.getItem(`momiji:run-args:${activeTab.filePath}`) ?? ''
       setRunArgs(saved)
     } else {
       setRunArgs('')
@@ -258,7 +258,7 @@ export function EditorToolbar() {
             value={runArgs}
             onChange={e => {
               setRunArgs(e.target.value)
-              const key = `parallax:run-args:${activeTab.filePath}`
+              const key = `momiji:run-args:${activeTab.filePath}`
               if (e.target.value) localStorage.setItem(key, e.target.value)
               else localStorage.removeItem(key)
             }}
@@ -271,7 +271,7 @@ export function EditorToolbar() {
           {runArgs && (
             <button onClick={() => {
               setRunArgs('')
-              localStorage.removeItem(`parallax:run-args:${activeTab.filePath}`)
+              localStorage.removeItem(`momiji:run-args:${activeTab.filePath}`)
             }}
               className="text-xs px-1.5 py-0.5 rounded"
               style={{ color: 'var(--accent-red)', border: '1px solid var(--border)' }}>

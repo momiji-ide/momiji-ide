@@ -16,7 +16,7 @@ type Translations = typeof en
 const en = {
   // Onboarding
   onb_welcome_title: 'Hello! I\'m Kitsune',
-  onb_welcome_sub: 'Your AI assistant inside Parallax IDE.\nI\'ll help you from zero to ship — whatever your goal.',
+  onb_welcome_sub: 'Your AI assistant inside Momiji IDE.\nI\'ll help you from zero to ship — whatever your goal.',
   onb_welcome_feat1: 'Visual\nblock coding',
   onb_welcome_feat2: 'AI that\nhelps you',
   onb_welcome_feat3: 'Grow to\nfull IDE',
@@ -78,7 +78,7 @@ const en = {
   onb_tips_terminal: 'Open/close terminal',
   onb_tips_ai: 'Chat with Kitsune AI anytime',
   onb_tips_split: 'Split editor — view 2 files side by side',
-  onb_ready_btn: 'Start using Parallax IDE →',
+  onb_ready_btn: 'Start using Momiji IDE →',
 
   btn_back: '← Back',
   btn_next: 'Next →',
@@ -106,7 +106,7 @@ const en = {
 
 const id: Translations = {
   onb_welcome_title: 'Halo! Gue Kitsune',
-  onb_welcome_sub: 'AI assistant di dalam Parallax IDE.\nGue bakal bantu lo dari nol sampai bisa — apapun tujuan lo.',
+  onb_welcome_sub: 'AI assistant di dalam Momiji IDE.\nGue bakal bantu lo dari nol sampai bisa — apapun tujuan lo.',
   onb_welcome_feat1: 'Coding visual\npakai blok',
   onb_welcome_feat2: 'AI yang\nbantu lo',
   onb_welcome_feat3: 'Berkembang ke\nfull IDE',
@@ -162,7 +162,7 @@ const id: Translations = {
   onb_tips_terminal: 'Buka/tutup terminal',
   onb_tips_ai: 'Chat dengan Kitsune AI kapanpun',
   onb_tips_split: 'Split editor — lihat 2 file sekaligus',
-  onb_ready_btn: 'Mulai pakai Parallax IDE →',
+  onb_ready_btn: 'Mulai pakai Momiji IDE →',
   btn_back: '← Kembali',
   btn_next: 'Lanjut →',
   btn_activate: 'Aktifkan →',
@@ -187,7 +187,7 @@ const id: Translations = {
 
 const ja: Translations = {
   onb_welcome_title: 'こんにちは！キツネです',
-  onb_welcome_sub: 'Parallax IDEのAIアシスタントです。\nどんな目標でも、ゼロからサポートします。',
+  onb_welcome_sub: 'Momiji IDEのAIアシスタントです。\nどんな目標でも、ゼロからサポートします。',
   onb_welcome_feat1: 'ビジュアル\nブロックコーディング',
   onb_welcome_feat2: 'あなたを\n助けるAI',
   onb_welcome_feat3: 'フルIDE\nへの成長',
@@ -243,7 +243,7 @@ const ja: Translations = {
   onb_tips_terminal: 'ターミナルを開く/閉じる',
   onb_tips_ai: 'いつでもKitsune AIとチャット',
   onb_tips_split: '分割エディタ — 2つのファイルを並べて表示',
-  onb_ready_btn: 'Parallax IDEを使い始める →',
+  onb_ready_btn: 'Momiji IDEを使い始める →',
   btn_back: '← 戻る',
   btn_next: '次へ →',
   btn_activate: '有効化 →',
@@ -269,12 +269,12 @@ const ja: Translations = {
 // Minimal stubs for other languages (English fallback)
 const makeStub = (overrides: Partial<Translations>): Translations => ({ ...en, ...overrides })
 
-const zh = makeStub({ onb_welcome_title: '你好！我是 Kitsune', onb_welcome_btn: '开始 →', onb_goal_title: '你今天想做什么？', settings_language: '语言', btn_back: '← 返回', btn_next: '下一步 →', onb_ready_btn: '开始使用 Parallax IDE →' })
-const es = makeStub({ onb_welcome_title: '¡Hola! Soy Kitsune', onb_welcome_btn: 'Comenzar →', onb_goal_title: '¿Qué quieres hacer hoy?', settings_language: 'Idioma', btn_back: '← Atrás', btn_next: 'Siguiente →', onb_ready_btn: 'Empezar a usar Parallax IDE →' })
-const fr = makeStub({ onb_welcome_title: 'Bonjour ! Je suis Kitsune', onb_welcome_btn: 'Commencer →', onb_goal_title: 'Que voulez-vous faire ?', settings_language: 'Langue', btn_back: '← Retour', btn_next: 'Suivant →', onb_ready_btn: 'Commencer à utiliser Parallax IDE →' })
-const de = makeStub({ onb_welcome_title: 'Hallo! Ich bin Kitsune', onb_welcome_btn: 'Loslegen →', onb_goal_title: 'Was möchtest du heute tun?', settings_language: 'Sprache', btn_back: '← Zurück', btn_next: 'Weiter →', onb_ready_btn: 'Parallax IDE verwenden →' })
-const pt = makeStub({ onb_welcome_title: 'Olá! Eu sou o Kitsune', onb_welcome_btn: 'Começar →', onb_goal_title: 'O que você quer fazer hoje?', settings_language: 'Idioma', btn_back: '← Voltar', btn_next: 'Próximo →', onb_ready_btn: 'Começar a usar o Parallax IDE →' })
-const ko = makeStub({ onb_welcome_title: '안녕하세요! 저는 Kitsune입니다', onb_welcome_btn: '시작하기 →', onb_goal_title: '오늘 무엇을 하고 싶으신가요?', settings_language: '언어', btn_back: '← 뒤로', btn_next: '다음 →', onb_ready_btn: 'Parallax IDE 시작하기 →' })
+const zh = makeStub({ onb_welcome_title: '你好！我是 Kitsune', onb_welcome_btn: '开始 →', onb_goal_title: '你今天想做什么？', settings_language: '语言', btn_back: '← 返回', btn_next: '下一步 →', onb_ready_btn: '开始使用 Momiji IDE →' })
+const es = makeStub({ onb_welcome_title: '¡Hola! Soy Kitsune', onb_welcome_btn: 'Comenzar →', onb_goal_title: '¿Qué quieres hacer hoy?', settings_language: 'Idioma', btn_back: '← Atrás', btn_next: 'Siguiente →', onb_ready_btn: 'Empezar a usar Momiji IDE →' })
+const fr = makeStub({ onb_welcome_title: 'Bonjour ! Je suis Kitsune', onb_welcome_btn: 'Commencer →', onb_goal_title: 'Que voulez-vous faire ?', settings_language: 'Langue', btn_back: '← Retour', btn_next: 'Suivant →', onb_ready_btn: 'Commencer à utiliser Momiji IDE →' })
+const de = makeStub({ onb_welcome_title: 'Hallo! Ich bin Kitsune', onb_welcome_btn: 'Loslegen →', onb_goal_title: 'Was möchtest du heute tun?', settings_language: 'Sprache', btn_back: '← Zurück', btn_next: 'Weiter →', onb_ready_btn: 'Momiji IDE verwenden →' })
+const pt = makeStub({ onb_welcome_title: 'Olá! Eu sou o Kitsune', onb_welcome_btn: 'Começar →', onb_goal_title: 'O que você quer fazer hoje?', settings_language: 'Idioma', btn_back: '← Voltar', btn_next: 'Próximo →', onb_ready_btn: 'Começar a usar o Momiji IDE →' })
+const ko = makeStub({ onb_welcome_title: '안녕하세요! 저는 Kitsune입니다', onb_welcome_btn: '시작하기 →', onb_goal_title: '오늘 무엇을 하고 싶으신가요?', settings_language: '언어', btn_back: '← 뒤로', btn_next: '다음 →', onb_ready_btn: 'Momiji IDE 시작하기 →' })
 
 const ALL: Record<Language, Translations> = { en, id, ja, zh, es, fr, de, pt, ko }
 
@@ -283,9 +283,9 @@ export function getT(lang: Language): Translations {
 }
 
 export function getLang(): Language {
-  return (localStorage.getItem('parallax:language') ?? 'en') as Language
+  return (localStorage.getItem('momiji:language') ?? 'en') as Language
 }
 
 export function setLang(lang: Language) {
-  localStorage.setItem('parallax:language', lang)
+  localStorage.setItem('momiji:language', lang)
 }

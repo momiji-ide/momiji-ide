@@ -24,8 +24,8 @@ const METHOD_COLORS: Record<Method, string> = {
 let kvId = 0
 const newKV = (): KV => ({ id: kvId++, key: '', value: '', enabled: true })
 
-const SAVED_KEY = 'parallax:http:collections'
-const HISTORY_KEY = 'parallax:http:history'
+const SAVED_KEY = 'momiji:http:collections'
+const HISTORY_KEY = 'momiji:http:history'
 
 function loadCollections(): Collection[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) ?? '[]') } catch { return [] }
@@ -36,7 +36,7 @@ function loadHistory(): HistoryItem[] {
 
 export function HttpClient() {
   const { settings } = useAppStore()
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   const [method, setMethod] = useState<Method>('GET')
   const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/posts/1')

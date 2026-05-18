@@ -34,7 +34,7 @@ export default function App() {
   }, [setActivePanel, setPendingAIPrompt])
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('parallax:onboarding-done')
+    return !localStorage.getItem('momiji:onboarding-done')
   })
   const [showAbout, setShowAbout] = useState(false)
   const [showPlayground, setShowPlayground] = useState(false)
@@ -206,7 +206,7 @@ export default function App() {
       {/* Onboarding — first launch only */}
       {showOnboarding && (
         <OnboardingWizard onComplete={() => {
-          localStorage.setItem('parallax:onboarding-done', '1')
+          localStorage.setItem('momiji:onboarding-done', '1')
           setShowOnboarding(false)
         }} />
       )}

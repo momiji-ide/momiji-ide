@@ -24,7 +24,7 @@ interface FileItem {
 
 type PaletteItem = CommandItem | FileItem
 
-const RECENT_KEY = 'parallax:recent-files'
+const RECENT_KEY = 'momiji:recent-files'
 const MAX_RECENT = 8
 
 function getRecentFiles(): string[] {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { MomijiLogo } from '../Logo/MomijiLogo'
 import { toast } from '../../utils/toast'
 import { getT, getLang, setLang, LANGUAGES, type Language } from '../../utils/i18n'
 
@@ -104,9 +104,9 @@ export function OnboardingWizard({ onComplete }: Props) {
           {step === 'welcome' && (
             <div className="flex flex-col items-center text-center gap-6">
               <div className="flex items-center gap-3">
-                <ParallaxLogo size={40} />
+                <MomijiLogo size={40} />
                 <div className="text-left">
-                  <h1 className="text-2xl font-black tracking-widest" style={{ color: 'var(--accent-mauve)' }}>PARALLAX</h1>
+                  <h1 className="text-2xl font-black tracking-widest" style={{ color: 'var(--accent-mauve)' }}>MOMIJI</h1>
                   <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>CODE FROM EVERY ANGLE</p>
                 </div>
               </div>

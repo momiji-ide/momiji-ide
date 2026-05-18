@@ -392,7 +392,7 @@ export function CanvasPlayground({ onClose }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const runTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   const runCode = useCallback((src: string) => {
     setError('')

@@ -9,7 +9,7 @@ export async function callKitsune(prompt: string, systemPrompt?: string): Promis
   const provider = aiProviders.find((p) => p.enabled && p.apiKey)
   if (!provider) throw new Error('NO_PROVIDER')
 
-  const sys = systemPrompt ?? `You are Kitsune, the friendly AI assistant inside Parallax IDE.
+  const sys = systemPrompt ?? `You are Kitsune, the friendly AI assistant inside Momiji IDE.
 You help people of all skill levels understand and fix their code.
 Be concise, warm, and encouraging. Avoid jargon. Use plain language.`
 

@@ -5,7 +5,8 @@ import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
-import { ParallaxLogo } from '../Logo/ParallaxLogo'
+import { PdfViewer, isPdfFile } from './PdfViewer'
+import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import kitsuneCharImg from '../../assets/kitsune-char.png'
 import { FileIcon } from '../Sidebar/FileIcon'
@@ -212,7 +213,7 @@ export function CodeEditor() {
 
     // ─── Context menu actions ────────────────────────────────────────
     editorInstance.addAction({
-      id: 'parallax.goToDefinition',
+      id: 'momiji.goToDefinition',
       label: '🎯 Go to Definition',
       keybindings: [monaco.KeyCode.F12],
       contextMenuGroupId: '1_navigation',
@@ -225,7 +226,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.peekDefinition',
+      id: 'momiji.peekDefinition',
       label: '🔍 Peek Definition',
       keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.F12],
       contextMenuGroupId: '1_navigation',
@@ -236,7 +237,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.findReferences',
+      id: 'momiji.findReferences',
       label: '🔗 Find All References',
       keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.F12],
       contextMenuGroupId: '1_navigation',
@@ -247,7 +248,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.renameSymbol',
+      id: 'momiji.renameSymbol',
       label: '✏️ Rename Symbol',
       keybindings: [monaco.KeyCode.F2],
       contextMenuGroupId: '1_navigation',
@@ -258,7 +259,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.formatDocument',
+      id: 'momiji.formatDocument',
       label: '🎨 Format Document',
       keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
       contextMenuGroupId: '2_edit',
@@ -269,7 +270,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.toggleComment',
+      id: 'momiji.toggleComment',
       label: '💬 Toggle Comment',
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Slash],
       contextMenuGroupId: '2_edit',
@@ -280,7 +281,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.copyLine',
+      id: 'momiji.copyLine',
       label: '📋 Copy Line',
       keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.DownArrow],
       contextMenuGroupId: '2_edit',
@@ -291,7 +292,7 @@ export function CodeEditor() {
     })
 
     editorInstance.addAction({
-      id: 'parallax.showErrors',
+      id: 'momiji.showErrors',
       label: '⚠️ Show Problems',
       contextMenuGroupId: '3_tools',
       contextMenuOrder: 1,
@@ -392,7 +393,7 @@ export function CodeEditor() {
       }
       colorDecorations = editorInstance.deltaDecorations(colorDecorations, decorations)
       // Inject swatch styles
-      const styleId = 'parallax-color-swatches'
+      const styleId = 'momiji-color-swatches'
       let styleEl = document.getElementById(styleId)
       if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = styleId; document.head.appendChild(styleEl) }
       const allColors = new Set<string>()
@@ -510,7 +511,7 @@ export function CodeEditor() {
         const pythonPath = useAppStore.getState().settings.pythonPath ?? 'python'
         const errors = await (window.api as any).lint.python(tab.filePath, pythonPath) as
           { line: number; col: number; message: string; severity: string }[]
-        mo.editor.setModelMarkers(model, 'parallax-lint', errors.map(e => ({
+        mo.editor.setModelMarkers(model, 'momiji-lint', errors.map(e => ({
           startLineNumber: e.line, endLineNumber: e.line,
           startColumn: 1, endColumn: model.getLineMaxColumn(e.line),
           message: e.message,
@@ -520,7 +521,7 @@ export function CodeEditor() {
     } else {
       // Clear markers for non-Python or unsaved files
       const model2 = editorRef.current?.getModel()
-      if (model2) mo.editor.setModelMarkers(model2, 'parallax-lint', [])
+      if (model2) mo.editor.setModelMarkers(model2, 'momiji-lint', [])
     }
   }, [])
 
@@ -543,11 +544,11 @@ export function CodeEditor() {
     }])
   }, [colorPicker])
 
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   const handleEditorBeforeMount = (monaco: typeof import('monaco-editor')) => {
     // Dark theme — Catppuccin Mocha
-    monaco.editor.defineTheme('parallax-dark', {
+    monaco.editor.defineTheme('momiji-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
@@ -584,7 +585,7 @@ export function CodeEditor() {
     })
 
     // Light theme — Catppuccin Latte
-    monaco.editor.defineTheme('parallax-light', {
+    monaco.editor.defineTheme('momiji-light', {
       base: 'vs',
       inherit: true,
       rules: [
@@ -616,6 +617,11 @@ export function CodeEditor() {
 
   if (!activeTab) {
     return <WelcomeScreen />
+  }
+
+  // PDF files: native Chromium PDF renderer
+  if (isPdfFile(activeTab.filePath)) {
+    return <PdfViewer filePath={activeTab.filePath} />
   }
 
   // Image files: show viewer instead of Monaco
@@ -751,10 +757,10 @@ export function CodeEditor() {
 // Track recently opened folders
 export function addRecentFolder(folderPath: string) {
   try {
-    const raw = localStorage.getItem('parallax:recent-folders') ?? '[]'
+    const raw = localStorage.getItem('momiji:recent-folders') ?? '[]'
     const list: string[] = JSON.parse(raw)
     const updated = [folderPath, ...list.filter(f => f !== folderPath)].slice(0, 8)
-    localStorage.setItem('parallax:recent-folders', JSON.stringify(updated))
+    localStorage.setItem('momiji:recent-folders', JSON.stringify(updated))
   } catch {}
 }
 
@@ -784,11 +790,11 @@ function WelcomeScreen() {
   }
 
   const recentFolders: string[] = (() => {
-    try { return JSON.parse(localStorage.getItem('parallax:recent-folders') ?? '[]') } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('momiji:recent-folders') ?? '[]') } catch { return [] }
   })()
 
   const recentFiles: string[] = (() => {
-    try { return JSON.parse(localStorage.getItem('parallax:recent-files') ?? '[]') } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('momiji:recent-files') ?? '[]') } catch { return [] }
   })()
 
   const features = [
@@ -807,9 +813,9 @@ function WelcomeScreen() {
 
         {/* Logo */}
         <div className="text-center flex flex-col items-center">
-          <ParallaxLogo size={44} className="mb-2" />
+          <MomijiLogo size={44} className="mb-2" />
           <h1 className="text-xl font-black tracking-widest mb-1" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.15em' }}>
-            PARALLAX
+            MOMIJI
           </h1>
           <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)', letterSpacing: '0.08em' }}>CODE FROM EVERY ANGLE</p>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"

@@ -19,7 +19,7 @@ export function TimeTravelDebugger() {
   const monacoRef = useRef<typeof import('monaco-editor') | null>(null)
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null)
 
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   const current = snapshots[currentStep]
 

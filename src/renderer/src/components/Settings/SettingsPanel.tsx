@@ -40,7 +40,7 @@ export function SettingsPanel() {
         <div className="flex items-center gap-2">
           {currentFolder && (
             <button
-              onClick={async () => { await saveWorkspaceSettings(); toast.success('Saved to .parallax/settings.json') }}
+              onClick={async () => { await saveWorkspaceSettings(); toast.success('Saved to .momiji/settings.json') }}
               className="text-xs px-2 py-0.5 rounded transition-all"
               style={{ color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)', fontSize: 10 }}
               title="Save current settings to this project folder">

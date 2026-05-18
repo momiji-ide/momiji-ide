@@ -29,7 +29,7 @@ function FlowCanvas() {
   const [code, setCode] = useState('')
   const [showCode, setShowCode] = useState(true)
 
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   // Regenerate code whenever nodes/edges change
   useEffect(() => {
@@ -82,12 +82,12 @@ function FlowCanvas() {
 
   const handleSave = () => {
     const state = { nodes, edges }
-    localStorage.setItem('parallax:flow:workspace', JSON.stringify(state))
+    localStorage.setItem('momiji:flow:workspace', JSON.stringify(state))
     toast.success('Flow saved!')
   }
 
   const handleLoad = () => {
-    const raw = localStorage.getItem('parallax:flow:workspace')
+    const raw = localStorage.getItem('momiji:flow:workspace')
     if (!raw) { toast.warning('No saved flow found'); return }
     try {
       const { nodes: n, edges: e } = JSON.parse(raw)

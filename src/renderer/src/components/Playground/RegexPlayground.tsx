@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react'
 import { useAppStore } from '../../store/appStore'
 
 const EXAMPLES = [
-  { name: 'Email', pattern: '[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}', flags: 'gi', test: 'Contact us at hello@parallax.dev or support@kitsune.ai' },
-  { name: 'URL', pattern: 'https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+[\\/\\w\\-@:%+~#?&=]*', flags: 'gi', test: 'Visit https://parallax.dev or http://kitsune.ai/docs' },
+  { name: 'Email', pattern: '[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}', flags: 'gi', test: 'Contact us at hello@momiji.dev or support@kitsune.ai' },
+  { name: 'URL', pattern: 'https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+[\\/\\w\\-@:%+~#?&=]*', flags: 'gi', test: 'Visit https://momiji.dev or http://kitsune.ai/docs' },
   { name: 'Date', pattern: '\\d{4}[-/]\\d{2}[-/]\\d{2}', flags: 'g', test: 'Dates: 2024-01-15, 2025/06/30, not 24-1-5' },
   { name: 'Hex Color', pattern: '#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\b', flags: 'g', test: 'Colors: #fff, #1e1e2e, #cba6f7, not #xyz' },
   { name: 'IP Address', pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'g', test: 'Server at 192.168.1.1, DNS: 8.8.8.8, invalid: 999.x.1.1' },
@@ -15,7 +15,7 @@ export function RegexPlayground({ onClose }: Props) {
   const { settings } = useAppStore()
   const [pattern, setPattern] = useState('[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}')
   const [flags, setFlags] = useState('gi')
-  const [testStr, setTestStr] = useState('Contact us at hello@parallax.dev or support@kitsune.ai for help!')
+  const [testStr, setTestStr] = useState('Contact us at hello@momiji.dev or support@kitsune.ai for help!')
   const [selected, setSelected] = useState(0)
 
   const { matches, error, highlighted } = useCallback(() => {

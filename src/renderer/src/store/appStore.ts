@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem } from '../types'
+import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem, AgentConfig } from '../types'
 import { detectLanguage } from '../utils/languageDetect'
 
 const defaultSettings: EditorSettings = {
@@ -48,6 +48,12 @@ interface AppStore extends AppState {
   // AI actions
   setAIProviders: (providers: AIProvider[]) => void
   updateAIProvider: (provider: AIProvider) => void
+
+  // Agent management
+  customAgents: AgentConfig[]
+  addAgent: (agent: AgentConfig) => void
+  updateAgent: (agent: AgentConfig) => void
+  deleteAgent: (id: string) => void
 
   // Kitsune quick-ask (right-click from editor)
   pendingAIPrompt: string | null
@@ -157,7 +163,7 @@ export const useAppStore = create<AppStore>()(
 
       loadWorkspaceSettings: async (folder) => {
         try {
-          const result = await window.api.fs.readFile(`${folder}/.parallax/settings.json`)
+          const result = await window.api.fs.readFile(`${folder}/.momiji/settings.json`)
           if (result.content) {
             const ws = JSON.parse(result.content) as Partial<EditorSettings>
             set((s) => ({ settings: { ...s.settings, ...ws } }))
@@ -168,7 +174,7 @@ export const useAppStore = create<AppStore>()(
       saveWorkspaceSettings: async () => {
         const { currentFolder, settings } = get()
         if (!currentFolder) return
-        const dir = `${currentFolder}/.parallax`
+        const dir = `${currentFolder}/.momiji`
         await window.api.fs.createFolder(dir)
         await window.api.fs.writeFile(`${dir}/settings.json`, JSON.stringify({
           fontSize: settings.fontSize,
@@ -184,10 +190,20 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({
           aiProviders: s.aiProviders.map((p) => (p.id === provider.id ? provider : p))
         })),
+
+      customAgents: [],
+      addAgent: (agent) => set((s) => ({ customAgents: [...s.customAgents, agent] })),
+      updateAgent: (agent) => set((s) => ({
+        customAgents: s.customAgents.map((a) => a.id === agent.id ? agent : a)
+      })),
+      deleteAgent: (id) => set((s) => ({
+        customAgents: s.customAgents.filter((a) => a.id !== id)
+      })),
+
       setPendingAIPrompt: (prompt) => set({ pendingAIPrompt: prompt }),
     }),
     {
-      name: 'parallax-store',
+      name: 'momiji-store',
       // Merge persisted state with current defaults so new fields always get values
       merge: (persisted: any, current) => {
         // Migrate deprecated Gemini models that don't work on free tier
@@ -210,6 +226,7 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         settings: state.settings,
         aiProviders: state.aiProviders,
+        customAgents: state.customAgents,
         sidebarWidth: state.sidebarWidth,
         showSidebar: state.showSidebar,
         bottomPanelHeight: state.bottomPanelHeight

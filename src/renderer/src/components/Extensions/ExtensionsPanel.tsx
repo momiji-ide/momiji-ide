@@ -61,38 +61,38 @@ const EXTENSIONS: Extension[] = [
   // ── Language runners ───────────────────────────────────────────────
   {
     id: 'lang-csharp', name: 'C# / .NET Runner', desc: 'Run C# files with dotnet-script or Mono',
-    author: 'Parallax', icon: '🟣', category: 'languages', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🟣', category: 'languages', version: '1.0.0', installs: 'built-in',
     action: 'external', requiresTool: 'dotnet-script',
     installUrl: 'dotnet tool install -g dotnet-script'
   },
   {
     id: 'lang-cpp', name: 'C / C++ Runner', desc: 'Compile and run C/C++ with GCC/G++',
-    author: 'Parallax', icon: '🔵', category: 'languages', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🔵', category: 'languages', version: '1.0.0', installs: 'built-in',
     action: 'external', requiresTool: 'gcc/g++',
     installUrl: 'winget install GnuWin32.GCC  (or install MinGW)'
   },
   {
     id: 'lang-kotlin', name: 'Kotlin Runner', desc: 'Compile and run Kotlin via kotlinc',
-    author: 'Parallax', icon: '🟣', category: 'languages', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🟣', category: 'languages', version: '1.0.0', installs: 'built-in',
     action: 'external', requiresTool: 'kotlinc',
     installUrl: 'https://kotlinlang.org/docs/command-line.html'
   },
   {
     id: 'lang-dart', name: 'Dart / Flutter Runner', desc: 'Run Dart files with the Dart SDK',
-    author: 'Parallax', icon: '🎯', category: 'languages', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🎯', category: 'languages', version: '1.0.0', installs: 'built-in',
     action: 'external', requiresTool: 'dart',
     installUrl: 'https://dart.dev/get-dart'
   },
   {
     id: 'lang-lua', name: 'Lua Runner', desc: 'Run Lua scripts with lua interpreter',
-    author: 'Parallax', icon: '🌙', category: 'languages', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🌙', category: 'languages', version: '1.0.0', installs: 'built-in',
     action: 'external', requiresTool: 'lua',
     installUrl: 'winget install lua  (or https://www.lua.org/download.html)'
   },
   // ── Tools ──────────────────────────────────────────────────────────
   {
     id: 'tool-minimap', name: 'Minimap', desc: 'Show code minimap on the right side of editor',
-    author: 'Parallax', icon: '🗺️', category: 'tools', version: '1.0.0', installs: 'built-in',
+    author: 'Momiji', icon: '🗺️', category: 'tools', version: '1.0.0', installs: 'built-in',
     action: 'setting', settingKey: 'minimap', settingValue: true
   },
   {
@@ -260,23 +260,23 @@ const EXTRA_THEMES: Record<string, { base: 'vs-dark' | 'vs'; rules: any[]; color
 }
 
 // Expose themes globally so CodeEditor can register them
-;(window as any).__parallaxExtraThemes = EXTRA_THEMES
+;(window as any).__momijiExtraThemes = EXTRA_THEMES
 
 export function ExtensionsPanel() {
   const { settings, updateSettings } = useAppStore()
   const [category, setCategory] = useState<ExtCategory>('all')
   const [search, setSearch] = useState('')
   const [installedIds, setInstalledIds] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('parallax:extensions') ?? '[]')) }
+    try { return new Set(JSON.parse(localStorage.getItem('momiji:extensions') ?? '[]')) }
     catch { return new Set() }
   })
   const [activeTheme, setActiveTheme] = useState<string>(() =>
-    localStorage.getItem('parallax:active-theme') ?? 'parallax-dark'
+    localStorage.getItem('momiji:active-theme') ?? 'momiji-dark'
   )
 
   const saveInstalled = (ids: Set<string>) => {
     setInstalledIds(new Set(ids))
-    localStorage.setItem('parallax:extensions', JSON.stringify([...ids]))
+    localStorage.setItem('momiji:extensions', JSON.stringify([...ids]))
   }
 
   const handleInstall = (ext: Extension) => {
@@ -289,7 +289,7 @@ export function ExtensionsPanel() {
         ;(window as any).monaco.editor.setTheme(themeId)
       }
       setActiveTheme(themeId)
-      localStorage.setItem('parallax:active-theme', themeId)
+      localStorage.setItem('momiji:active-theme', themeId)
       const ids = new Set(installedIds)
       ids.add(ext.id)
       saveInstalled(ids)
@@ -309,10 +309,10 @@ export function ExtensionsPanel() {
   const handleUninstall = (ext: Extension) => {
     if (ext.action === 'theme') {
       // Revert to Catppuccin
-      const defaultTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+      const defaultTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
       if ((window as any).monaco) (window as any).monaco.editor.setTheme(defaultTheme)
       setActiveTheme(defaultTheme)
-      localStorage.setItem('parallax:active-theme', defaultTheme)
+      localStorage.setItem('momiji:active-theme', defaultTheme)
     } else if (ext.action === 'setting' && ext.settingKey) {
       updateSettings({ [ext.settingKey]: !ext.settingValue } as any)
     }

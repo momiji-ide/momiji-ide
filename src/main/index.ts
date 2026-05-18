@@ -100,7 +100,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.parallax.ide')
+  electronApp.setAppUserModelId('com.momiji.ide')
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
@@ -696,6 +696,10 @@ function setupIpcHandlers(): void {
       const buf = fs.readFileSync(filePath)
       return { ok: true, base64: buf.toString('base64') }
     } catch (e: any) { return { ok: false, base64: '' } }
+  })
+
+  ipcMain.handle('shell:openExternal', async (_, url: string) => {
+    await shell.openExternal(url)
   })
 }
 

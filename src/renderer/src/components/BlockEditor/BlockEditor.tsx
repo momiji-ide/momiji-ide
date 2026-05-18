@@ -23,7 +23,7 @@ export function BlockEditor() {
   const [level, setLevel]       = useState<Level>('beginner')
   const [showTemplates, setShowTemplates] = useState(false)
 
-  const monacoTheme = settings.theme === 'dark' ? 'parallax-dark' : 'parallax-light'
+  const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
   // ─── Generate code from workspace ──────────────────────────────────
   const generateCode = useCallback((): string => {
@@ -44,7 +44,7 @@ export function BlockEditor() {
     // Dispose old workspace
     workspaceRef.current?.dispose()
 
-    const theme = Blockly.Theme.defineTheme('parallax', {
+    const theme = Blockly.Theme.defineTheme('momiji', {
       base: Blockly.Themes.Classic,
       blockStyles: {
         logic_blocks:     { colourPrimary: '#89b4fa', colourSecondary: '#74c7ec', colourTertiary: '#45475a' },
@@ -152,13 +152,13 @@ export function BlockEditor() {
     if (!workspaceRef.current) return
     try {
       const state = Blockly.serialization.workspaces.save(workspaceRef.current)
-      localStorage.setItem('parallax:blockly:workspace', JSON.stringify(state))
+      localStorage.setItem('momiji:blockly:workspace', JSON.stringify(state))
       toast.success('Workspace saved!')
     } catch { toast.error('Failed to save') }
   }
 
   const handleLoad = () => {
-    const raw = localStorage.getItem('parallax:blockly:workspace')
+    const raw = localStorage.getItem('momiji:blockly:workspace')
     if (!raw || !workspaceRef.current) { toast.warning('No saved workspace found'); return }
     try {
       Blockly.serialization.workspaces.load(JSON.parse(raw), workspaceRef.current)

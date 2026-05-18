@@ -71,7 +71,7 @@ export function OutputPanel({ processId, onRunningChange }: Props) {
     try {
       const reply = await callKitsune(
         `A student ran their code and got this error:\n\n${stderr.slice(0, 800)}${codeSnippet}\n\nExplain what went wrong in 2-3 friendly sentences. No jargon. Be encouraging. If you can see the fix clearly, show it briefly (e.g. "Change line X from ... to ...").`,
-        `You are Kitsune 🦊, the friendly AI guide inside Parallax IDE. You help beginners understand errors. Speak like a patient teacher, not a manual. Keep answers short, warm, and actionable.`
+        `You are Kitsune 🦊, the friendly AI guide inside Momiji IDE. You help beginners understand errors. Speak like a patient teacher, not a manual. Keep answers short, warm, and actionable.`
       )
       setKitText(reply)
     } catch {
