@@ -473,12 +473,26 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
             {provider.name}
           </span>
           {link && (
-            <button
-              onClick={() => window.open(link.url, '_blank')}
-              className="text-xs text-left transition-colors"
-              style={{ color: 'var(--accent-blue)', fontSize: 10 }}>
-              🔑 {link.label} ↗
-            </button>
+            <div className="flex items-center gap-1.5">
+              {link.free && (
+                <span className="text-xs px-1 py-0.5 rounded font-bold"
+                  style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)', border: '1px solid var(--accent-green)44', fontSize: 9 }}>
+                  FREE
+                </span>
+              )}
+              {!link.free && provider.id !== 'ollama' && (
+                <span className="text-xs px-1 py-0.5 rounded font-bold"
+                  style={{ background: 'var(--accent-yellow)22', color: 'var(--accent-yellow)', border: '1px solid var(--accent-yellow)44', fontSize: 9 }}>
+                  BYOK
+                </span>
+              )}
+              <button
+                onClick={() => window.open(link.url, '_blank')}
+                className="text-xs text-left transition-colors"
+                style={{ color: 'var(--accent-blue)', fontSize: 10 }}>
+                🔑 {link.label} ↗
+              </button>
+            </div>
           )}
         </div>
         <Toggle
@@ -562,6 +576,39 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
             }}>
             {testResult}
           </p>
+        )}
+
+        {/* Gemini: free tier info */}
+        {provider.id === 'gemini' && (
+          <div className="flex items-start gap-2 px-2 py-2 rounded"
+            style={{ background: 'var(--accent-blue)11', border: '1px solid var(--accent-blue)33' }}>
+            <span style={{ fontSize: 13 }}>💡</span>
+            <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10, lineHeight: 1.6 }}>
+              <strong style={{ color: 'var(--accent-blue)' }}>Free tier tip:</strong> Use <strong>Gemini 3.1 Flash Lite</strong> (500 RPD free) or <strong>Gemini 3 Flash</strong> (20 RPD free). Get key at <code>aistudio.google.com/apikey</code>
+            </p>
+          </div>
+        )}
+
+        {/* Groq: free tier info */}
+        {provider.id === 'groq' && (
+          <div className="flex items-start gap-2 px-2 py-2 rounded"
+            style={{ background: 'var(--accent-green)11', border: '1px solid var(--accent-green)33' }}>
+            <span style={{ fontSize: 13 }}>⚡</span>
+            <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10, lineHeight: 1.6 }}>
+              <strong style={{ color: 'var(--accent-green)' }}>100% Free!</strong> Groq runs Llama 3.3 70B at 500+ tokens/sec — faster than any paid API. Get free key at <code>console.groq.com</code>
+            </p>
+          </div>
+        )}
+
+        {/* OpenRouter: free models info */}
+        {provider.id === 'openrouter' && (
+          <div className="flex items-start gap-2 px-2 py-2 rounded"
+            style={{ background: 'var(--accent-mauve)11', border: '1px solid var(--accent-mauve)33' }}>
+            <span style={{ fontSize: 13 }}>🌐</span>
+            <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10, lineHeight: 1.6 }}>
+              <strong style={{ color: 'var(--accent-mauve)' }}>Many free models!</strong> Select models with <code>:free</code> suffix (Llama, DeepSeek, Gemma). Paid models available too. Get key at <code>openrouter.ai/keys</code>
+            </p>
+          </div>
         )}
 
         {/* Ollama: no API key needed, show base URL */}

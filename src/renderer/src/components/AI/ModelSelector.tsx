@@ -17,16 +17,15 @@ const PROVIDER_MODELS: Record<string, ModelDef[]> = {
     { value: 'claude-haiku-4-5',  label: 'Claude Haiku 4.5',  sublabel: 'fastest & cheap',  shortcut: 3 },
   ],
   gemini: [
-    { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash', sublabel: 'latest, free tier ⭐', shortcut: 1 },
-    { value: 'gemini-2.5-pro-preview-05-06',   label: 'Gemini 2.5 Pro',   sublabel: 'most capable',        shortcut: 2 },
-    { value: 'gemini-2.0-flash',               label: 'Gemini 2.0 Flash', sublabel: 'fast & free',         shortcut: 3 },
-    { value: 'gemini-2.0-flash-lite',          label: 'Gemini 2.0 Lite',  sublabel: 'lightweight',         shortcut: 4 },
+    { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: 'free tier, 500 RPD ⭐', shortcut: 1 },
+    { value: 'gemini-3-flash',        label: 'Gemini 3 Flash',        sublabel: 'free tier, 20 RPD',    shortcut: 2 },
+    { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash', sublabel: 'BYOK',            shortcut: 3 },
+    { value: 'gemini-2.5-pro-preview-05-06',   label: 'Gemini 2.5 Pro',   sublabel: 'BYOK',            shortcut: 4 },
   ],
   openai: [
-    { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'flagship',        shortcut: 1 },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'fast & cheap ⭐', shortcut: 2 },
-    { value: 'o3-mini',     label: 'o3 Mini',     sublabel: 'reasoning',       shortcut: 3 },
-    { value: 'o1-mini',     label: 'o1 Mini',     sublabel: 'reasoning (old)', shortcut: 4 },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', sublabel: 'BYOK, recommended ⭐', shortcut: 1 },
+    { value: 'gpt-4o',      label: 'GPT-4o',      sublabel: 'BYOK, flagship',       shortcut: 2 },
+    { value: 'o3-mini',     label: 'o3 Mini',     sublabel: 'BYOK, reasoning',      shortcut: 3 },
   ],
   groq: [
     { value: 'llama-3.3-70b-versatile',    label: 'Llama 3.3 70B',    sublabel: 'free, ultra fast ⭐', shortcut: 1 },
@@ -94,10 +93,10 @@ function shortModelLabel(model: string): string {
     'claude-sonnet-4-5': 'Sonnet 4.5',
     'claude-haiku-4-5':  'Haiku 4.5',
     // Gemini
+    'gemini-3.1-flash-lite':          '3.1 Flash Lite',
+    'gemini-3-flash':                 '3 Flash',
     'gemini-2.5-flash-preview-05-20': '2.5 Flash',
     'gemini-2.5-pro-preview-05-06':   '2.5 Pro',
-    'gemini-2.0-flash':               '2.0 Flash',
-    'gemini-2.0-flash-lite':          '2.0 Lite',
     // OpenAI
     'gpt-4o': 'GPT-4o', 'gpt-4o-mini': 'GPT-4o Mini', 'o3-mini': 'o3 Mini', 'o1-mini': 'o1 Mini',
     // Groq
