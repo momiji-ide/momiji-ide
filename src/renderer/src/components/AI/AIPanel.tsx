@@ -324,6 +324,24 @@ export function AIPanel() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  // ── Right-click "Ask Kitsune" from editor context menu ───────────────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { prompt } = (e as CustomEvent).detail
+      if (!prompt) return
+      setInput(prompt)
+      setAiTab('chat')
+      // Also open the AI sidebar panel
+      useAppStore.getState().setActivePanel('ai')
+      // Auto-send after a tick so the UI updates first
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('kitsune:autoSend'))
+      }, 100)
+    }
+    window.addEventListener('kitsune:askWithPrompt', handler)
+    return () => window.removeEventListener('kitsune:askWithPrompt', handler)
+  }, [])
+
   // ── Start / stop elapsed timer ────────────────────────────────────────────
   const startTimer = () => {
     startTimeRef.current = Date.now()
@@ -465,6 +483,13 @@ export function AIPanel() {
   }
 
   // ── Send ──────────────────────────────────────────────────────────────────
+  // Auto-send trigger from right-click actions
+  useEffect(() => {
+    const handler = () => { handleSend() }
+    window.addEventListener('kitsune:autoSend', handler)
+    return () => window.removeEventListener('kitsune:autoSend', handler)
+  }, []) // eslint-disable-line
+
   const handleSend = useCallback(async () => {
     if ((!input.trim() && !attachedImage) || isLoading || !activeProvider) return
     const userMessage   = input.trim() || '(analyze this image)'

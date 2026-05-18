@@ -124,13 +124,36 @@ export function CodeEditor() {
     editorRef.current = editorInstance
     monacoRef.current = monaco
 
-    // Ctrl+S = Save
+    // Ctrl+S = Format + Save
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
       const tab = useAppStore.getState().tabs.find(t => t.id === useAppStore.getState().activeTabId)
-      if (tab && tab.isDirty && !tab.filePath.startsWith('__')) {
-        await saveFile(tab.filePath, tab.content, tab.id)
+      if (!tab || tab.filePath.startsWith('__')) return
+      // Auto-format before save (Monaco built-in formatter for JS/TS/HTML/CSS/JSON)
+      const formattable = ['.js','.ts','.jsx','.tsx','.html','.css','.json','.md']
+      const ext = tab.filePath.slice(tab.filePath.lastIndexOf('.'))
+      if (formattable.includes(ext)) {
+        try { await editorInstance.getAction('editor.action.formatDocument')?.run() } catch {}
       }
+      if (tab.isDirty) await saveFile(tab.filePath, tab.content, tab.id)
     })
+
+    // ─── Emit Monaco markers (errors/warnings) to Problems panel ─────
+    const emitMarkers = () => {
+      const model = editorInstance.getModel()
+      if (!model) return
+      const raw = monaco.editor.getModelMarkers({ resource: model.uri })
+      const items = raw.map(m => ({
+        severity: m.severity as 1|2|4|8,
+        message: m.message,
+        file: model.uri.path,
+        startLineNumber: m.startLineNumber,
+        startColumn: m.startColumn,
+        code: m.code,
+      }))
+      window.dispatchEvent(new CustomEvent('editor:markers', { detail: items }))
+    }
+    editorInstance.onDidChangeModelDecorations(() => setTimeout(emitMarkers, 300))
+    monaco.editor.onDidChangeMarkers(() => emitMarkers())
 
     // ─── Context menu actions ────────────────────────────────────────
     editorInstance.addAction({
@@ -219,7 +242,57 @@ export function CodeEditor() {
       contextMenuOrder: 1,
       run: (ed) => {
         ed.getAction('editor.action.marker.nextInFiles')?.run()
+        window.dispatchEvent(new CustomEvent('bottomPanel:switchTab', { detail: { tab: 'problems' } }))
       }
+    })
+
+    // ─── Kitsune AI right-click actions ─────────────────────────────
+    const kitsuneAsk = (prompt: string, ed: editor.IStandaloneCodeEditor) => {
+      const selection = ed.getSelection()
+      const model = ed.getModel()
+      if (!model) return
+      const selected = selection && !selection.isEmpty()
+        ? model.getValueInRange(selection)
+        : model.getValue().slice(0, 3000)
+      const lang = model.getLanguageId()
+      const fullPrompt = `${prompt}\n\nLanguage: ${lang}\n\`\`\`${lang}\n${selected}\n\`\`\``
+      window.dispatchEvent(new CustomEvent('kitsune:askWithPrompt', { detail: { prompt: fullPrompt } }))
+    }
+
+    editorInstance.addAction({
+      id: 'kitsune.explain',
+      label: '🦊 Explain this code',
+      contextMenuGroupId: '9_kitsune',
+      contextMenuOrder: 1,
+      run: (ed) => kitsuneAsk('Explain this code clearly and concisely. What does it do?', ed)
+    })
+    editorInstance.addAction({
+      id: 'kitsune.refactor',
+      label: '🦊 Refactor / Improve',
+      contextMenuGroupId: '9_kitsune',
+      contextMenuOrder: 2,
+      run: (ed) => kitsuneAsk('Refactor this code to improve readability, performance, and best practices. Show the improved version with explanations.', ed)
+    })
+    editorInstance.addAction({
+      id: 'kitsune.tests',
+      label: '🦊 Generate Unit Tests',
+      contextMenuGroupId: '9_kitsune',
+      contextMenuOrder: 3,
+      run: (ed) => kitsuneAsk('Generate comprehensive unit tests for this code. Use appropriate test framework for the language.', ed)
+    })
+    editorInstance.addAction({
+      id: 'kitsune.docs',
+      label: '🦊 Generate JSDoc / Docstring',
+      contextMenuGroupId: '9_kitsune',
+      contextMenuOrder: 4,
+      run: (ed) => kitsuneAsk('Generate JSDoc comments (or appropriate docstring for the language) for each function and class in this code.', ed)
+    })
+    editorInstance.addAction({
+      id: 'kitsune.fix',
+      label: '🦊 Fix / Debug this',
+      contextMenuGroupId: '9_kitsune',
+      contextMenuOrder: 5,
+      run: (ed) => kitsuneAsk('Find and fix any bugs, errors, or issues in this code. Explain what was wrong.', ed)
     })
 
     // Listen for jump-to-line from Kitsune error panel
