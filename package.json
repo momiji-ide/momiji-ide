@@ -15,10 +15,10 @@
     "code-editor",
     "electron",
     "ai",
-    "parallax",
+    "momiji",
     "kitsune"
   ],
-  "author": "Parallax",
+  "author": "Momiji IDE",
   "license": "MIT",
   "devDependencies": {
     "@electron/rebuild": "^4.0.4",
@@ -55,8 +55,8 @@
     "zustand": "^4.5.4"
   },
   "build": {
-    "appId": "com.parallax.ide",
-    "productName": "Parallax IDE",
+    "appId": "com.momiji.ide",
+    "productName": "Momiji IDE",
     "npmRebuild": false,
     "directories": {
       "output": "release"
@@ -68,8 +68,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "parallax-ide",
-      "repo": "parallax-ide"
+      "owner": "momiji-ide",
+      "repo": "momiji-ide"
     },
     "win": {
       "target": [
@@ -81,7 +81,7 @@
         }
       ],
       "icon": "resources/icon.ico",
-      "artifactName": "Parallax-IDE-Setup-${version}.${ext}"
+      "artifactName": "Momiji-IDE-Setup-${version}.${ext}"
     },
     "mac": {
       "target": [
@@ -94,7 +94,7 @@
         }
       ],
       "icon": "resources/icon.icns",
-      "artifactName": "Parallax-IDE-${version}-${arch}.${ext}"
+      "artifactName": "Momiji-IDE-${version}-${arch}.${ext}"
     },
     "linux": {
       "target": [
@@ -106,7 +106,7 @@
         }
       ],
       "icon": "resources/icon.png",
-      "artifactName": "Parallax-IDE-${version}.${ext}"
+      "artifactName": "Momiji-IDE-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
