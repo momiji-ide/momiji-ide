@@ -48,6 +48,10 @@ interface AppStore extends AppState {
   // AI actions
   setAIProviders: (providers: AIProvider[]) => void
   updateAIProvider: (provider: AIProvider) => void
+
+  // Kitsune quick-ask (right-click from editor)
+  pendingAIPrompt: string | null
+  setPendingAIPrompt: (prompt: string | null) => void
 }
 
 export const useAppStore = create<AppStore>()(
@@ -70,6 +74,7 @@ export const useAppStore = create<AppStore>()(
       showBottomPanel: false,
       bottomPanelHeight: 220,
       splitTabId: null,
+      pendingAIPrompt: null,
 
       setCurrentFolder: (folder) => {
         set({ currentFolder: folder })
@@ -174,7 +179,8 @@ export const useAppStore = create<AppStore>()(
       updateAIProvider: (provider) =>
         set((s) => ({
           aiProviders: s.aiProviders.map((p) => (p.id === provider.id ? provider : p))
-        }))
+        })),
+      setPendingAIPrompt: (prompt) => set({ pendingAIPrompt: prompt }),
     }),
     {
       name: 'parallax-store',

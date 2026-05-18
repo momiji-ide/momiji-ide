@@ -324,22 +324,18 @@ export function AIPanel() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  // ── Right-click "Ask Kitsune" from editor context menu ───────────────────
+  // ── Consume pending prompt set by App.tsx global handler ─────────────────
+  const pendingAIPrompt    = useAppStore(s => s.pendingAIPrompt)
+  const setPendingAIPrompt = useAppStore(s => s.setPendingAIPrompt)
+
   useEffect(() => {
-    const handler = (e: Event) => {
-      const { prompt } = (e as CustomEvent).detail as { prompt: string }
-      if (!prompt) return
-      // Open AI sidebar + switch to chat tab
-      useAppStore.getState().setActivePanel('ai')
-      setAiTab('chat')
-      // Set input so user sees what was sent
-      setInput(prompt)
-      // Send directly via ref — bypasses stale closure, no timing issue
-      setTimeout(() => handleSendRef.current(prompt), 50)
-    }
-    window.addEventListener('kitsune:askWithPrompt', handler)
-    return () => window.removeEventListener('kitsune:askWithPrompt', handler)
-  }, []) // eslint-disable-line
+    if (!pendingAIPrompt) return
+    setPendingAIPrompt(null)   // clear immediately so it doesn't fire twice
+    setAiTab('chat')
+    setInput(pendingAIPrompt)
+    // Give React one tick to render, then send
+    setTimeout(() => handleSendRef.current(pendingAIPrompt), 80)
+  }, [pendingAIPrompt]) // eslint-disable-line
 
   // ── Start / stop elapsed timer ────────────────────────────────────────────
   const startTimer = () => {
