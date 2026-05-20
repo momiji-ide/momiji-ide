@@ -68,7 +68,7 @@ export function BottomPanel({ height }: BottomPanelProps) {
       <div className="h-1 cursor-row-resize w-full flex-shrink-0 transition-colors"
         style={{ background: 'transparent' }}
         onMouseDown={handleMouseDown}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-blue)')}
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-mauve)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')} />
 
       {/* Tab bar */}
@@ -80,7 +80,7 @@ export function BottomPanel({ height }: BottomPanelProps) {
               style={{
                 color: activeTab === tab.id ? 'var(--text)' : 'var(--text-muted)',
                 borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                borderBottom: activeTab === tab.id ? '2px solid var(--accent-mauve)' : '2px solid transparent',
                 background: 'transparent', cursor: 'pointer',
               }}>
               {tab.label}

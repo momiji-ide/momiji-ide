@@ -113,7 +113,7 @@ function FlowCanvas() {
       <div className="flex items-center gap-2 px-3 flex-shrink-0"
         style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: '40px' }}>
         <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>⚡ Visual Flow</span>
-        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)' }}>
+        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)' }}>
           {nodes.length} nodes · {edges.length} edges
         </span>
         <div className="flex-1" />
@@ -127,7 +127,7 @@ function FlowCanvas() {
 
         <button onClick={() => setShowCode(s => !s)}
           className="text-xs px-2 py-1 rounded-lg"
-          style={{ background: showCode ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: showCode ? 'var(--bg-base)' : 'var(--text-muted)', border: '1px solid var(--border)' }}>
+          style={{ background: showCode ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: showCode ? 'var(--bg-base)' : 'var(--text-muted)', border: '1px solid var(--border)' }}>
           {showCode ? '📝 Hide Code' : '📝 Show Code'}
         </button>
 

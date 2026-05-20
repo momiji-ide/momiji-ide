@@ -41,7 +41,7 @@ function ReviewMarkdown({ text }: { text: string }) {
 function StatusBadge({ s }: { s: string }) {
   const map: Record<string, [string, string]> = {
     M: ['M', 'var(--accent-yellow)'], A: ['A', 'var(--accent-green)'],
-    D: ['D', 'var(--accent-red)'],   R: ['R', 'var(--accent-blue)'],
+    D: ['D', 'var(--accent-red)'],   R: ['R', 'var(--accent-mauve)'],
     '??': ['U', 'var(--text-subtle)'],
   }
   const [label, color] = map[s] ?? [s, 'var(--text-subtle)']
@@ -58,7 +58,7 @@ function DiffViewer({ diff }: { diff: string }) {
         return (
           <div key={i} className="px-2 leading-5 whitespace-pre-wrap break-all" style={{
             background: add ? 'rgba(166,227,161,.12)' : del ? 'rgba(243,139,168,.12)' : hdr ? 'rgba(137,180,250,.08)' : 'transparent',
-            color:      add ? 'var(--accent-green)'  : del ? 'var(--accent-red)'      : hdr ? 'var(--accent-blue)'     : 'var(--text-subtle)',
+            color:      add ? 'var(--accent-green)'  : del ? 'var(--accent-red)'      : hdr ? 'var(--accent-mauve)'     : 'var(--text-subtle)',
           }}>{line || ' '}</div>
         )
       })}
@@ -316,7 +316,7 @@ Respond in this exact format:
 
       {/* Branch + Push/Pull */}
       <div className="flex-shrink-0 px-2 py-1.5 flex items-center gap-1" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-surface0)' }}>
-        <span style={{ color: 'var(--accent-blue)', fontSize: 13, flexShrink: 0 }}>⎇</span>
+        <span style={{ color: 'var(--accent-mauve)', fontSize: 13, flexShrink: 0 }}>⎇</span>
         <button onClick={() => { setShowBranch(v => !v); if (!showBranch) loadBranches() }}
           className="flex-1 text-left text-xs font-semibold truncate"
           style={{ color: 'var(--text)', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -409,7 +409,7 @@ Respond in this exact format:
           {diff && (
             <div className="flex flex-col overflow-hidden flex-1" style={{ borderTop: '1px solid var(--border)', minHeight: 80 }}>
               <div className="flex items-center px-2 py-1 flex-shrink-0" style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}>
-                <code className="text-xs flex-1 truncate" style={{ color: 'var(--accent-blue)' }}>{diffFile}</code>
+                <code className="text-xs flex-1 truncate" style={{ color: 'var(--accent-mauve)' }}>{diffFile}</code>
                 <button onClick={() => { setDiff(''); setDiffFile('') }} style={{ color: 'var(--text-subtle)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
               </div>
               <DiffViewer diff={diff} />
@@ -447,7 +447,7 @@ Respond in this exact format:
             : commits.map(c => (
               <div key={c.hash} className="px-3 py-2" style={{ borderBottom: '1px solid rgba(69,71,90,.3)' }}>
                 <div className="flex items-start gap-2">
-                  <code style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: 10, flexShrink: 0 }}>{c.hash}</code>
+                  <code style={{ color: 'var(--accent-mauve)', fontFamily: 'monospace', fontSize: 10, flexShrink: 0 }}>{c.hash}</code>
                   <span style={{ color: 'var(--text)', fontSize: 11 }}>{c.subject}</span>
                 </div>
                 <p style={{ color: 'var(--text-subtle)', fontSize: 10, marginTop: 2 }}>{c.author} · {c.date}</p>

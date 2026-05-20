@@ -84,7 +84,7 @@ export function OnboardingWizard({ onComplete }: Props) {
 
         {/* Progress bar */}
         <div style={{ height: 3, background: 'var(--bg-surface0)' }}>
-          <div style={{ height: '100%', transition: 'width 0.4s ease', background: 'linear-gradient(90deg, #00CFFF, #7C3AED)', width: `${progress}%` }} />
+          <div style={{ height: '100%', transition: 'width 0.4s ease', background: 'linear-gradient(90deg, var(--accent-mauve), #e85d04)', width: `${progress}%` }} />
         </div>
 
         {/* Language switcher */}
@@ -144,13 +144,13 @@ export function OnboardingWizard({ onComplete }: Props) {
                 {GOALS.map(g => (
                   <button key={g.id} onClick={() => setGoal(g.id)}
                     className="flex items-center gap-3 p-3 rounded-xl text-left transition-all"
-                    style={{ background: goal === g.id ? 'var(--bg-surface1)' : 'var(--bg-surface0)', border: `2px solid ${goal === g.id ? 'var(--accent-blue)' : 'transparent'}` }}>
+                    style={{ background: goal === g.id ? 'var(--bg-surface1)' : 'var(--bg-surface0)', border: `2px solid ${goal === g.id ? 'var(--accent-mauve)' : 'transparent'}` }}>
                     <span className="text-2xl">{g.icon}</span>
                     <div className="flex-1">
                       <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{g.title}</p>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{g.desc}</p>
                     </div>
-                    {goal === g.id && <span style={{ color: 'var(--accent-blue)' }}>✓</span>}
+                    {goal === g.id && <span style={{ color: 'var(--accent-mauve)' }}>✓</span>}
                   </button>
                 ))}
               </div>
@@ -201,7 +201,7 @@ export function OnboardingWizard({ onComplete }: Props) {
                 <StepRow n="1" title={t.onb_free_step1}>
                   <button onClick={() => window.open('https://aistudio.google.com/apikey', '_blank')}
                     className="text-xs px-3 py-1.5 rounded-lg font-semibold"
-                    style={{ background: 'var(--accent-blue)', color: 'white' }}>{t.onb_free_step1_btn}</button>
+                    style={{ background: 'var(--accent-mauve)', color: 'white' }}>{t.onb_free_step1_btn}</button>
                 </StepRow>
                 <StepRow n="2" title={t.onb_free_step2} />
                 <StepRow n="3" title={t.onb_free_step3}>
@@ -243,7 +243,7 @@ export function OnboardingWizard({ onComplete }: Props) {
                 {(['claude', 'openai'] as const).map(p => (
                   <button key={p} onClick={() => setByokProvider(p)}
                     className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
-                    style={{ background: byokProvider === p ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: byokProvider === p ? 'white' : 'var(--text-muted)', border: `1px solid ${byokProvider === p ? 'var(--accent-blue)' : 'var(--border)'}` }}>
+                    style={{ background: byokProvider === p ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: byokProvider === p ? 'white' : 'var(--text-muted)', border: `1px solid ${byokProvider === p ? 'var(--accent-mauve)' : 'var(--border)'}` }}>
                     {p === 'claude' ? '🟣 Claude (Anthropic)' : '🟢 GPT (OpenAI)'}
                   </button>
                 ))}
@@ -262,7 +262,7 @@ export function OnboardingWizard({ onComplete }: Props) {
                   </button>
                 </div>
                 <a href={byokProvider === 'claude' ? 'https://console.anthropic.com' : 'https://platform.openai.com/api-keys'}
-                  target="_blank" rel="noreferrer" className="text-xs" style={{ color: 'var(--accent-blue)' }}>
+                  target="_blank" rel="noreferrer" className="text-xs" style={{ color: 'var(--accent-mauve)' }}>
                   → Get {byokProvider === 'claude' ? 'Anthropic' : 'OpenAI'} API key
                 </a>
               </div>
@@ -354,7 +354,7 @@ function Btn({ children, onClick, primary, disabled }: { children: React.ReactNo
     <button onClick={onClick} disabled={disabled}
       className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1"
       style={{
-        background: disabled ? 'var(--bg-surface0)' : primary ? 'linear-gradient(135deg, #00CFFF, #7C3AED)' : 'var(--bg-surface0)',
+        background: disabled ? 'var(--bg-surface0)' : primary ? 'linear-gradient(135deg, var(--accent-mauve), #e85d04)' : 'var(--bg-surface0)',
         color: disabled ? 'var(--text-subtle)' : primary ? 'white' : 'var(--text)',
         opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer',
         border: primary ? 'none' : '1px solid var(--border)',
@@ -393,7 +393,7 @@ function StepRow({ n, title, children }: { n: string; title: string; children?: 
   return (
     <div className="flex gap-3">
       <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-        style={{ background: 'var(--accent-blue)', color: 'white' }}>{n}</div>
+        style={{ background: 'var(--accent-mauve)', color: 'white' }}>{n}</div>
       <div className="flex-1">
         <p className="text-sm" style={{ color: 'var(--text)' }}>{title}</p>
         {children}

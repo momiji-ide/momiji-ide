@@ -65,7 +65,7 @@ export function ProblemsPanel() {
   const sev = (s: number) => {
     if (s === 8) return { icon: '●', color: 'var(--accent-red)',    label: 'Error' }
     if (s === 4) return { icon: '●', color: 'var(--accent-yellow)', label: 'Warning' }
-    if (s === 2) return { icon: '●', color: 'var(--accent-blue)',   label: 'Info' }
+    if (s === 2) return { icon: '●', color: 'var(--accent-mauve)',   label: 'Info' }
     return        { icon: '●', color: 'var(--text-subtle)',         label: 'Hint' }
   }
 
@@ -116,7 +116,7 @@ export function ProblemsPanel() {
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => jump(m)}>
                   <p className="text-xs truncate" style={{ color: 'var(--text)' }}>{m.message}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)', fontFamily: 'monospace' }}>
-                    {fileName} <span style={{ color: 'var(--accent-blue)' }}>:{m.startLineNumber}:{m.startColumn}</span>
+                    {fileName} <span style={{ color: 'var(--accent-mauve)' }}>:{m.startLineNumber}:{m.startColumn}</span>
                     {m.code != null && <span style={{ color: 'var(--text-subtle)', marginLeft: 6 }}>[{m.code}]</span>}
                   </p>
                 </div>

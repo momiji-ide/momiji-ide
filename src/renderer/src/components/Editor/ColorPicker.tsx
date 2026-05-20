@@ -121,7 +121,7 @@ export function ColorPickerPopup({ color, x, y, onApply, onClose }: Props) {
           <div className="flex gap-1">
             {['R','G','B'].map((ch, i) => (
               <div key={ch} className="flex-1 flex flex-col items-center gap-0.5">
-                <span className="text-xs" style={{ color: ['var(--accent-red)','var(--accent-green)','var(--accent-blue)'][i] }}>{ch}</span>
+                <span className="text-xs" style={{ color: ['var(--accent-red)','var(--accent-green)','var(--accent-mauve)'][i] }}>{ch}</span>
                 <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{rgb[i]}</span>
               </div>
             ))}

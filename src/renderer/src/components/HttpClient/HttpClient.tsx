@@ -157,7 +157,7 @@ export function HttpClient() {
     toast.info(`Loaded: ${col.name}`)
   }
 
-  const statusColor = (s: number) => s >= 500 ? 'var(--accent-red)' : s >= 400 ? 'var(--accent-yellow)' : s >= 300 ? 'var(--accent-blue)' : 'var(--accent-green)'
+  const statusColor = (s: number) => s >= 500 ? 'var(--accent-red)' : s >= 400 ? 'var(--accent-yellow)' : s >= 300 ? 'var(--accent-mauve)' : 'var(--accent-green)'
 
   const formatBody = (text: string) => {
     try { return JSON.stringify(JSON.parse(text), null, 2) } catch { return text }
@@ -174,11 +174,11 @@ export function HttpClient() {
       {/* ── Top bar ── */}
       <div className="flex items-center gap-2 px-3 py-2 flex-shrink-0"
         style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)' }}>
-        <span className="text-xs font-bold" style={{ color: 'var(--accent-blue)' }}>🌐 REST Client</span>
+        <span className="text-xs font-bold" style={{ color: 'var(--accent-mauve)' }}>🌐 REST Client</span>
         <div className="flex-1" />
         <button onClick={() => setShowHistory(!showHistory)}
           className="text-xs px-2 py-1 rounded"
-          style={{ background: showHistory ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: showHistory ? 'var(--bg-base)' : 'var(--text-muted)' }}>
+          style={{ background: showHistory ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: showHistory ? 'var(--bg-base)' : 'var(--text-muted)' }}>
           📋 History ({history.length})
         </button>
         <button onClick={() => setShowSaveDialog(true)}
@@ -229,7 +229,7 @@ export function HttpClient() {
             {(['params','headers','body','auth'] as ReqTab[]).map(t => (
               <button key={t} onClick={() => setReqTab(t)}
                 className="px-3 py-1.5 text-xs capitalize transition-colors"
-                style={{ color: reqTab === t ? 'var(--accent-blue)' : 'var(--text-muted)', borderBottom: reqTab === t ? '2px solid var(--accent-blue)' : '2px solid transparent' }}>
+                style={{ color: reqTab === t ? 'var(--accent-mauve)' : 'var(--text-muted)', borderBottom: reqTab === t ? '2px solid var(--accent-mauve)' : '2px solid transparent' }}>
                 {t === 'params' ? `Params${params.filter(p=>p.enabled&&p.key).length ? ' ('+params.filter(p=>p.enabled&&p.key).length+')' : ''}` :
                  t === 'headers' ? `Headers${headers.filter(h=>h.enabled&&h.key).length ? ' ('+headers.filter(h=>h.enabled&&h.key).length+')' : ''}` :
                  t}
@@ -250,7 +250,7 @@ export function HttpClient() {
                   {(['none','json','text'] as BodyType[]).map(bt => (
                     <button key={bt} onClick={() => setBodyType(bt)}
                       className="px-3 py-1 rounded text-xs capitalize"
-                      style={{ background: bodyType === bt ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: bodyType === bt ? 'var(--bg-base)' : 'var(--text-muted)' }}>
+                      style={{ background: bodyType === bt ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: bodyType === bt ? 'var(--bg-base)' : 'var(--text-muted)' }}>
                       {bt}
                     </button>
                   ))}
@@ -278,7 +278,7 @@ export function HttpClient() {
                   {(['none','bearer','basic'] as AuthType[]).map(a => (
                     <button key={a} onClick={() => setAuthType(a)}
                       className="px-3 py-1.5 rounded text-xs capitalize"
-                      style={{ background: authType === a ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: authType === a ? 'var(--bg-base)' : 'var(--text-muted)' }}>
+                      style={{ background: authType === a ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: authType === a ? 'var(--bg-base)' : 'var(--text-muted)' }}>
                       {a === 'bearer' ? 'Bearer Token' : a === 'basic' ? 'Basic Auth' : 'No Auth'}
                     </button>
                   ))}
@@ -305,7 +305,7 @@ export function HttpClient() {
               {(['body','headers','info'] as ResTab[]).map(t => (
                 <button key={t} onClick={() => setResTab(t)}
                   className="px-3 py-1.5 text-xs capitalize transition-colors"
-                  style={{ color: resTab === t ? 'var(--accent-blue)' : 'var(--text-muted)', borderBottom: resTab === t ? '2px solid var(--accent-blue)' : '2px solid transparent' }}>
+                  style={{ color: resTab === t ? 'var(--accent-mauve)' : 'var(--text-muted)', borderBottom: resTab === t ? '2px solid var(--accent-mauve)' : '2px solid transparent' }}>
                   {t}
                 </button>
               ))}
@@ -349,7 +349,7 @@ export function HttpClient() {
             {loading && (
               <div className="flex flex-col items-center justify-center h-full gap-3">
                 <div className="w-8 h-8 border-2 rounded-full animate-spin"
-                  style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
+                  style={{ borderColor: 'var(--accent-mauve)', borderTopColor: 'transparent' }} />
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sending request...</p>
               </div>
             )}
@@ -379,7 +379,7 @@ export function HttpClient() {
                     {Object.entries(response.headers).map(([k, v]) => (
                       <div key={k} className="flex gap-2 py-1.5 px-2 rounded text-xs"
                         style={{ background: 'var(--bg-surface0)' }}>
-                        <span className="font-medium flex-shrink-0" style={{ color: 'var(--accent-blue)', minWidth: 180 }}>{k}</span>
+                        <span className="font-medium flex-shrink-0" style={{ color: 'var(--accent-mauve)', minWidth: 180 }}>{k}</span>
                         <span className="flex-1 break-all" style={{ color: 'var(--text)', fontFamily: 'monospace' }}>{v}</span>
                       </div>
                     ))}
@@ -447,7 +447,7 @@ export function HttpClient() {
                 style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }} />
               <div className="flex gap-2">
                 <button onClick={() => setShowSaveDialog(false)} className="flex-1 py-2 rounded-lg text-xs" style={{ background: 'var(--bg-surface1)', color: 'var(--text)' }}>Cancel</button>
-                <button onClick={saveCollection} className="flex-1 py-2 rounded-lg text-xs font-bold" style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>Save</button>
+                <button onClick={saveCollection} className="flex-1 py-2 rounded-lg text-xs font-bold" style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>Save</button>
               </div>
             </div>
           </div>
@@ -474,7 +474,7 @@ function KVEditor({ rows, onChange, placeholder }: {
     <div className="p-2 flex flex-col gap-1">
       {rows.map(row => (
         <div key={row.id} className="flex items-center gap-1">
-          <input type="checkbox" checked={row.enabled} onChange={e => update(row.id, { enabled: e.target.checked })} className="flex-shrink-0" style={{ accentColor: 'var(--accent-blue)' }} />
+          <input type="checkbox" checked={row.enabled} onChange={e => update(row.id, { enabled: e.target.checked })} className="flex-shrink-0" style={{ accentColor: 'var(--accent-mauve)' }} />
           <input value={row.key} onChange={e => update(row.id, { key: e.target.value })}
             placeholder={placeholder.key}
             className="flex-1 px-2 py-1 rounded text-xs outline-none"

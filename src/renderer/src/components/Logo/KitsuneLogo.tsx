@@ -1,4 +1,4 @@
-import kitsuneImg from '../../assets/logo-kitsune.png'
+import kitsuneImg from '../../assets/iconkitsune.png'
 
 interface Props {
   size?: number

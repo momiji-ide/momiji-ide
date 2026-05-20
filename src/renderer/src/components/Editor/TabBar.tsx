@@ -72,7 +72,7 @@ export function TabBar() {
               style={{
                 background: isActive ? 'var(--bg-base)' : 'transparent',
                 color: isActive ? 'var(--text)' : 'var(--text-muted)',
-                borderTop: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                borderTop: isActive ? '2px solid var(--accent-mauve)' : '2px solid transparent',
                 borderRight: '1px solid var(--border)',
                 maxWidth: 200, minWidth: 80
               }}

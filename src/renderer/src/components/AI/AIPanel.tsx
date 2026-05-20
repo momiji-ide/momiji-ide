@@ -68,7 +68,7 @@ function renderInline(text: string): React.ReactNode[] {
     if (text[i] === '`') {
       const end = text.indexOf('`', i+1)
       if (end !== -1) {
-        parts.push(<code key={key++} className="px-1 rounded" style={{ background: 'var(--bg-crust)', color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: '0.9em' }}>{text.slice(i+1, end)}</code>)
+        parts.push(<code key={key++} className="px-1 rounded" style={{ background: 'var(--bg-crust)', color: 'var(--accent-mauve)', fontFamily: 'monospace', fontSize: '0.9em' }}>{text.slice(i+1, end)}</code>)
         i = end+1; continue
       }
     }
@@ -110,11 +110,11 @@ function tryRenderReview(content: string): React.ReactNode | null {
         {/* Tips — blue */}
         {(r.tips as { line: number; head: string; body: string }[] ?? []).map((t, i) => (
           <div key={i} className="flex flex-col gap-1 rounded-lg px-3 py-2 text-xs cursor-pointer"
-            style={{ background: 'var(--accent-blue)12', border: '1px solid var(--accent-blue)44' }}
+            style={{ background: 'var(--accent-mauve)12', border: '1px solid var(--accent-mauve)44' }}
             onClick={() => t.line > 0 && window.dispatchEvent(new CustomEvent('editor:jumpToLine', { detail: { line: t.line } }))}>
             <div className="flex items-center gap-2">
-              <span style={{ color: 'var(--accent-blue)', flexShrink: 0 }}>💡</span>
-              <span className="font-semibold" style={{ color: 'var(--accent-blue)' }}>{t.head}</span>
+              <span style={{ color: 'var(--accent-mauve)', flexShrink: 0 }}>💡</span>
+              <span className="font-semibold" style={{ color: 'var(--accent-mauve)' }}>{t.head}</span>
               {t.line > 0 && <span className="ml-auto opacity-60" style={{ fontFamily: 'monospace' }}>:{t.line}</span>}
             </div>
             <p style={{ color: 'var(--text-muted)', paddingLeft: 20 }}>{t.body}</p>
@@ -152,12 +152,12 @@ function renderMessage(content: string): React.ReactNode {
     part.split('\n').forEach(line => {
       if (!line.trim()) { blocks.push(<br key={key++} />); return }
       if (line.startsWith('### ')) blocks.push(<p key={key++} className="text-xs font-bold mt-2" style={{ color: 'var(--accent-mauve)' }}>{renderInline(line.slice(4))}</p>)
-      else if (line.startsWith('## ')) blocks.push(<p key={key++} className="text-xs font-black mt-2" style={{ color: 'var(--accent-blue)' }}>{renderInline(line.slice(3))}</p>)
+      else if (line.startsWith('## ')) blocks.push(<p key={key++} className="text-xs font-black mt-2" style={{ color: 'var(--accent-mauve)' }}>{renderInline(line.slice(3))}</p>)
       else if (line.startsWith('# ')) blocks.push(<p key={key++} className="text-sm font-black mt-2" style={{ color: 'var(--text)' }}>{renderInline(line.slice(2))}</p>)
-      else if (/^[-*]\s/.test(line)) blocks.push(<div key={key++} className="flex gap-1.5 items-start text-xs" style={{ color: 'var(--text)', marginLeft: 8 }}><span style={{ color: 'var(--accent-blue)', flexShrink: 0 }}>•</span><span>{renderInline(line.slice(2))}</span></div>)
+      else if (/^[-*]\s/.test(line)) blocks.push(<div key={key++} className="flex gap-1.5 items-start text-xs" style={{ color: 'var(--text)', marginLeft: 8 }}><span style={{ color: 'var(--accent-mauve)', flexShrink: 0 }}>•</span><span>{renderInline(line.slice(2))}</span></div>)
       else if (/^\d+\.\s/.test(line)) {
         const num = line.match(/^(\d+)\./)?.[1]
-        blocks.push(<div key={key++} className="flex gap-1.5 items-start text-xs" style={{ color: 'var(--text)', marginLeft: 8 }}><span style={{ color: 'var(--accent-blue)', flexShrink: 0, minWidth: 12 }}>{num}.</span><span>{renderInline(line.replace(/^\d+\.\s/, ''))}</span></div>)
+        blocks.push(<div key={key++} className="flex gap-1.5 items-start text-xs" style={{ color: 'var(--text)', marginLeft: 8 }}><span style={{ color: 'var(--accent-mauve)', flexShrink: 0, minWidth: 12 }}>{num}.</span><span>{renderInline(line.replace(/^\d+\.\s/, ''))}</span></div>)
       } else blocks.push(<p key={key++} className="text-xs" style={{ color: 'var(--text)', lineHeight: 1.6 }}>{renderInline(line)}</p>)
     })
   })
@@ -190,7 +190,7 @@ function ThinkingIndicator({ elapsed, tokens }: { elapsed: number; tokens: numbe
       {/* Progress bar */}
       <div className="rounded-full overflow-hidden" style={{ height: 2, background: 'var(--bg-surface1)' }}>
         <div className="h-full rounded-full" style={{
-          background: 'linear-gradient(90deg, var(--accent-mauve), var(--accent-blue))',
+          background: 'linear-gradient(90deg, var(--accent-mauve), var(--accent-mauve))',
           width: `${Math.min(100, (elapsed / 30000) * 100)}%`,
           transition: 'width 0.5s ease'
         }} />
@@ -858,7 +858,7 @@ export function AIPanel() {
           {/* Auto-detected context */}
           {autoContext && (
             <div className="rounded-lg p-2.5" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
-              <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--accent-blue)' }}>⚡ Auto-detected</p>
+              <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--accent-mauve)' }}>⚡ Auto-detected</p>
               {autoContext.split('\n').map((line, i) => (
                 <p key={i} className="text-xs" style={{ color: 'var(--text-muted)' }}>{line}</p>
               ))}
@@ -959,7 +959,7 @@ export function AIPanel() {
                   <ThinkingIndicator elapsed={streamElapsed} tokens={streamTokens} />
                 ) : (
                   <div className="rounded-lg px-3 py-2 text-xs max-w-full"
-                    style={{ background: msg.role === 'user' ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: msg.role === 'user' ? 'var(--bg-base)' : 'var(--text)', wordBreak: 'break-word' }}>
+                    style={{ background: msg.role === 'user' ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: msg.role === 'user' ? 'var(--bg-base)' : 'var(--text)', wordBreak: 'break-word' }}>
                     {msg.role === 'assistant'
                       ? <>
                           {tryRenderReview(msg.content) ?? renderMessage(msg.content.replace('__FIX_BUTTON__', ''))}
@@ -973,7 +973,7 @@ export function AIPanel() {
                               ))}
                             </div>
                           )}
-                          {msg.streaming && msg.content && <span className="animate-pulse ml-0.5" style={{ color: 'var(--accent-blue)' }}>▌</span>}
+                          {msg.streaming && msg.content && <span className="animate-pulse ml-0.5" style={{ color: 'var(--accent-mauve)' }}>▌</span>}
                         </>
                       : msg.content
                     }
@@ -1004,7 +1004,7 @@ export function AIPanel() {
                       <button onClick={() => handleInsertCode(msg.content)}
                         className="text-xs px-2 py-0.5 rounded transition-all"
                         style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-blue)'; e.currentTarget.style.color = 'var(--bg-base)' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-mauve)'; e.currentTarget.style.color = 'var(--bg-base)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface0)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
                         ↙ Insert
                       </button>
@@ -1044,7 +1044,7 @@ export function AIPanel() {
                 ? <button onClick={handleStop} className="px-2 py-1 rounded text-xs font-bold self-end" style={{ background: 'var(--accent-red)', color: 'white' }} title="Stop">■</button>
                 : <button onClick={handleSend} disabled={!input.trim() && !attachedImage}
                     className="px-2 py-1 rounded text-xs font-medium self-end transition-all"
-                    style={{ background: (!input.trim() && !attachedImage) ? 'var(--bg-surface0)' : 'var(--accent-blue)', color: (!input.trim() && !attachedImage) ? 'var(--text-muted)' : 'var(--bg-base)' }}>▶</button>
+                    style={{ background: (!input.trim() && !attachedImage) ? 'var(--bg-surface0)' : 'var(--accent-mauve)', color: (!input.trim() && !attachedImage) ? 'var(--text-muted)' : 'var(--bg-base)' }}>▶</button>
               }
             </div>
             <div className="flex items-center gap-2 mt-1.5">

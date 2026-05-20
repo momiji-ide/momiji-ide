@@ -998,7 +998,7 @@ function ActionButton({ onClick, icon, label, primary }: { onClick: () => void; 
     <button onClick={onClick}
       className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
       style={{
-        background: primary ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+        background: primary ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
         color: primary ? 'white' : 'var(--text)',
         border: primary ? 'none' : '1px solid var(--border)'
       }}

@@ -87,7 +87,7 @@ export function RegexPlayground({ onClose }: Props) {
               <span style={{ color: 'var(--text-subtle)', fontSize: 18 }}>/</span>
               <input value={flags} onChange={e => setFlags(e.target.value)} placeholder="gi"
                 className="w-16 px-2 py-1.5 rounded text-sm outline-none font-mono text-center"
-                style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)', border: '1px solid var(--border)' }} />
+                style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', border: '1px solid var(--border)' }} />
             </div>
             {error && <p className="text-xs mt-1" style={{ color: 'var(--accent-red)' }}>⚠ {error}</p>}
           </div>
@@ -106,7 +106,7 @@ export function RegexPlayground({ onClose }: Props) {
               {/* Textarea */}
               <textarea value={testStr} onChange={e => setTestStr(e.target.value)} spellCheck={false}
                 className="absolute inset-0 w-full h-full px-4 py-3 text-sm font-mono outline-none resize-none bg-transparent"
-                style={{ color: 'var(--text)', fontFamily: settings.fontFamily, lineHeight: 1.7, caretColor: 'var(--accent-blue)' }} />
+                style={{ color: 'var(--text)', fontFamily: settings.fontFamily, lineHeight: 1.7, caretColor: 'var(--accent-mauve)' }} />
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ export function RegexPlayground({ onClose }: Props) {
                     <div className="mt-1 flex flex-col gap-0.5">
                       {Array.from({ length: m.length - 1 }, (_, j) => (
                         <p key={j} className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-                          <span style={{ color: 'var(--accent-blue)' }}>Group {j + 1}:</span> {m[j + 1] ?? 'undefined'}
+                          <span style={{ color: 'var(--accent-mauve)' }}>Group {j + 1}:</span> {m[j + 1] ?? 'undefined'}
                         </p>
                       ))}
                     </div>

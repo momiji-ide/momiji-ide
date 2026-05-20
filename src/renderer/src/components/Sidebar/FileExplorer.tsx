@@ -141,7 +141,7 @@ export function FileExplorer() {
             <button
               onClick={handleOpenFolder}
               className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
-              style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}
+              style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}
             >
               Open Folder
             </button>
@@ -213,7 +213,7 @@ function FileTree({
             {renaming === node.path ? (
               <input
                 className="flex-1 text-xs px-1 rounded outline-none min-w-0"
-                style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--accent-blue)' }}
+                style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--accent-mauve)' }}
                 value={renameValue}
                 autoFocus
                 onChange={(e) => onRenameChange(e.target.value)}

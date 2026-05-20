@@ -143,7 +143,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
   // ── Loading / Error ───────────────────────────────────────────────────────────
   if (loading) return (
     <div className="flex items-center justify-center h-full gap-3" style={{ color: 'var(--text-subtle)' }}>
-      <div className="animate-spin" style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid var(--accent-blue)', borderTopColor: 'transparent' }} />
+      <div className="animate-spin" style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid var(--accent-mauve)', borderTopColor: 'transparent' }} />
       <span className="text-xs">Loading binary…</span>
     </div>
   )
@@ -161,7 +161,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
       <div className="flex-shrink-0 flex items-center gap-3 px-3 py-1.5" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-mantle)', flexWrap: 'wrap', gap: '6px 12px' }}>
         {/* File info */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold" style={{ color: 'var(--accent-blue)' }}>⬡ HEX</span>
+          <span className="text-xs font-bold" style={{ color: 'var(--accent-mauve)' }}>⬡ HEX</span>
           <span className="text-xs truncate" style={{ color: 'var(--text-muted)', maxWidth: 200 }}>{name}</span>
           <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)' }}>{fmtSize(bytes.length)}</span>
           <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>{bytes.length.toLocaleString()} bytes</span>
@@ -177,14 +177,14 @@ export function HexViewer({ filePath }: { filePath: string }) {
         {/* Search */}
         <div className="flex items-center gap-1 ml-auto">
           <button onClick={() => setSearchMode(m => m === 'hex' ? 'ascii' : 'hex')}
-            style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'var(--bg-surface0)', border: '1px solid var(--border)', color: 'var(--accent-blue)', cursor: 'pointer', fontFamily: 'monospace' }}>
+            style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'var(--bg-surface0)', border: '1px solid var(--border)', color: 'var(--accent-mauve)', cursor: 'pointer', fontFamily: 'monospace' }}>
             {searchMode.toUpperCase()}
           </button>
           <input value={search} onChange={e => setSearch(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') doSearch() }}
             placeholder={searchMode === 'hex' ? 'Search hex: FF D8 FF' : 'Search text…'}
             style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--bg-surface0)', border: '1px solid var(--border)', color: 'var(--text)', outline: 'none', width: 170, fontFamily: 'monospace' }} />
-          <button onClick={doSearch} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-blue)', border: 'none', color: 'white', cursor: 'pointer' }}>Find</button>
+          <button onClick={doSearch} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-mauve)', border: 'none', color: 'white', cursor: 'pointer' }}>Find</button>
           {matches.length > 0 && (
             <>
               <span style={{ fontSize: 10, color: 'var(--accent-green)' }}>{matchIdx+1}/{matches.length}</span>
@@ -199,7 +199,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
       {selectedByte !== null && selected !== null && (
         <div className="flex-shrink-0 flex items-center gap-4 px-3 py-1" style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)', fontSize: 11 }}>
           <span style={{ color: 'var(--text-subtle)' }}>Offset:</span>
-          <span style={{ color: 'var(--accent-blue)', fontFamily: 'monospace' }}>{h8(selected)} ({selected})</span>
+          <span style={{ color: 'var(--accent-mauve)', fontFamily: 'monospace' }}>{h8(selected)} ({selected})</span>
           <span style={{ color: 'var(--text-subtle)' }}>Hex:</span>
           <span style={{ color: 'var(--accent-yellow)', fontFamily: 'monospace' }}>{h2(selectedByte)}</span>
           <span style={{ color: 'var(--text-subtle)' }}>Dec:</span>
@@ -226,7 +226,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
           <span style={{ width: 80, paddingLeft: 12, color: 'var(--text-subtle)', fontSize: 10 }}>OFFSET</span>
           <div className="flex gap-0.5" style={{ flex: '0 0 auto' }}>
             {Array.from({ length: BYTES_PER_ROW }, (_, i) => (
-              <span key={i} style={{ width: 24, textAlign: 'center', color: i === 8 ? 'var(--accent-blue)' : 'var(--text-subtle)', fontSize: 10 }}>{h2(i)}</span>
+              <span key={i} style={{ width: 24, textAlign: 'center', color: i === 8 ? 'var(--accent-mauve)' : 'var(--text-subtle)', fontSize: 10 }}>{h2(i)}</span>
             ))}
           </div>
           <span style={{ paddingLeft: 16, color: 'var(--text-subtle)', fontSize: 10 }}>ASCII</span>
@@ -261,7 +261,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
                         width: 24, textAlign: 'center', cursor: b !== undefined ? 'pointer' : 'default',
                         color: b === undefined ? 'transparent'
                           : b === 0 ? 'var(--text-subtle)'
-                          : b < 32 || b > 126 ? 'var(--accent-blue)' : 'var(--text)',
+                          : b < 32 || b > 126 ? 'var(--accent-mauve)' : 'var(--text)',
                         background: isSel ? 'var(--accent-mauve)' : isCurrentMatch ? 'var(--accent-green)' : isMatch ? 'var(--accent-green)33' : 'transparent',
                         borderRadius: 2,
                         marginLeft: bi === 8 ? 8 : 0,
@@ -283,7 +283,7 @@ export function HexViewer({ filePath }: { filePath: string }) {
                     <span key={bi} onClick={() => setSelected(idx)}
                       style={{
                         width: 9, textAlign: 'center', cursor: 'pointer', fontSize: 12,
-                        color: b === 0 ? '#45475a' : b < 32 || b > 126 ? 'var(--accent-blue)' : 'var(--accent-green)',
+                        color: b === 0 ? '#45475a' : b < 32 || b > 126 ? 'var(--accent-mauve)' : 'var(--accent-green)',
                         background: idx === selected ? 'var(--accent-mauve)' : 'transparent',
                         borderRadius: 2,
                       }}>

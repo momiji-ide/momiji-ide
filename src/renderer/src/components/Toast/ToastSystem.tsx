@@ -12,7 +12,7 @@ const COLORS: Record<string, string> = {
   success: 'var(--accent-green)',
   error: 'var(--accent-red)',
   warning: 'var(--accent-yellow)',
-  info: 'var(--accent-blue)'
+  info: 'var(--accent-mauve)'
 }
 
 export function ToastSystem() {

@@ -25,7 +25,7 @@ function PanelLoader() {
     <div className="flex items-center justify-center h-full gap-2"
       style={{ color: 'var(--text-subtle)' }}>
       <div className="w-4 h-4 rounded-full border-2 animate-spin"
-        style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
+        style={{ borderColor: 'var(--accent-mauve)', borderTopColor: 'transparent' }} />
       <span className="text-xs">Loading…</span>
     </div>
   )
@@ -95,7 +95,7 @@ export function Sidebar() {
       <div className="w-1 cursor-col-resize flex-shrink-0 transition-colors"
         style={{ background: 'transparent' }}
         onMouseDown={handleMouseDown}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-blue)')}
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-mauve)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')} />
     </div>
   )

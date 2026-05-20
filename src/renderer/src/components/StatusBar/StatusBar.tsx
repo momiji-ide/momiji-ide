@@ -41,7 +41,7 @@ export function StatusBar({ onCommandPalette }: Props) {
     <>
       <div
         className="flex items-center justify-between px-2 h-6 text-xs flex-shrink-0 select-none"
-        style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}
+        style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}
       >
         {/* Left */}
         <div className="flex items-center gap-0.5">

@@ -132,7 +132,7 @@ export function SnippetManager() {
           )}
           <button onClick={handleNewSnippet}
             className="text-xs px-2 py-0.5 rounded transition-colors"
-            style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>
+            style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
             + New
           </button>
         </div>
@@ -180,7 +180,7 @@ export function SnippetManager() {
                   </div>
                   <span
                     className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
-                    style={{ background: 'var(--bg-surface1)', color: 'var(--accent-blue)' }}
+                    style={{ background: 'var(--bg-surface1)', color: 'var(--accent-mauve)' }}
                   >
                     {snippet.language}
                   </span>
@@ -224,7 +224,7 @@ export function SnippetManager() {
                     <button onClick={() => handleInsert(snippet)}
                       className="flex-1 py-1 rounded text-xs transition-all"
                       style={{ background: 'var(--bg-surface1)', color: 'var(--text-muted)' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent-blue)'; e.currentTarget.style.color = 'var(--bg-base)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent-mauve)'; e.currentTarget.style.color = 'var(--bg-base)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-surface1)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
                       Insert
                     </button>
@@ -304,7 +304,7 @@ export function SnippetManager() {
             <button onClick={handleCreate}
               className="flex-1 py-2 rounded text-xs font-medium transition-all"
               style={{
-                background: form.title && form.code ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+                background: form.title && form.code ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
                 color: form.title && form.code ? 'var(--bg-base)' : 'var(--text-muted)'
               }}>
               {editingId ? 'Save Changes' : 'Create Snippet'}

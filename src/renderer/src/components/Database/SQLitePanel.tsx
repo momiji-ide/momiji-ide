@@ -102,14 +102,14 @@ export function SQLitePanel() {
         {suggestedDb && dbPath !== suggestedDb && (
           <button onClick={() => { setDbPath(suggestedDb); handleConnect(suggestedDb) }}
             className="px-1.5 py-1 rounded text-xs"
-            style={{ background: 'var(--accent-blue)', color: 'white' }} title="Open current file">
+            style={{ background: 'var(--accent-mauve)', color: 'white' }} title="Open current file">
             ↑
           </button>
         )}
         <button onClick={() => handleConnect()}
           disabled={loading}
           className="px-2 py-1 rounded text-xs font-medium"
-          style={{ background: 'var(--accent-blue)', color: 'white', opacity: loading ? 0.6 : 1 }}>
+          style={{ background: 'var(--accent-mauve)', color: 'white', opacity: loading ? 0.6 : 1 }}>
           {loading ? '…' : 'Open'}
         </button>
       </div>
@@ -136,9 +136,9 @@ export function SQLitePanel() {
               <button key={t} onClick={() => handleSelectTable(dbPath, t)}
                 className="text-left px-2 py-1.5 text-xs truncate transition-colors"
                 style={{
-                  color: activeTable === t ? 'var(--accent-blue)' : 'var(--text)',
+                  color: activeTable === t ? 'var(--accent-mauve)' : 'var(--text)',
                   background: activeTable === t ? 'var(--bg-surface0)' : 'transparent',
-                  borderLeft: activeTable === t ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                  borderLeft: activeTable === t ? '2px solid var(--accent-mauve)' : '2px solid transparent',
                   fontSize: '11px'
                 }}>
                 {t}
@@ -183,7 +183,7 @@ export function SQLitePanel() {
                     <tr>
                       {columns.map(col => (
                         <th key={col} className="px-2 py-1 text-left font-semibold whitespace-nowrap"
-                          style={{ color: 'var(--accent-blue)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                          style={{ color: 'var(--accent-mauve)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
                           {col}
                         </th>
                       ))}

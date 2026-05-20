@@ -88,13 +88,13 @@ export function NpmScriptsPanel() {
 
   const COLORS: Record<string, string> = {
     dev: 'var(--accent-green)', start: 'var(--accent-green)',
-    build: 'var(--accent-blue)', test: 'var(--accent-yellow)',
+    build: 'var(--accent-mauve)', test: 'var(--accent-yellow)',
     lint: 'var(--accent-peach)', preview: 'var(--accent-teal)',
     clean: 'var(--accent-red)', deploy: 'var(--accent-mauve)',
   }
   const getColor = (name: string) => {
     for (const [k, c] of Object.entries(COLORS)) if (name.includes(k)) return c
-    return 'var(--accent-blue)'
+    return 'var(--accent-mauve)'
   }
 
   if (!currentFolder) return (
@@ -108,7 +108,7 @@ export function NpmScriptsPanel() {
     <div className="flex flex-col items-center justify-center h-full gap-2" style={{ color: 'var(--text-subtle)' }}>
       <span style={{ fontSize: 28 }}>📄</span>
       <p className="text-xs">No package.json found in project</p>
-      <button onClick={loadPkg} style={{ fontSize: 11, color: 'var(--accent-blue)', background: 'none', border: 'none', cursor: 'pointer' }}>Refresh</button>
+      <button onClick={loadPkg} style={{ fontSize: 11, color: 'var(--accent-mauve)', background: 'none', border: 'none', cursor: 'pointer' }}>Refresh</button>
     </div>
   )
 
@@ -142,7 +142,7 @@ export function NpmScriptsPanel() {
                   width: '100%',
                 }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                  background: isRunning ? 'var(--accent-green)' : st?.code === 0 ? 'var(--accent-blue)' : st?.code != null ? 'var(--accent-red)' : color,
+                  background: isRunning ? 'var(--accent-green)' : st?.code === 0 ? 'var(--accent-mauve)' : st?.code != null ? 'var(--accent-red)' : color,
                   animation: isRunning ? 'pulse 1s infinite' : 'none'
                 }} />
                 <span className="flex-1 truncate text-xs font-semibold" style={{ color: active === s.name ? color : 'var(--text-muted)' }}>{s.name}</span>

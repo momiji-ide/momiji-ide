@@ -45,7 +45,7 @@ function AgentStatsBar({ tokensIn, tokensOut, model, elapsed, toolCalls, filesWr
   const used    = tokensIn + tokensOut
   const pct     = Math.min(100, (used / total) * 100)
   const remain  = Math.max(0, total - used)
-  const barColor = pct > 85 ? 'var(--accent-red)' : pct > 60 ? 'var(--accent-yellow)' : 'var(--accent-blue)'
+  const barColor = pct > 85 ? 'var(--accent-red)' : pct > 60 ? 'var(--accent-yellow)' : 'var(--accent-mauve)'
   const secs    = (elapsed / 1000).toFixed(1)
 
   return (
@@ -173,15 +173,15 @@ function ActivityRow({ item }: { item: ActivityItem }) {
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center gap-2 py-1 px-2 rounded"
-        style={{ background: item.status === 'error' ? 'var(--accent-red)11' : item.status === 'running' ? 'var(--accent-blue)08' : 'transparent' }}>
+        style={{ background: item.status === 'error' ? 'var(--accent-red)11' : item.status === 'running' ? 'var(--accent-mauve)08' : 'transparent' }}>
         <span style={{ fontSize: 12 }}>{icon}</span>
-        <span className="flex-1 text-xs truncate" style={{ color: item.status === 'error' ? 'var(--accent-red)' : item.status === 'running' ? 'var(--accent-blue)' : 'var(--text-muted)' }}>
+        <span className="flex-1 text-xs truncate" style={{ color: item.status === 'error' ? 'var(--accent-red)' : item.status === 'running' ? 'var(--accent-mauve)' : 'var(--text-muted)' }}>
           {item.tool
             ? <><span style={{ color: 'var(--accent-mauve)' }}>{item.tool}</span>{shortPath ? <span style={{ color: 'var(--text-subtle)' }}> · {shortPath}</span> : null}{item.args?.query ? <span style={{ color: 'var(--text-subtle)' }}> · "{item.args.query}"</span> : null}</>
             : item.result?.slice(0, 80)
           }
         </span>
-        {item.status === 'running' && <span className="text-xs animate-spin" style={{ color: 'var(--accent-blue)' }}>⟳</span>}
+        {item.status === 'running' && <span className="text-xs animate-spin" style={{ color: 'var(--accent-mauve)' }}>⟳</span>}
         {item.status === 'done' && <span style={{ color: 'var(--accent-green)', fontSize: 10 }}>✓</span>}
         {item.result && item.type !== 'info' && (
           <button onClick={() => setExpanded(v => !v)} className="text-xs" style={{ color: 'var(--text-subtle)' }}>{expanded ? '▲' : '▼'}</button>

@@ -548,7 +548,7 @@ export function CanvasPlayground({ onClose }: Props) {
             <p className="text-xs" style={{ color: 'var(--text-subtle)', lineHeight: 1.5 }}>
               {STARTER_TEMPLATES[selected].name} — try changing numbers and colors!
               The canvas auto-refreshes 0.8s after you stop typing.
-              Use <code style={{ color: 'var(--accent-blue)' }}>requestAnimationFrame(draw)</code> for animation.
+              Use <code style={{ color: 'var(--accent-mauve)' }}>requestAnimationFrame(draw)</code> for animation.
             </p>
           </div>
         </div>

@@ -17,7 +17,7 @@ function parseMarkdown(md: string): string {
   h = h.replace(/^#{6}\s+(.+)$/gm, '<h6 style="color:var(--text);font-size:14px;margin:12px 0 6px">$1</h6>')
   h = h.replace(/^#{5}\s+(.+)$/gm, '<h5 style="color:var(--text);font-size:15px;margin:12px 0 6px">$1</h5>')
   h = h.replace(/^#{4}\s+(.+)$/gm, '<h4 style="color:var(--text);font-size:16px;margin:14px 0 6px">$1</h4>')
-  h = h.replace(/^#{3}\s+(.+)$/gm, '<h3 style="color:var(--accent-blue);font-size:18px;margin:16px 0 8px;font-weight:700">$1</h3>')
+  h = h.replace(/^#{3}\s+(.+)$/gm, '<h3 style="color:var(--accent-mauve);font-size:18px;margin:16px 0 8px;font-weight:700">$1</h3>')
   h = h.replace(/^#{2}\s+(.+)$/gm, '<h2 style="color:var(--accent-mauve);font-size:22px;margin:20px 0 10px;font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px">$1</h2>')
   h = h.replace(/^#{1}\s+(.+)$/gm, '<h1 style="color:var(--accent-mauve);font-size:28px;margin:0 0 16px;font-weight:800;border-bottom:2px solid var(--border);padding-bottom:10px">$1</h1>')
 
@@ -29,10 +29,10 @@ function parseMarkdown(md: string): string {
 
   // Links & images
   h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:8px 0">')
-  h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:var(--accent-blue);text-decoration:underline" target="_blank">$1</a>')
+  h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:var(--accent-mauve);text-decoration:underline" target="_blank">$1</a>')
 
   // Blockquote
-  h = h.replace(/^&gt;\s*(.+)$/gm, '<blockquote style="border-left:3px solid var(--accent-blue);padding:8px 16px;margin:12px 0;background:var(--bg-surface0);border-radius:0 8px 8px 0;color:var(--text-muted)">$1</blockquote>')
+  h = h.replace(/^&gt;\s*(.+)$/gm, '<blockquote style="border-left:3px solid var(--accent-mauve);padding:8px 16px;margin:12px 0;background:var(--bg-surface0);border-radius:0 8px 8px 0;color:var(--text-muted)">$1</blockquote>')
 
   // Horizontal rule
   h = h.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:20px 0">')
@@ -51,7 +51,7 @@ function parseMarkdown(md: string): string {
   // Tables
   h = h.replace(/^(\|.+\|)\n\|[-|: ]+\|\n((?:\|.+\|\n?)*)/gm, (_, head, body) => {
     const ths = head.split('|').filter((s: string) => s.trim())
-      .map((s: string) => `<th style="padding:8px 14px;background:var(--bg-surface0);color:var(--accent-blue);font-weight:600;text-align:left;white-space:nowrap">${s.trim()}</th>`).join('')
+      .map((s: string) => `<th style="padding:8px 14px;background:var(--bg-surface0);color:var(--accent-mauve);font-weight:600;text-align:left;white-space:nowrap">${s.trim()}</th>`).join('')
     const trs = body.trim().split('\n').map((row: string) =>
       `<tr>${row.split('|').filter((s: string) => s.trim()).map((s: string) => `<td style="padding:8px 14px;border-top:1px solid var(--border)">${s.trim()}</td>`).join('')}</tr>`
     ).join('')

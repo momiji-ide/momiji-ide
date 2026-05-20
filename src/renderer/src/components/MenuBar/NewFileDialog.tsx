@@ -179,7 +179,7 @@ export function NewFileDialog({ isFolder, currentFolder, onClose, onCreate }: Pr
                     <button key={f.name} onClick={() => setName(f.name)}
                       className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-colors"
                       style={{
-                        background: name === f.name ? 'var(--accent-blue)' : 'var(--bg-surface1)',
+                        background: name === f.name ? 'var(--accent-mauve)' : 'var(--bg-surface1)',
                         color: name === f.name ? 'var(--bg-base)' : 'var(--text)'
                       }}>
                       <span>{f.icon}</span>
@@ -215,7 +215,7 @@ export function NewFileDialog({ isFolder, currentFolder, onClose, onCreate }: Pr
                 disabled={!name.trim() || !location}
                 className="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
                 style={{
-                  background: name.trim() && location ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+                  background: name.trim() && location ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
                   color: name.trim() && location ? 'var(--bg-base)' : 'var(--text-muted)'
                 }}>
                 {isFolder ? 'Create Folder' : 'Create File'}
