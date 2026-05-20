@@ -1,4 +1,4 @@
-import { useRef, useCallback, lazy, Suspense } from 'react'
+import { useRef, useCallback, lazy, Suspense, useState } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { FileExplorer }   from './FileExplorer'
 import { SettingsPanel }  from '../Settings/SettingsPanel'
@@ -12,6 +12,7 @@ import { OutlinePanel }   from '../Outline/OutlinePanel'
 const BlockEditor     = lazy(() => import('../BlockEditor/BlockEditor').then(m => ({ default: m.BlockEditor })))
 const FlowEditor      = lazy(() => import('../FlowEditor/FlowEditor').then(m => ({ default: m.FlowEditor })))
 const TimeTravelDebugger = lazy(() => import('../Debugger/TimeTravelDebugger').then(m => ({ default: m.TimeTravelDebugger })))
+const AlgorithmAnimator = lazy(() => import('../Debugger/AlgorithmAnimator').then(m => ({ default: m.AlgorithmAnimator })))
 const HttpClient      = lazy(() => import('../HttpClient/HttpClient').then(m => ({ default: m.HttpClient })))
 const PackageManager  = lazy(() => import('../PackageManager/PackageManager').then(m => ({ default: m.PackageManager })))
 const ProjectScaffold = lazy(() => import('../Scaffold/ProjectScaffold').then(m => ({ default: m.ProjectScaffold })))
@@ -19,6 +20,35 @@ const SQLitePanel     = lazy(() => import('../Database/SQLitePanel').then(m => (
 const ExtensionsPanel = lazy(() => import('../Extensions/ExtensionsPanel').then(m => ({ default: m.ExtensionsPanel })))
 const SnippetManager  = lazy(() => import('../Snippets/SnippetManager').then(m => ({ default: m.SnippetManager })))
 const TemplateGallery = lazy(() => import('../Templates/TemplateGallery').then(m => ({ default: m.TemplateGallery })))
+
+function DebugPanel() {
+  const [tab, setTab] = useState<'timetavel' | 'animator'>('timetavel')
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Sub-tab bar */}
+      <div className="flex flex-shrink-0" style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}>
+        {(['timetavel', 'animator'] as const).map((t) => (
+          <button key={t} onClick={() => setTab(t)}
+            className="px-4 py-2 text-xs font-semibold"
+            style={{
+              background: tab === t ? 'var(--bg-mantle)' : 'transparent',
+              color: tab === t ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+              border: 'none', cursor: 'pointer',
+              borderBottom: tab === t ? '2px solid var(--accent-mauve)' : '2px solid transparent',
+            }}>
+            {t === 'timetavel' ? '⏱ Time-Travel' : '🎬 Animator'}
+          </button>
+        ))}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {tab === 'timetavel'
+          ? <Suspense fallback={<PanelLoader />}><TimeTravelDebugger /></Suspense>
+          : <Suspense fallback={<PanelLoader />}><AlgorithmAnimator /></Suspense>
+        }
+      </div>
+    </div>
+  )
+}
 
 function PanelLoader() {
   return (
@@ -59,7 +89,7 @@ export function Sidebar() {
     const fullPanels: Record<string, React.ReactNode> = {
       blocks: <Suspense fallback={<PanelLoader />}><BlockEditor /></Suspense>,
       flow:   <Suspense fallback={<PanelLoader />}><FlowEditor /></Suspense>,
-      debug:  <Suspense fallback={<PanelLoader />}><TimeTravelDebugger /></Suspense>,
+      debug:  <DebugPanel />,
       http:   <Suspense fallback={<PanelLoader />}><HttpClient /></Suspense>,
     }
     return (
