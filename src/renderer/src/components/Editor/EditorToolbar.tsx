@@ -66,8 +66,12 @@ export function EditorToolbar() {
     await window.api.process.run('runner-main', runConfig.command, [...runConfig.args, ...extraArgs], cwd)
 
     // onExit handler in OutputPanel handles setIsRunning(false)
-    const unsub = window.api.process.onExit((id) => {
-      if (id === 'runner-main') { setIsRunning(false); unsub() }
+    const unsub = window.api.process.onExit((id, code) => {
+      if (id === 'runner-main') {
+        setIsRunning(false)
+        window.dispatchEvent(new CustomEvent('runner:exit', { detail: { code } }))
+        unsub()
+      }
     })
   }, [activeTab, isRunning, showBottomPanel, toggleBottomPanel, currentFolder, runConfig])
 
