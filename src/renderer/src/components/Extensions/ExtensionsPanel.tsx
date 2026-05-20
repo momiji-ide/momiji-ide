@@ -365,7 +365,7 @@ export function ExtensionsPanel() {
           <button key={c.id} onClick={() => setCategory(c.id)}
             className="px-2 py-0.5 rounded text-xs transition-all"
             style={{
-              background: category === c.id ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+              background: category === c.id ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
               color: category === c.id ? 'white' : 'var(--text-muted)'
             }}>
             {c.label}
@@ -386,7 +386,7 @@ export function ExtensionsPanel() {
               className="rounded-lg p-2.5 flex flex-col gap-1.5"
               style={{
                 background: 'var(--bg-surface0)',
-                border: `1px solid ${installed ? 'var(--accent-blue)44' : 'var(--border)'}`
+                border: `1px solid ${installed ? 'var(--accent-mauve)44' : 'var(--border)'}`
               }}>
               <div className="flex items-start gap-2">
                 <span className="text-xl flex-shrink-0">{ext.icon}</span>
@@ -436,7 +436,7 @@ export function ExtensionsPanel() {
                   <button onClick={() => handleInstall(ext)}
                     className="text-xs px-2 py-0.5 rounded transition-all font-medium"
                     style={{
-                      background: ext.action === 'external' ? 'var(--accent-yellow)' : installed ? 'var(--bg-surface1)' : 'var(--accent-blue)',
+                      background: ext.action === 'external' ? 'var(--accent-yellow)' : installed ? 'var(--bg-surface1)' : 'var(--accent-mauve)',
                       color: ext.action === 'external' ? 'var(--bg-base)' : installed ? 'var(--text-muted)' : 'white'
                     }}>
                     {ext.action === 'external' ? '📋 Copy cmd'

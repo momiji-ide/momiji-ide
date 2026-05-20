@@ -354,7 +354,7 @@ ${code}
               <button key={l} onClick={() => setLevel(l)}
                 className="px-2 py-0.5 rounded-md text-xs font-semibold transition-all"
                 style={{
-                  background: level === l ? 'var(--accent-blue)' : 'transparent',
+                  background: level === l ? 'var(--accent-mauve)' : 'transparent',
                   color: level === l ? 'white' : 'var(--text-muted)'
                 }}>
                 {labels[l]}
@@ -364,7 +364,7 @@ ${code}
         </div>
 
         {/* Block count */}
-        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)' }}>
+        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)' }}>
           {blockCount} blocks
         </span>
 
@@ -408,7 +408,7 @@ ${code}
         {/* Sync toggle */}
         <button onClick={handleToggleSync}
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-          style={{ background: syncMode === 'blocks-primary' ? 'var(--accent-blue)' : 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
+          style={{ background: syncMode === 'blocks-primary' ? 'var(--accent-mauve)' : 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
           {syncMode === 'blocks-primary' ? '⟳ Live' : '✏️ Free'}
         </button>
 
@@ -550,7 +550,7 @@ ${code}
           <div className="px-3 py-1.5 text-xs flex items-center gap-2 flex-shrink-0"
             style={{ background: 'var(--bg-mantle)', borderTop: '1px solid var(--border)', color: 'var(--text-subtle)' }}>
             {syncMode === 'blocks-primary'
-              ? <><span>🔒 Read-only — drag blocks to update</span><button onClick={handleToggleSync} className="ml-auto underline" style={{ color: 'var(--accent-blue)' }}>Edit freely</button></>
+              ? <><span>🔒 Read-only — drag blocks to update</span><button onClick={handleToggleSync} className="ml-auto underline" style={{ color: 'var(--accent-mauve)' }}>Edit freely</button></>
               : <><span>✏️ Editing freely — blocks frozen</span><button onClick={handleToggleSync} className="ml-auto underline" style={{ color: 'var(--accent-green)' }}>Sync from blocks</button></>
             }
           </div>

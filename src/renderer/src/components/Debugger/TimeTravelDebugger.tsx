@@ -131,7 +131,7 @@ export function TimeTravelDebugger() {
         style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: '40px' }}>
         <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>⏱ Time-Travel Debugger</span>
         {snapshots.length > 0 && (
-          <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)' }}>
+          <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)' }}>
             {snapshots.length} snapshots
           </span>
         )}
@@ -202,7 +202,7 @@ export function TimeTravelDebugger() {
               </pre>
               <button onClick={runDebug}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>
+                style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
                 Try Again
               </button>
             </div>
@@ -215,13 +215,13 @@ export function TimeTravelDebugger() {
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
                     TIMELINE
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--accent-blue)' }}>
+                  <span className="text-xs" style={{ color: 'var(--accent-mauve)' }}>
                     Step {currentStep + 1} / {snapshots.length} — Line {current?.line ?? '?'}
                   </span>
                 </div>
                 <input type="range" min={0} max={snapshots.length - 1} value={currentStep}
                   onChange={e => goTo(+e.target.value)}
-                  className="w-full" style={{ accentColor: 'var(--accent-blue)' }} />
+                  className="w-full" style={{ accentColor: 'var(--accent-mauve)' }} />
                 <div className="flex items-center justify-between mt-2 gap-2">
                   <button onClick={() => goTo(0)}
                     className="flex-1 py-1 rounded text-xs"
@@ -236,7 +236,7 @@ export function TimeTravelDebugger() {
                   </button>
                   <button onClick={next} disabled={currentStep === snapshots.length - 1}
                     className="flex-1 py-1 rounded text-xs font-medium"
-                    style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>
+                    style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
                     Next ▶
                   </button>
                   <button onClick={() => goTo(snapshots.length - 1)}
@@ -265,7 +265,7 @@ export function TimeTravelDebugger() {
                             color: v === null ? 'var(--text-subtle)'
                               : typeof v === 'number' ? 'var(--accent-peach)'
                               : typeof v === 'string' ? 'var(--accent-green)'
-                              : typeof v === 'boolean' ? 'var(--accent-blue)'
+                              : typeof v === 'boolean' ? 'var(--accent-mauve)'
                               : 'var(--text)',
                             fontFamily: 'monospace'
                           }}>

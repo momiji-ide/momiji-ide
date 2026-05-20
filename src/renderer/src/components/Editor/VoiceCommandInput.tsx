@@ -62,7 +62,7 @@ export function VoiceCommandInput({ language, onInsert, onClose }: Props) {
           right: '16px',
           width: '380px',
           background: 'var(--bg-surface0)',
-          border: '1px solid var(--accent-blue)',
+          border: '1px solid var(--accent-mauve)',
           animation: 'slideInRight 0.15s ease-out'
         }}
       >
@@ -110,7 +110,7 @@ export function VoiceCommandInput({ language, onInsert, onClose }: Props) {
               disabled={!value.trim()}
               className="px-3 py-2 rounded-lg text-xs font-bold flex-shrink-0 transition-all"
               style={{
-                background: value.trim() ? 'var(--accent-blue)' : 'var(--bg-surface1)',
+                background: value.trim() ? 'var(--accent-mauve)' : 'var(--bg-surface1)',
                 color: value.trim() ? 'var(--bg-base)' : 'var(--text-muted)'
               }}
             >
@@ -159,9 +159,9 @@ export function VoiceCommandInput({ language, onInsert, onClose }: Props) {
                     border: '1px solid var(--border)'
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.background = 'var(--accent-blue)'
+                    e.currentTarget.style.background = 'var(--accent-mauve)'
                     e.currentTarget.style.color = 'var(--bg-base)'
-                    e.currentTarget.style.borderColor = 'var(--accent-blue)'
+                    e.currentTarget.style.borderColor = 'var(--accent-mauve)'
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.background = 'var(--bg-surface1)'

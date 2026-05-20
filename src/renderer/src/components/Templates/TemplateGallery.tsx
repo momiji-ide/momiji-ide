@@ -40,7 +40,7 @@ export function TemplateGallery() {
           <button key={cat.id} onClick={() => setCategory(cat.id)}
             className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all"
             style={{
-              background: category === cat.id ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+              background: category === cat.id ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
               color: category === cat.id ? 'var(--bg-base)' : 'var(--text-muted)'
             }}>
             {cat.icon} {cat.label}
@@ -56,7 +56,7 @@ export function TemplateGallery() {
               className="rounded-xl overflow-hidden cursor-pointer transition-all group"
               style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}
               onClick={() => setPreview(template)}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-blue)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-mauve)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}>
 
               {/* Preview area */}
@@ -136,7 +136,7 @@ export function TemplateGallery() {
                 </button>
                 <button onClick={() => handleOpen(preview)}
                   className="flex-1 py-2 rounded-lg text-xs font-bold"
-                  style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>
+                  style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
                   Open Template →
                 </button>
               </div>

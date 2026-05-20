@@ -140,7 +140,7 @@ export function SearchPanel() {
           <button onClick={() => setShowReplace(v => !v)}
             className="text-xs px-1.5 py-0.5 rounded transition-all"
             title="Toggle replace"
-            style={{ background: showReplace ? 'var(--accent-blue)22' : 'transparent', color: showReplace ? 'var(--accent-blue)' : 'var(--text-subtle)', border: `1px solid ${showReplace ? 'var(--accent-blue)44' : 'transparent'}` }}>
+            style={{ background: showReplace ? 'var(--accent-mauve)22' : 'transparent', color: showReplace ? 'var(--accent-mauve)' : 'var(--text-subtle)', border: `1px solid ${showReplace ? 'var(--accent-mauve)44' : 'transparent'}` }}>
             ⇄ Replace
           </button>
         </div>
@@ -248,7 +248,7 @@ function FileGroup({ group, onOpen, highlightMatch, showReplace, onReplaceFile }
           </button>
         )}
         <span className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0"
-          style={{ background: 'var(--accent-blue)', color: 'var(--bg-base)' }}>
+          style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>
           {group.results.length}
         </span>
       </button>
@@ -259,7 +259,7 @@ function FileGroup({ group, onOpen, highlightMatch, showReplace, onReplaceFile }
           style={{ background: 'transparent' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-          <span className="text-xs flex-shrink-0 w-8 text-right" style={{ color: 'var(--accent-blue)', fontFamily: 'monospace' }}>
+          <span className="text-xs flex-shrink-0 w-8 text-right" style={{ color: 'var(--accent-mauve)', fontFamily: 'monospace' }}>
             {r.line}
           </span>
           <span className="text-xs truncate flex-1 min-w-0" style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>
@@ -278,9 +278,9 @@ function Toggle({ label, title, active, onChange }: {
     <button onClick={() => onChange(!active)} title={title}
       className="px-2 py-0.5 rounded text-xs font-mono font-bold transition-all"
       style={{
-        background: active ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+        background: active ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
         color: active ? 'var(--bg-base)' : 'var(--text-muted)',
-        border: `1px solid ${active ? 'var(--accent-blue)' : 'var(--border)'}`
+        border: `1px solid ${active ? 'var(--accent-mauve)' : 'var(--border)'}`
       }}>
       {label}
     </button>

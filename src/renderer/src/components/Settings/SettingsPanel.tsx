@@ -42,7 +42,7 @@ export function SettingsPanel() {
             <button
               onClick={async () => { await saveWorkspaceSettings(); toast.success('Saved to .momiji/settings.json') }}
               className="text-xs px-2 py-0.5 rounded transition-all"
-              style={{ color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)', fontSize: 10 }}
+              style={{ color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)', fontSize: 10 }}
               title="Save current settings to this project folder">
               💾 Workspace
             </button>
@@ -67,8 +67,8 @@ export function SettingsPanel() {
             className="flex items-center gap-1 px-2 py-1 text-xs rounded-t transition-colors"
             style={{
               background: activeTab === tab.id ? 'var(--bg-base)' : 'transparent',
-              color: activeTab === tab.id ? 'var(--accent-blue)' : 'var(--text-muted)',
-              borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent'
+              color: activeTab === tab.id ? 'var(--accent-mauve)' : 'var(--text-muted)',
+              borderBottom: activeTab === tab.id ? '2px solid var(--accent-mauve)' : '2px solid transparent'
             }}
           >
             {tab.icon} {tab.label}
@@ -115,7 +115,7 @@ export function SettingsPanel() {
                   className="flex-1"
                 />
                 <span className="text-xs font-mono w-10 text-center"
-                  style={{ color: 'var(--accent-blue)' }}>
+                  style={{ color: 'var(--accent-mauve)' }}>
                   {Math.round((settings.uiZoom ?? 1.15) * 100)}%
                 </span>
               </div>
@@ -135,7 +135,7 @@ export function SettingsPanel() {
                   type="number" min={10} max={28} value={settings.fontSize}
                   onChange={(e) => applySettings({ fontSize: Math.min(28, Math.max(10, +e.target.value)) })}
                   className="w-12 px-1.5 py-0.5 rounded text-xs text-center outline-none"
-                  style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)', border: '1px solid var(--border)' }}
+                  style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', border: '1px solid var(--border)' }}
                 />
               </div>
             </SettingRow>
@@ -198,7 +198,7 @@ export function SettingsPanel() {
                     onChange={(e) => applySettings({ autoSaveDelay: +e.target.value })}
                     className="flex-1"
                   />
-                  <span className="text-xs w-12 text-right" style={{ color: 'var(--accent-blue)' }}>
+                  <span className="text-xs w-12 text-right" style={{ color: 'var(--accent-mauve)' }}>
                     {settings.autoSaveDelay}ms
                   </span>
                 </div>
@@ -234,7 +234,7 @@ export function SettingsPanel() {
                     }}
                     className="flex-1 py-2 rounded text-xs font-medium transition-all capitalize"
                     style={{
-                      background: settings.theme === t ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+                      background: settings.theme === t ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
                       color: settings.theme === t ? 'var(--bg-base)' : 'var(--text)'
                     }}
                   >
@@ -484,7 +484,7 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
   return (
     <div
       className="rounded-lg p-3 flex flex-col gap-3"
-      style={{ background: 'var(--bg-surface0)', border: `1px solid ${provider.enabled ? 'var(--accent-blue)' : 'var(--border)'}` }}
+      style={{ background: 'var(--bg-surface0)', border: `1px solid ${provider.enabled ? 'var(--accent-mauve)' : 'var(--border)'}` }}
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
@@ -508,7 +508,7 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
               <button
                 onClick={() => window.open(link.url, '_blank')}
                 className="text-xs text-left transition-colors"
-                style={{ color: 'var(--accent-blue)', fontSize: 10 }}>
+                style={{ color: 'var(--accent-mauve)', fontSize: 10 }}>
                 🔑 {link.label} ↗
               </button>
             </div>
@@ -567,7 +567,7 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
                 : 'model-id'
               }
               className="flex-1 px-2 py-1.5 rounded text-xs outline-none font-mono"
-              style={{ background: 'var(--bg-base)', color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)66', fontSize: 11 }}
+              style={{ background: 'var(--bg-base)', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)66', fontSize: 11 }}
             />
             {isCustomModel && (
               <span className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
@@ -608,9 +608,9 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
                     onClick={() => onUpdate({ ...provider, model: m.value })}
                     className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
                     style={{
-                      background: isActive ? 'var(--accent-blue)' : 'var(--bg-crust)',
+                      background: isActive ? 'var(--accent-mauve)' : 'var(--bg-crust)',
                       color: isActive ? 'white' : 'var(--text-muted)',
-                      border: `1px solid ${isActive ? 'var(--accent-blue)' : 'var(--border)'}`,
+                      border: `1px solid ${isActive ? 'var(--accent-mauve)' : 'var(--border)'}`,
                       fontSize: 10,
                     }}>
                     {isActive && <span>✓ </span>}
@@ -636,8 +636,8 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
           className="w-full py-1.5 rounded text-xs font-medium transition-all"
           style={{
             background: testing ? 'var(--bg-surface1)' : 'var(--bg-crust)',
-            color: testing ? 'var(--text-subtle)' : 'var(--accent-blue)',
-            border: '1px solid var(--accent-blue)'
+            color: testing ? 'var(--text-subtle)' : 'var(--accent-mauve)',
+            border: '1px solid var(--accent-mauve)'
           }}>
           {testing ? '⏳ Testing...' : '🔌 Test Connection'}
         </button>
@@ -656,10 +656,10 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
         {/* Gemini: free tier info */}
         {provider.id === 'gemini' && (
           <div className="flex items-start gap-2 px-2 py-2 rounded"
-            style={{ background: 'var(--accent-blue)11', border: '1px solid var(--accent-blue)33' }}>
+            style={{ background: 'var(--accent-mauve)11', border: '1px solid var(--accent-mauve)33' }}>
             <span style={{ fontSize: 13 }}>💡</span>
             <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10, lineHeight: 1.6 }}>
-              <strong style={{ color: 'var(--accent-blue)' }}>Free tier tip:</strong> Use <strong>Gemini 3.1 Flash Lite</strong> (500 RPD free) or <strong>Gemini 3 Flash</strong> (20 RPD free). Get key at <code>aistudio.google.com/apikey</code>
+              <strong style={{ color: 'var(--accent-mauve)' }}>Free tier tip:</strong> Use <strong>Gemini 3.1 Flash Lite</strong> (500 RPD free) or <strong>Gemini 3 Flash</strong> (20 RPD free). Get key at <code>aistudio.google.com/apikey</code>
             </p>
           </div>
         )}
@@ -791,7 +791,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       onClick={() => onChange(!checked)}
       className="relative w-9 h-5 rounded-full transition-all flex-shrink-0"
-      style={{ background: checked ? 'var(--accent-blue)' : 'var(--bg-surface1)' }}
+      style={{ background: checked ? 'var(--accent-mauve)' : 'var(--bg-surface1)' }}
     >
       <div
         className="absolute top-0.5 w-4 h-4 rounded-full transition-all"

@@ -65,7 +65,7 @@ export function PythonPicker({ onClose }: Props) {
         {loading ? (
           <div className="flex items-center gap-2 px-4 py-6 justify-center">
             <div className="w-4 h-4 rounded-full border-2 animate-spin"
-              style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
+              style={{ borderColor: 'var(--accent-mauve)', borderTopColor: 'transparent' }} />
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Scanning for interpreters…</span>
           </div>
         ) : interpreters.length === 0 ? (
@@ -81,7 +81,7 @@ export function PythonPicker({ onClose }: Props) {
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
               style={{
                 background: isActive(it.path) ? 'var(--bg-surface0)' : 'transparent',
-                borderLeft: isActive(it.path) ? '3px solid var(--accent-blue)' : '3px solid transparent'
+                borderLeft: isActive(it.path) ? '3px solid var(--accent-mauve)' : '3px solid transparent'
               }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
               onMouseLeave={e => (e.currentTarget.style.background = isActive(it.path) ? 'var(--bg-surface0)' : 'transparent')}>
@@ -106,7 +106,7 @@ export function PythonPicker({ onClose }: Props) {
                 </p>
               </div>
               {isActive(it.path) && (
-                <span className="text-sm flex-shrink-0" style={{ color: 'var(--accent-blue)' }}>✓</span>
+                <span className="text-sm flex-shrink-0" style={{ color: 'var(--accent-mauve)' }}>✓</span>
               )}
             </button>
           ))
@@ -128,7 +128,7 @@ export function PythonPicker({ onClose }: Props) {
             disabled={!custom.trim()}
             className="px-3 py-1 rounded text-xs font-medium"
             style={{
-              background: custom.trim() ? 'var(--accent-blue)' : 'var(--bg-surface1)',
+              background: custom.trim() ? 'var(--accent-mauve)' : 'var(--bg-surface1)',
               color: custom.trim() ? 'white' : 'var(--text-muted)'
             }}>
             Use

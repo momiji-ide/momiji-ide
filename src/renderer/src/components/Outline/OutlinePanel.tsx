@@ -26,9 +26,9 @@ const KIND_ICON: Record<string, string> = {
 
 const KIND_COLOR: Record<string, string> = {
   class:     'var(--accent-yellow)',
-  function:  'var(--accent-blue)',
-  method:    'var(--accent-blue)',
-  def:       'var(--accent-blue)',
+  function:  'var(--accent-mauve)',
+  method:    'var(--accent-mauve)',
+  def:       'var(--accent-mauve)',
   const:     'var(--accent-mauve)',
   let:       'var(--accent-mauve)',
   var:       'var(--text-muted)',
@@ -191,7 +191,7 @@ export function OutlinePanel() {
       {/* File + language */}
       <div className="px-3 pb-1 flex-shrink-0">
         <p className="text-xs truncate" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-          {activeTab.fileName} · <span style={{ color: 'var(--accent-blue)' }}>{activeTab.language}</span>
+          {activeTab.fileName} · <span style={{ color: 'var(--accent-mauve)' }}>{activeTab.language}</span>
         </p>
       </div>
 
@@ -213,8 +213,8 @@ export function OutlinePanel() {
                 className="w-full flex items-center gap-1.5 py-1 rounded text-left transition-all"
                 style={{
                   paddingLeft: leftPad,
-                  background: isActive ? 'var(--accent-blue)15' : 'transparent',
-                  borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent'
+                  background: isActive ? 'var(--accent-mauve)15' : 'transparent',
+                  borderLeft: isActive ? '2px solid var(--accent-mauve)' : '2px solid transparent'
                 }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-surface0)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>

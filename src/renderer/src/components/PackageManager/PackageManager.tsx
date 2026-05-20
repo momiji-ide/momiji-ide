@@ -230,8 +230,8 @@ export function PackageManager() {
             <button key={t} onClick={() => setPmTab(t)}
               className="flex-1 py-1.5 text-xs transition-colors capitalize"
               style={{
-                color: pmTab === t ? 'var(--accent-blue)' : 'var(--text-muted)',
-                borderBottom: pmTab === t ? '2px solid var(--accent-blue)' : '2px solid transparent'
+                color: pmTab === t ? 'var(--accent-mauve)' : 'var(--text-muted)',
+                borderBottom: pmTab === t ? '2px solid var(--accent-mauve)' : '2px solid transparent'
               }}>
               {t === 'scripts' ? `▶ Scripts (${npmScripts.length})` : `📦 Packages (${packages.length})`}
             </button>
@@ -320,7 +320,7 @@ export function PackageManager() {
         <button onClick={handleInstall} disabled={running || !installInput.trim()}
           className="px-2 py-1 rounded text-xs font-medium transition-all"
           style={{
-            background: running || !installInput.trim() ? 'var(--bg-surface0)' : (meta?.color ?? 'var(--accent-blue)'),
+            background: running || !installInput.trim() ? 'var(--bg-surface0)' : (meta?.color ?? 'var(--accent-mauve)'),
             color: running || !installInput.trim() ? 'var(--text-muted)' : 'white'
           }}>
           {running ? '…' : '+ Add'}
@@ -340,7 +340,7 @@ export function PackageManager() {
           <button key={f} onClick={() => setFilter(f)}
             className="px-1.5 py-0.5 rounded text-xs transition-all capitalize"
             style={{
-              background: filter === f ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+              background: filter === f ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
               color: filter === f ? 'white' : 'var(--text-muted)'
             }}>{f}</button>
         ))}

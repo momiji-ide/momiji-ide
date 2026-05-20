@@ -161,11 +161,11 @@ html, body, #root {
 
 /* ── Focus styles ── */
 :focus-visible {
-  outline: 2px solid var(--accent-blue);
+  outline: 2px solid var(--accent-mauve);
   outline-offset: 2px;
 }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid var(--accent-blue);
+  outline: 2px solid var(--accent-mauve);
   outline-offset: 1px;
 }
 
@@ -182,7 +182,7 @@ button, a, input, textarea, select {
 .blocklyTreeLabel { color: var(--text) !important; font-size: 12px !important; font-family: inherit !important; }
 .blocklyTreeRow:hover { background: var(--bg-surface0) !important; }
 .blocklyTreeSelected, .blocklyTreeRow.blocklyTreeSelected { background: var(--bg-surface0) !important; }
-.blocklyTreeSelected > .blocklyTreeLabel { color: var(--accent-blue) !important; }
+.blocklyTreeSelected > .blocklyTreeLabel { color: var(--accent-mauve) !important; }
 .blocklyFlyoutBackground { fill: var(--bg-mantle) !important; }
 .blocklyScrollbarBackground { fill: transparent !important; }
 .blocklyScrollbarHandle { fill: var(--bg-surface1) !important; rx: 3 !important; }

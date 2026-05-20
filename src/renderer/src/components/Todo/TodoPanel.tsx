@@ -4,7 +4,7 @@ import { FileIcon } from '../Sidebar/FileIcon'
 
 const TODO_PATTERNS = ['TODO', 'FIXME', 'HACK', 'BUG', 'NOTE', 'XXX', 'OPTIMIZE', 'REVIEW']
 const BADGE_COLORS: Record<string, string> = {
-  TODO: 'var(--accent-blue)', FIXME: 'var(--accent-red)', BUG: 'var(--accent-red)',
+  TODO: 'var(--accent-mauve)', FIXME: 'var(--accent-red)', BUG: 'var(--accent-red)',
   HACK: 'var(--accent-yellow)', NOTE: 'var(--accent-green)', XXX: 'var(--accent-red)',
   OPTIMIZE: 'var(--accent-mauve)', REVIEW: 'var(--accent-yellow)'
 }
@@ -85,7 +85,7 @@ export function TodoPanel() {
         <div className="flex items-center gap-1">
           <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>{items.length}</span>
           <button onClick={scan} disabled={loading} className="text-xs px-1.5 py-0.5 rounded ml-1 transition-colors"
-            style={{ color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)44' }}>
+            style={{ color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44' }}>
             {loading ? '⟳' : '↻ Scan'}
           </button>
         </div>
@@ -104,7 +104,7 @@ export function TodoPanel() {
           <button key={tag} onClick={() => setFilter(tag)}
             className="text-xs px-2 py-0.5 rounded-full transition-all font-semibold"
             style={{
-              background: filter === tag ? (BADGE_COLORS[tag] ?? 'var(--accent-blue)') : 'var(--bg-surface0)',
+              background: filter === tag ? (BADGE_COLORS[tag] ?? 'var(--accent-mauve)') : 'var(--bg-surface0)',
               color: filter === tag ? 'white' : 'var(--text-muted)',
               fontSize: 10
             }}>
@@ -121,7 +121,7 @@ export function TodoPanel() {
         </div>
       ) : loading ? (
         <div className="flex items-center justify-center flex-1 gap-2">
-          <div className="w-4 h-4 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
+          <div className="w-4 h-4 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent-mauve)', borderTopColor: 'transparent' }} />
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Scanning…</span>
         </div>
       ) : filtered.length === 0 ? (
@@ -149,7 +149,7 @@ export function TodoPanel() {
                     onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0 mt-px"
-                      style={{ background: (BADGE_COLORS[t.tag] ?? 'var(--accent-blue)') + '22', color: BADGE_COLORS[t.tag] ?? 'var(--accent-blue)', fontSize: 9 }}>
+                      style={{ background: (BADGE_COLORS[t.tag] ?? 'var(--accent-mauve)') + '22', color: BADGE_COLORS[t.tag] ?? 'var(--accent-mauve)', fontSize: 9 }}>
                       {t.tag}
                     </span>
                     <span className="text-xs flex-1 truncate" style={{ color: 'var(--text)' }}>{t.text}</span>

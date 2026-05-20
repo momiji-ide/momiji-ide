@@ -209,7 +209,7 @@ export function LivePreview() {
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold" style={{ color: 'var(--text-subtle)' }}>PREVIEW</span>
           <span className="text-xs" style={{ color: '#a6e3a1' }}>● {activeTab.fileName}</span>
-          {isLoading && <span className="text-xs animate-pulse" style={{ color: 'var(--accent-blue)' }}>⟳</span>}
+          {isLoading && <span className="text-xs animate-pulse" style={{ color: 'var(--accent-mauve)' }}>⟳</span>}
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -218,7 +218,7 @@ export function LivePreview() {
             <button key={d} onClick={() => setDeviceMode(d)}
               title={d} className="text-xs px-2 py-0.5 rounded transition-all"
               style={{
-                background: deviceMode === d ? 'var(--accent-blue)' : 'var(--bg-surface0)',
+                background: deviceMode === d ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
                 color: deviceMode === d ? 'white' : 'var(--text-subtle)',
                 border: 'none', cursor: 'pointer',
               }}>

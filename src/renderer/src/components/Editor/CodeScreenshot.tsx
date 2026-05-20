@@ -154,7 +154,7 @@ export function CodeScreenshot({ onClose }: Props) {
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)' }}>
           <span className="text-sm font-bold" style={{ color: 'var(--text)' }}>📸 Code Screenshot</span>
           <div className="flex gap-2">
-            <button onClick={download} className="px-4 py-1.5 rounded-lg text-xs font-bold" style={{ background: 'var(--accent-blue)', color: 'white' }}>⬇ Download PNG</button>
+            <button onClick={download} className="px-4 py-1.5 rounded-lg text-xs font-bold" style={{ background: 'var(--accent-mauve)', color: 'white' }}>⬇ Download PNG</button>
             <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-xs" style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)' }}>✕</button>
           </div>
         </div>
@@ -167,7 +167,7 @@ export function CodeScreenshot({ onClose }: Props) {
                 {THEMES.map((t, i) => (
                   <button key={t.id} onClick={() => setThemeIdx(i)}
                     className="flex items-center gap-2 px-2 py-1 rounded text-xs text-left"
-                    style={{ background: themeIdx === i ? 'var(--accent-blue)22' : 'transparent', color: themeIdx === i ? 'var(--accent-blue)' : 'var(--text-muted)', border: themeIdx === i ? '1px solid var(--accent-blue)44' : '1px solid transparent' }}>
+                    style={{ background: themeIdx === i ? 'var(--accent-mauve)22' : 'transparent', color: themeIdx === i ? 'var(--accent-mauve)' : 'var(--text-muted)', border: themeIdx === i ? '1px solid var(--accent-mauve)44' : '1px solid transparent' }}>
                     <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: t.bg, border: '1px solid #ffffff33' }} />
                     {t.id}
                   </button>
@@ -203,7 +203,7 @@ export function CodeScreenshot({ onClose }: Props) {
             <Control label="Line numbers">
               <button onClick={() => setShowLineNums(v => !v)}
                 className="w-full py-1 rounded text-xs"
-                style={{ background: showLineNums ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: showLineNums ? 'white' : 'var(--text-muted)' }}>
+                style={{ background: showLineNums ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: showLineNums ? 'white' : 'var(--text-muted)' }}>
                 {showLineNums ? 'On' : 'Off'}
               </button>
             </Control>

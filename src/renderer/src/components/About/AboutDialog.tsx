@@ -116,7 +116,7 @@ export function AboutDialog({ onClose }: Props) {
             </div>
 
             <div className="px-3 py-1 rounded-full text-xs font-bold"
-              style={{ background: 'var(--bg-surface0)', color: 'var(--accent-blue)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', border: '1px solid var(--border)' }}>
               v{version}
             </div>
 
@@ -137,7 +137,7 @@ export function AboutDialog({ onClose }: Props) {
             style={{
               background: updateStatus === 'available' ? 'var(--accent-green)'
                 : updateStatus === 'latest' ? 'var(--bg-surface0)'
-                : 'var(--accent-blue)',
+                : 'var(--accent-mauve)',
               color: updateStatus === 'latest' ? 'var(--text-muted)' : 'white',
               border: updateStatus === 'latest' ? '1px solid var(--border)' : 'none'
             }}>
@@ -189,7 +189,7 @@ export function AboutDialog({ onClose }: Props) {
                       <div key={m.name} className="flex flex-col gap-0.5 px-3 py-2.5 rounded-lg mb-1.5"
                         style={{ background: 'var(--bg-surface0)' }}>
                         <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{m.name}</p>
-                        <p className="text-xs" style={{ color: 'var(--accent-blue)' }}>{m.role}</p>
+                        <p className="text-xs" style={{ color: 'var(--accent-mauve)' }}>{m.role}</p>
                         <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{m.handle}</p>
                       </div>
                     ))}
@@ -217,7 +217,7 @@ export function AboutDialog({ onClose }: Props) {
                   ].map(l => (
                     <button key={l.label} onClick={() => window.open(l.url, '_blank')}
                       className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg"
-                      style={{ color: 'var(--accent-blue)', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      style={{ color: 'var(--accent-mauve)', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       {l.icon} {l.label} <span className="ml-auto" style={{ color: 'var(--text-subtle)' }}>↗</span>
@@ -260,7 +260,7 @@ export function AboutDialog({ onClose }: Props) {
                       <p className="text-sm font-semibold" style={{ color:'var(--text)' }}>{l.label}</p>
                       <p className="text-xs truncate" style={{ color:'var(--text-subtle)' }}>{l.desc}</p>
                     </div>
-                    <span style={{ color:'var(--accent-blue)', fontSize:14 }}>↗</span>
+                    <span style={{ color:'var(--accent-mauve)', fontSize:14 }}>↗</span>
                   </button>
                 ))}
                 <p className="text-xs text-center mt-3" style={{ color:'var(--overlay0)' }}>
