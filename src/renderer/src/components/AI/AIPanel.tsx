@@ -313,6 +313,21 @@ export function AIPanel() {
   const [streamElapsed, setStreamElapsed] = useState(0)
   const [streamTokens, setStreamTokens]   = useState(0)
   const [contextUsed, setContextUsed]     = useState(0)
+  // ── Kitsune Persona ───────────────────────────────────────────────────────
+  type Persona = 'beginner' | 'developer' | 'creative'
+  const [persona, setPersona] = useState<Persona>(() =>
+    (localStorage.getItem('momiji:kitsune-persona') as Persona) ?? 'developer'
+  )
+  const PERSONA_LABELS: Record<Persona, { icon: string; label: string }> = {
+    beginner:  { icon: '🧒', label: 'Beginner' },
+    developer: { icon: '⚡', label: 'Dev' },
+    creative:  { icon: '🎨', label: 'Creative' },
+  }
+  const handleSetPersona = (p: Persona) => {
+    setPersona(p)
+    localStorage.setItem('momiji:kitsune-persona', p)
+  }
+
   // ── Project Memory ────────────────────────────────────────────────────────
   const [projectMemory, setProjectMemory] = useState('')
   const [memoryDraft, setMemoryDraft]     = useState('')
@@ -439,11 +454,42 @@ export function AIPanel() {
     setTimeout(() => setMemorySaved(false), 2000)
   }
 
-  // ── System prompt ─────────────────────────────────────────────────────────
+  // ── System prompt (persona-aware) ────────────────────────────────────────
+  const PERSONA_PROMPTS: Record<Persona, string> = {
+    beginner: `You are Kitsune, a friendly AI companion in Momiji IDE. The user is a beginner or child. Rules:
+- Always use real-world analogies (toys, food, everyday objects)
+- Never use jargon without explaining it first
+- Keep sentences short (max 2 lines per paragraph)
+- Celebrate small wins before suggesting improvements
+- End every explanation with one simple thing they can try next
+- Say "Oops!" not "Error:" when something goes wrong
+- Use emoji occasionally to keep it friendly 🎉
+- Use markdown with code blocks. Always specify the language in code fences.`,
+
+    developer: `You are Kitsune AI, an expert pair programmer in Momiji IDE. Be sharp, precise, and a little playful — like a clever fox. Rules:
+- Direct and precise, no hand-holding
+- Use correct technical terminology
+- Focus on edge cases, performance, and best practices
+- Suggest idiomatic patterns for the language being used
+- Keep responses concise
+- Use markdown with code blocks. Always specify language in code fences.
+- When fixing/refactoring/writing code, output the COMPLETE updated function or file so it can be applied directly.`,
+
+    creative: `You are Kitsune, a creative coding companion in Momiji IDE. The user is a designer, animator, or game developer. Rules:
+- Frame everything in terms of visual outcomes and creative tools
+- Reference familiar tools: Unity, Godot, Blender, Photoshop, After Effects
+- Connect code concepts to visual/game concepts they already know
+- Suggest how code changes will affect visual output
+- Be enthusiastic about creative applications
+- Always mention what this enables them to CREATE
+- Use markdown with code blocks. Always specify language in code fences.
+- When fixing/refactoring code, output the COMPLETE updated code.`,
+  }
+
   const buildSystemPrompt = () => {
-    let sys = `You are Kitsune AI, the intelligent coding assistant built into Momiji IDE. You are sharp, precise, and a little playful — like a clever fox. Be concise and helpful. Use markdown with code blocks. Always specify the language in code fences. When asked to fix/refactor/write code, output the COMPLETE updated function or file so it can be applied directly.`
+    let sys = PERSONA_PROMPTS[persona]
     if (autoContext) sys += `\n\n## Project Info\n${autoContext}`
-    if (projectMemory.trim()) sys += `\n\n## Project Memory (user-defined context)\n${projectMemory}`
+    if (projectMemory.trim()) sys += `\n\n## Project Memory\n${projectMemory}`
     if (activeTab) sys += `\n\n## Current file: ${activeTab.fileName} (${activeTab.language})\n\`\`\`${activeTab.language}\n${activeTab.content.slice(0, 4000)}\n\`\`\``
     return sys
   }
@@ -721,6 +767,30 @@ export function AIPanel() {
             </button>
           ))}
         </div>
+
+        {/* Persona selector — only in chat tab */}
+        {aiTab === 'chat' && (
+          <div className="flex items-center gap-1 px-2 py-1.5" style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-mantle)' }}>
+            <span className="text-xs mr-1" style={{ color: 'var(--text-subtle)' }}>Persona:</span>
+            {(Object.entries(PERSONA_LABELS) as [Persona, { icon: string; label: string }][]).map(([p, { icon, label }]) => (
+              <button
+                key={p}
+                onClick={() => handleSetPersona(p)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
+                style={{
+                  background: persona === p ? 'var(--accent-mauve)28' : 'transparent',
+                  border: `1px solid ${persona === p ? 'var(--accent-mauve)' : 'transparent'}`,
+                  color: persona === p ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+                  fontWeight: persona === p ? 600 : 400,
+                }}
+                title={p === 'beginner' ? 'Simple analogies, encouraging tone' : p === 'developer' ? 'Technical, direct, concise' : 'Visual, game/creative focused'}
+              >
+                {icon} {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       </div>
 
       {/* Agent tab */}
