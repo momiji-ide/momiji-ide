@@ -176,6 +176,17 @@ export function TerminalPanel() {
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-subtle)' }}
         >+</button>
 
+        {/* Kill process (Ctrl+C) — keeps terminal open */}
+        <button
+          onClick={() => terminalsRef.current.get(activeId!)?.write('\x03')}
+          title="Kill running process (Ctrl+C)"
+          style={{ padding: '0 10px', height: 33, background: 'transparent', border: 'none',
+            cursor: 'pointer', color: 'var(--accent-red)', fontSize: 11, flexShrink: 0, fontWeight: 600 }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >⊘ Kill</button>
+
+        {/* Clear */}
         <button onClick={() => terminalsRef.current.get(activeId!)?.clear()}
           style={{ padding: '0 10px', height: 33, background: 'transparent', border: 'none',
             cursor: 'pointer', color: 'var(--text-subtle)', fontSize: 11, flexShrink: 0 }}

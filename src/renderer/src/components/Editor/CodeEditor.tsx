@@ -926,7 +926,7 @@ function WelcomeScreen() {
               <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>No recent projects yet</p>
               <button onClick={() => openFolder()}
                 className="text-xs px-3 py-1.5 rounded-lg mt-1 transition-all"
-                style={{ background: 'var(--accent-blue)', color: 'white' }}>
+                style={{ background: 'var(--accent-mauve)', color: 'white' }}>
                 Open a folder
               </button>
             </div>
@@ -939,7 +939,7 @@ function WelcomeScreen() {
                   <button key={fp} onClick={() => openFolder(fp)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all group"
                     style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface1)'; e.currentTarget.style.borderColor = 'var(--accent-blue)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface1)'; e.currentTarget.style.borderColor = 'var(--accent-mauve)' }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface0)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
@@ -947,7 +947,7 @@ function WelcomeScreen() {
                       <p className="text-xs truncate" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{parent}</p>
                     </div>
                     <span className="opacity-0 group-hover:opacity-100 text-xs transition-opacity"
-                      style={{ color: 'var(--accent-blue)' }}>→</span>
+                      style={{ color: 'var(--accent-mauve)' }}>→</span>
                   </button>
                 )
               })}
