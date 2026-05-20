@@ -6,6 +6,7 @@ import {
   IcoDatabase, IcoExtensions, IcoSettings, IcoTodo, IcoOutline
 } from './Icons'
 import kitsuneImg from '../../assets/iconkitsune.png'
+import { KitsuneAvatarWidget } from './KitsuneAvatarWidget'
 
 interface NavItem {
   id: ActivityBarItem
@@ -68,8 +69,9 @@ export function ActivityBar() {
         ))}
       </div>
 
-      {/* Bottom — settings */}
+      {/* Bottom — avatar + settings */}
       <div className="flex flex-col items-center gap-0.5">
+        <KitsuneAvatarWidget />
         {BOTTOM_ITEMS.map(item => (
           <Btn key={item.id} item={item}
             isActive={activePanel === item.id && showSidebar}

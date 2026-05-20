@@ -687,6 +687,7 @@ export function AIPanel() {
     setMessages(prev => [...prev, { role: 'user', content: userMessage, id: msgId++, image: imageSnapshot?.preview }])
     setIsLoading(true)
     setKitsuneExpr('thinking')
+    window.dispatchEvent(new CustomEvent('kitsune:avatar', { detail: { state: 'thinking' } }))
     startTimer()
 
     const streamId = msgId++
@@ -730,7 +731,7 @@ export function AIPanel() {
       stopTimer()
       const msg = err instanceof Error ? err.message : 'Unknown error'
       let friendly = `❌ **Error:** ${msg}`
-      if (msg.includes('aborted')) { setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: m.content + '\n\n_[stopped]_', streaming: false } : m)); setIsLoading(false); setKitsuneExpr('normal'); return }
+      if (msg.includes('aborted')) { setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: m.content + '\n\n_[stopped]_', streaming: false } : m)); setIsLoading(false); setKitsuneExpr('normal'); window.dispatchEvent(new CustomEvent('kitsune:avatar', { detail: { state: 'idle' } })); return }
       if (msg.includes('quota') || msg.includes('limit: 0') || msg.includes('RESOURCE_EXHAUSTED')) {
         friendly = `❌ **API Quota / Access Error** (model: \`${activeProvider?.model}\`)\n\n"limit: 0" usually means Gemini API is not enabled for this key's project.\n\n**Fix:**\n1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)\n2. Create a new API key there\n3. Paste it in ⚙️ Settings → AI & API Keys\n\n__FIX_BUTTON__`
       } else if (msg.includes('401') || msg.includes('API_KEY') || msg.includes('invalid')) {
@@ -744,6 +745,7 @@ export function AIPanel() {
     }
     setIsLoading(false)
     setKitsuneExpr('happy')
+    window.dispatchEvent(new CustomEvent('kitsune:avatar', { detail: { state: 'idle' } }))
     setTimeout(() => setKitsuneExpr('normal'), 3000)
   }, [input, attachedImage, isLoading, activeProvider, messages, activeTab])
 
