@@ -6,6 +6,7 @@ import { SearchPanel }    from '../Search/SearchPanel'
 import { AIPanel }        from '../AI/AIPanel'
 import { GitPanel }       from '../Git/GitPanel'
 import { TodoPanel }      from '../Todo/TodoPanel'
+import { QuestPanel }     from '../Todo/QuestPanel'
 import { OutlinePanel }   from '../Outline/OutlinePanel'
 
 // Heavy panels — lazy loaded on first access
@@ -20,6 +21,31 @@ const SQLitePanel     = lazy(() => import('../Database/SQLitePanel').then(m => (
 const ExtensionsPanel = lazy(() => import('../Extensions/ExtensionsPanel').then(m => ({ default: m.ExtensionsPanel })))
 const SnippetManager  = lazy(() => import('../Snippets/SnippetManager').then(m => ({ default: m.SnippetManager })))
 const TemplateGallery = lazy(() => import('../Templates/TemplateGallery').then(m => ({ default: m.TemplateGallery })))
+
+function TodoQuestPanel() {
+  const [tab, setTab] = useState<'todo' | 'quests'>('todo')
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-shrink-0" style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}>
+        {(['todo', 'quests'] as const).map((t) => (
+          <button key={t} onClick={() => setTab(t)}
+            className="px-4 py-2 text-xs font-semibold"
+            style={{
+              background: tab === t ? 'var(--bg-mantle)' : 'transparent',
+              color: tab === t ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+              border: 'none', cursor: 'pointer',
+              borderBottom: tab === t ? '2px solid var(--accent-mauve)' : '2px solid transparent',
+            }}>
+            {t === 'todo' ? '✅ TODO' : '🗺️ Quests'}
+          </button>
+        ))}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {tab === 'todo' ? <TodoPanel /> : <QuestPanel />}
+      </div>
+    </div>
+  )
+}
 
 function DebugPanel() {
   const [tab, setTab] = useState<'timetavel' | 'animator'>('timetavel')
@@ -106,7 +132,7 @@ export function Sidebar() {
     settings:   <SettingsPanel />,
     search:     <SearchPanel />,
     git:        <GitPanel />,
-    todo:       <TodoPanel />,
+    todo:       <TodoQuestPanel />,
     outline:    <OutlinePanel />,
     snippets:   <Suspense fallback={<PanelLoader />}><SnippetManager /></Suspense>,
     templates:  <Suspense fallback={<PanelLoader />}><TemplateGallery /></Suspense>,
