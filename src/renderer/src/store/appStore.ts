@@ -78,6 +78,7 @@ export const useAppStore = create<AppStore>()(
         { id: 'deepseek',   name: 'DeepSeek',           apiKey: '', model: 'deepseek-chat',             enabled: false },
         { id: 'mistral',    name: 'Mistral AI',         apiKey: '', model: 'mistral-small-latest',      enabled: false },
         { id: 'ollama',     name: 'Ollama (Local)',     apiKey: '', model: 'qwen2.5-coder:7b',          enabled: false, baseUrl: 'http://localhost:11434' },
+        { id: 'custom',     name: 'Custom (OpenAI Compatible)', apiKey: '', model: 'gpt-4o',            enabled: false, baseUrl: 'https://api.openai.com' },
       ],
       sidebarWidth: 260,
       showSidebar: true,

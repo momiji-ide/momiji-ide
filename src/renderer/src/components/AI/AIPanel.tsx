@@ -393,7 +393,7 @@ export function AIPanel() {
   const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef   = useRef<number>(0)
 
-  const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama'))
+  const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama' || p.id === 'custom'))
   const activeProvider   = enabledProviders.find(p => p.id === selectedProviderId) ?? enabledProviders[0]
   const activeTab        = tabs.find(t => t.id === activeTabId)
 
@@ -653,7 +653,9 @@ export function AIPanel() {
       deepseek:   'https://api.deepseek.com/v1/chat/completions',
       mistral:    'https://api.mistral.ai/v1/chat/completions',
     }
-    const url = provider.baseUrl ? `${provider.baseUrl}/v1/chat/completions` : ENDPOINTS[provider.id]
+    // custom provider: use baseUrl directly, strip trailing slash
+    const baseUrl = provider.baseUrl?.replace(/\/$/, '')
+    const url = baseUrl ? `${baseUrl}/v1/chat/completions` : ENDPOINTS[provider.id]
     if (!url) throw new Error(`Unknown provider: ${provider.id}`)
     const history = messages.filter(m => !m.streaming).map(m => ({ role: m.role, content: m.content }))
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.apiKey}` }
@@ -713,7 +715,7 @@ export function AIPanel() {
         const elapsed = stopTimer()
         setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
         if (tokensIn) setContextUsed(tokensIn + (tokensOut ?? 0))
-      } else if (['groq','openrouter','deepseek','mistral'].includes(activeProvider.id)) {
+      } else if (['groq','openrouter','deepseek','mistral','custom'].includes(activeProvider.id)) {
         const { text, tokensIn, tokensOut } = await callOpenAICompat(activeProvider, userMessage, imageSnapshot)
         const elapsed = stopTimer()
         setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))

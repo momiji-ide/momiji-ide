@@ -713,6 +713,33 @@ function AIProviderCard({ provider, onUpdate }: { provider: AIProvider; onUpdate
           </div>
         )}
 
+        {/* Custom OpenAI-compatible endpoint */}
+        {provider.id === 'custom' && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start gap-1.5 px-2 py-1.5 rounded"
+              style={{ background: 'var(--accent-mauve)11', border: '1px solid var(--accent-mauve)33' }}>
+              <span style={{ fontSize: 12 }}>🔌</span>
+              <p className="text-xs" style={{ color: 'var(--accent-mauve)', fontSize: 10, lineHeight: 1.5 }}>
+                <strong>OpenAI Compatible</strong> — supports any API with OpenAI format.<br/>
+                Works with: company VPN APIs, Azure OpenAI, local proxies, vLLM, LM Studio, etc.
+              </p>
+            </div>
+            <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Base URL</label>
+            <input
+              type="text"
+              value={provider.baseUrl ?? 'https://api.openai.com'}
+              onChange={e => onUpdate({ ...provider, baseUrl: e.target.value })}
+              placeholder="https://your-api-endpoint.com"
+              className="px-2 py-1.5 rounded text-xs outline-none font-mono"
+              style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
+            />
+            <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+              Example: <code style={{ fontFamily: 'monospace' }}>https://oa-openai-01.openai.azure.com</code><br/>
+              Kitsune will append <code style={{ fontFamily: 'monospace' }}>/v1/chat/completions</code> automatically.
+            </p>
+          </div>
+        )}
+
         {/* Free tier note for Gemini */}
         {provider.id === 'gemini' && (
           <div className="flex items-start gap-1.5 px-2 py-1.5 rounded"
