@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Momiji IDE — Landing Page Improvement Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0D0F14; --bg2:#13161E; --bg3:#1A1E2A; --border:#252836;
+    --accent:#E8663D; --gold:#F5A623; --teal:#2DD4BF;
+    --white:#F8FAFC; --gray:#8892A4; --lgray:#C8D0DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;padding:2rem;}
+  h1{font-family:'DM Serif Display',serif;font-size:2.5rem;color:var(--white);margin-bottom:0.5rem;}
+  h2{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--accent);margin:2.5rem 0 1rem;}
+  h3{font-size:1.05rem;font-weight:600;color:var(--teal);margin:1.5rem 0 0.5rem;}
+  p,li{color:var(--lgray);font-size:0.95rem;line-height:1.7;}
+  ul{padding-left:1.25rem;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;}
+  .badge{display:inline-block;background:rgba(232,102,61,0.12);border:1px solid rgba(232,102,61,0.3);
+    color:var(--accent);padding:0.2rem 0.75rem;border-radius:100px;
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;margin-bottom:1.25rem;}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem;}
+  .card-title{font-weight:700;font-size:1rem;color:var(--white);margin-bottom:0.5rem;}
+  .tag{display:inline-block;padding:0.15rem 0.6rem;border-radius:4px;
+    font-size:0.72rem;font-family:'JetBrains Mono',monospace;margin-right:0.4rem;margin-bottom:0.75rem;}
+  .tag.high{background:rgba(239,68,68,0.15);color:#f87171;}
+  .tag.med{background:rgba(245,166,35,0.15);color:var(--gold);}
+  .tag.low{background:rgba(45,212,191,0.15);color:var(--teal);}
+  .copy-box{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:0.75rem 0;
+    font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--lgray);line-height:1.6;}
+  .divider{height:1px;background:var(--border);margin:2.5rem 0;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+  .before{border-left:3px solid #f87171;background:rgba(239,68,68,0.06);}
+  .after{border-left:3px solid var(--teal);background:rgba(45,212,191,0.06);}
+  .label{font-size:0.7rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;
+    margin-bottom:0.4rem;opacity:0.7;}
+</style>
+</head>
+<body>
+<div style="max-width:860px;margin:0 auto">
+
+<div class="badge">🍁 LANDING PAGE IMPROVEMENT GUIDE</div>
+<h1>Momiji IDE</h1>
+<p style="color:var(--gray);margin-bottom:3rem">Actionable improvements to increase conversion, trust, and viral growth — based on current landing page analysis.</p>
+
+<!-- ═══════════════════════════════════ -->
+<h2>1. Hero Section</h2>
+
+<div class="card">
+  <div class="tag high">HIGH IMPACT</div>
+  <div class="card-title">Add a hero demo video / GIF (30–60 sec)</div>
+  <p>This is the single highest-ROI improvement. Visitors can't feel the product without seeing it. A 30-second Loom or GIF showing Kitsune writing a React component and then explaining it in Block mode would 3–5× increase time-on-page.</p>
+  <h3>What to show in the video:</h3>
+  <ul>
+    <li>User types a prompt in natural language → Kitsune writes code in real time</li>
+    <li>Switch to Block view to show the same logic visually</li>
+    <li>Paste a screenshot error → Kitsune reads and fixes it (Vision mode)</li>
+    <li>End on download CTA with a snappy voice-over</li>
+  </ul>
+</div>
+
+<div class="card">
+  <div class="tag high">HIGH IMPACT</div>
+  <div class="card-title">Refine the headline to lead with the user outcome</div>
+  <div class="grid2">
+    <div class="copy-box before"><div class="label">CURRENT</div>"Code smarter with Kitsune AI your on-call genius"</div>
+    <div class="copy-box after"><div class="label">SUGGESTED</div>"Build anything — even if you've never coded before.<br>Kitsune AI does the heavy lifting."</div>
+  </div>
+  <p>The current headline speaks to developers. The new one captures beginners and creative professionals — your actual differentiator.</p>
+</div>
+
+<div class="card">
+  <div class="tag med">MEDIUM IMPACT</div>
+  <div class="card-title">Add social proof numbers below the CTA</div>
+  <div class="copy-box after">
+    ⬇ 2,400+ downloads &nbsp;·&nbsp; ★ 480 GitHub stars &nbsp;·&nbsp; 🌍 38 countries
+  </div>
+  <p>Even small real numbers build trust. Once you have them, put them right below the download button. Update weekly.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>2. BYOK / AI Model Clarity</h2>
+
+<div class="card">
+  <div class="tag high">HIGH IMPACT</div>
+  <div class="card-title">Explain the "bring your own key" model upfront</div>
+  <p>Many visitors will wonder: "If it's free, what's the catch with AI?" Answer it proactively — it builds trust and removes the friction of downloading and discovering this later.</p>
+  <div class="copy-box after"><div class="label">ADD NEAR THE AI PROVIDERS SECTION</div>
+🔑 Your keys, your cost, your privacy.<br>
+Momiji connects to AI providers using your own API keys.<br>
+Keys are stored on your machine only — never sent to our servers.<br>
+Groq is available free with no key required to get started.</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>3. Target Audience Clarity</h2>
+
+<div class="card">
+  <div class="tag high">HIGH IMPACT</div>
+  <div class="card-title">Add a "Who is Momiji for?" section</div>
+  <p>Currently the page feels developer-focused despite the product targeting non-coders too. Explicitly calling out audience segments creates instant recognition for the right people.</p>
+
+  <div class="copy-box after"><div class="label">SUGGESTED SECTION</div>
+🧒 Kids & Students — Learn to code without the frustration. Start with blocks, grow into code.<br><br>
+🎮 Game Developers — Visual flow logic + AI agent for Unity/Godot scripting. No context switching.<br><br>
+🎨 Designers & Animators — Automate your workflow with visual nodes. No syntax required.<br><br>
+⚡ Developers — Full Monaco + Kitsune AI + 7 agents. Your power IDE, supercharged.<br><br>
+🏢 Teams & Studios — Share memory, collaborate, customize Kitsune for your stack.</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>4. Kitsune AI Section</h2>
+
+<div class="card">
+  <div class="tag med">MEDIUM IMPACT</div>
+  <div class="card-title">Show Kitsune's personality more — it's a differentiator</div>
+  <p>The current character profile section is great but buried. Consider pulling a Kitsune quote to the top of the section and adding 2–3 short animated conversation examples (typewriter effect) showing:</p>
+  <ul>
+    <li>"Explain this code to a 12-year-old" → Kitsune replies in simple language</li>
+    <li>"Refactor this for performance" → Kitsune rewrites with explanation</li>
+    <li>"I want to make a game character jump" → Kitsune writes the code without being asked for code</li>
+  </ul>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>5. Social Proof & Trust</h2>
+
+<div class="card">
+  <div class="tag high">HIGH IMPACT</div>
+  <div class="card-title">Add GitHub star / download badge to the nav or hero</div>
+  <p>GitHub's badge API gives you a live star count you can embed as an image:</p>
+  <div class="copy-box after"><div class="label">HTML SNIPPET</div>
+&lt;img src="https://img.shields.io/github/stars/momiji-ide/momiji-ide?style=social" /&gt;<br>
+&lt;img src="https://img.shields.io/github/downloads/momiji-ide/momiji-ide/total?style=flat-square&amp;color=E8663D" /&gt;</div>
+</div>
+
+<div class="card">
+  <div class="tag med">MEDIUM IMPACT</div>
+  <div class="card-title">Add a testimonials / community quotes section</div>
+  <p>Even 3 short quotes from early users (from Discord/Reddit/email) dramatically increase credibility. Target these specific personas: a student, a game developer, a designer.</p>
+  <div class="copy-box after"><div class="label">FORMAT</div>
+"I've tried VS Code and it always felt overwhelming. Momiji just makes sense — I actually built something today."<br>
+— @username · r/learnprogramming</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>6. Conversion & CTA</h2>
+
+<div class="card">
+  <div class="tag med">MEDIUM IMPACT</div>
+  <div class="card-title">Add a persistent bottom CTA bar on scroll</div>
+  <p>When users scroll past the hero, they lose the download CTA. A sticky bottom bar (appears after 50% scroll) keeps the conversion path visible without being intrusive.</p>
+  <div class="copy-box after"><div class="label">COPY</div>
+🍁 Momiji IDE — Free download · v1.2.0 · Windows / macOS / Linux &nbsp; [Download Free ↓]</div>
+</div>
+
+<div class="card">
+  <div class="tag low">QUICK WIN</div>
+  <div class="card-title">Add a "Pricing" link in the nav</div>
+  <p>The current nav has: Features · Kitsune AI · Download · GitHub. Adding "Pricing" (even if it's currently all free) sets the expectation that there will be paid tiers and makes the product feel more serious to investors and potential enterprise clients.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>7. SEO & Meta</h2>
+
+<div class="card">
+  <div class="tag med">MEDIUM IMPACT</div>
+  <div class="card-title">Improve meta description and OG tags</div>
+  <div class="grid2">
+    <div class="copy-box before"><div class="label">CURRENT META</div>"AI-powered desktop code editor with Kitsune AI. Free forever."</div>
+    <div class="copy-box after"><div class="label">SUGGESTED META</div>"Momiji IDE — the AI-native code editor for everyone. Block, Flow & Code modes. Powered by Kitsune AI. Free download for Windows, macOS, Linux."</div>
+  </div>
+  <p>Add keywords: "ai code editor", "visual programming", "block coding", "beginner IDE", "alternative to VS Code for beginners".</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════ -->
+<h2>8. Priority Action List</h2>
+
+<div class="card" style="border-color:var(--accent)">
+  <p style="margin-bottom:1rem;font-weight:600;color:var(--white)">Do these in order for maximum impact:</p>
+  <ul>
+    <li><span style="color:var(--accent);font-weight:700">1.</span> Record a 30–60 sec demo video → embed in hero</li>
+    <li><span style="color:var(--accent);font-weight:700">2.</span> Rewrite headline to target non-coders explicitly</li>
+    <li><span style="color:var(--accent);font-weight:700">3.</span> Add "Who is Momiji for?" section with 5 personas</li>
+    <li><span style="color:var(--accent);font-weight:700">4.</span> Add GitHub star badge + total download count</li>
+    <li><span style="color:var(--accent);font-weight:700">5.</span> Add "Pricing" to nav (link to pricing page)</li>
+    <li><span style="color:var(--accent);font-weight:700">6.</span> Explain BYOK/AI model upfront near AI providers section</li>
+    <li><span style="color:var(--accent);font-weight:700">7.</span> Add 3 user quotes after traction is established</li>
+    <li><span style="color:var(--accent);font-weight:700">8.</span> Add sticky bottom CTA bar on scroll</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

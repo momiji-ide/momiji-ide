@@ -3,6 +3,7 @@
  * Listens for 'editor:markers' custom event dispatched by CodeEditor
  */
 import { useState, useEffect } from 'react'
+import { useAppStore } from '../../store/appStore'
 
 export interface MarkerItem {
   severity: 1 | 2 | 4 | 8  // hint=1 info=2 warn=4 error=8
@@ -16,6 +17,7 @@ export interface MarkerItem {
 export function ProblemsPanel() {
   const [markers, setMarkers] = useState<MarkerItem[]>([])
   const [filter, setFilter]   = useState<'all' | 'error' | 'warning'>('all')
+  const { tabs, activeTabId, setActivePanel, setPendingAIPrompt } = useAppStore()
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -28,6 +30,27 @@ export function ProblemsPanel() {
 
   const jump = (m: MarkerItem) => {
     window.dispatchEvent(new CustomEvent('editor:jumpToLine', { detail: { line: m.startLineNumber } }))
+  }
+
+  const askKitsune = (m: MarkerItem) => {
+    // Get surrounding code context (±5 lines)
+    const tab = tabs.find(t => t.id === activeTabId)
+    let codeContext = ''
+    if (tab) {
+      const lines = tab.content.split('\n')
+      const start = Math.max(0, m.startLineNumber - 6)
+      const end   = Math.min(lines.length - 1, m.startLineNumber + 4)
+      codeContext = lines.slice(start, end + 1)
+        .map((l, i) => `${start + i + 1}${start + i + 1 === m.startLineNumber ? ' ◄' : '  '} ${l}`)
+        .join('\n')
+    }
+
+    const fileName = m.file.split(/[/\\]/).pop() ?? m.file
+    const severity = m.severity === 8 ? 'Error' : 'Warning'
+    const prompt = `I have a ${severity} in my code:\n\n**${m.message}**\n*${fileName} :${m.startLineNumber}:${m.startColumn}*${m.code != null ? ` [${m.code}]` : ''}\n\n${codeContext ? `\`\`\`\n${codeContext}\n\`\`\`\n\n` : ''}Explain what went wrong in plain language and exactly how to fix it.`
+
+    setActivePanel('ai')
+    setPendingAIPrompt(prompt)
   }
 
   const shown = markers.filter(m => {
@@ -85,20 +108,38 @@ export function ProblemsPanel() {
             const fileName = m.file.split(/[/\\]/).pop() ?? m.file
             return (
               <div key={i}
-                onClick={() => jump(m)}
-                className="flex items-start gap-2 px-3 py-1.5 cursor-pointer"
-                style={{ borderBottom: '1px solid var(--border)22' }}
+                className="flex items-start gap-2 px-3 py-1.5 group"
+                style={{ borderBottom: '1px solid var(--border)22', cursor: 'default' }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-surface0)'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
                 <span style={{ color, fontSize: 10, marginTop: 2, flexShrink: 0 }}>{icon}</span>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => jump(m)}>
                   <p className="text-xs truncate" style={{ color: 'var(--text)' }}>{m.message}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-subtle)', fontFamily: 'monospace' }}>
                     {fileName} <span style={{ color: 'var(--accent-blue)' }}>:{m.startLineNumber}:{m.startColumn}</span>
                     {m.code != null && <span style={{ color: 'var(--text-subtle)', marginLeft: 6 }}>[{m.code}]</span>}
                   </p>
                 </div>
-                <span className="text-xs flex-shrink-0" style={{ color, opacity: 0.7 }}>{label}</span>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Ask Kitsune button — always visible for errors */}
+                  {m.severity === 8 && (
+                    <button
+                      onClick={() => askKitsune(m)}
+                      className="text-xs px-1.5 py-0.5 rounded transition-all"
+                      style={{
+                        background: 'var(--accent-mauve)18',
+                        border: '1px solid var(--accent-mauve)44',
+                        color: 'var(--accent-mauve)',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                      }}
+                      title="Explain this error with Kitsune AI"
+                    >
+                      🦊 Ask Kitsune
+                    </button>
+                  )}
+                  <span className="text-xs" style={{ color, opacity: 0.7 }}>{label}</span>
+                </div>
               </div>
             )
           })

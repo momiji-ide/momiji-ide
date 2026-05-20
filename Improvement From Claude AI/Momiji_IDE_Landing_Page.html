@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Momiji IDE — Build games, apps & tools. Even if you've never coded.</title>
+<meta name="description" content="Momiji IDE is the AI-native creative studio where anyone can build games, apps, and tools — from their first block to production-ready code. Powered by Kitsune AI."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Zen+Kaku+Gothic+New:wght@300;400;700;900&family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ─────────────────────────────── */
+:root {
+  --ink:     #0A0B0F;
+  --ink2:    #11131A;
+  --ink3:    #181B26;
+  --border:  #1E2130;
+  --maple:   #D4521E;
+  --maple2:  #E8895A;
+  --ember:   #F5A940;
+  --sakura:  #C4647A;
+  --teal:    #2BBFAD;
+  --white:   #F2F0EB;
+  --mist:    #9BA5B8;
+  --smoke:   #5A6272;
+  --gold:    #C9A84C;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--white);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ───────────────────────── */
+.cursor {
+  width: 10px; height: 10px;
+  background: var(--maple);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.08s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: screen;
+}
+.cursor-ring {
+  width: 32px; height: 32px;
+  border: 1px solid rgba(212,82,30,0.5);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.18s ease-out, width 0.25s, height 0.25s;
+}
+
+/* ── NOISE OVERLAY ───────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none; z-index: 1000;
+  mix-blend-mode: overlay;
+}
+
+/* ── SCROLLBAR ───────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--maple); border-radius: 2px; }
+
+/* ── NAV ─────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem;
+  background: rgba(10,11,15,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.nav-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--maple); letter-spacing: 0.08em;
+  text-decoration: none; display: flex; align-items: center; gap: 0.5rem;
+}
+.nav-logo-leaf { font-size: 1.1rem; animation: sway 4s ease-in-out infinite; display: inline-block; }
+@keyframes sway { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  font-size: 0.82rem; color: var(--smoke); text-decoration: none;
+  letter-spacing: 0.05em; font-weight: 400;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-dl {
+  background: transparent;
+  border: 1px solid var(--maple);
+  color: var(--maple); padding: 0.5rem 1.4rem;
+  border-radius: 4px; font-size: 0.82rem; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  text-decoration: none; letter-spacing: 0.06em;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-dl:hover { background: var(--maple); color: var(--ink); }
+
+/* ── HERO ─────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 7rem 2rem 5rem;
+  position: relative; text-align: center;
+  overflow: hidden;
+}
+
+/* Maple leaf particles bg */
+.leaf-bg {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.leaf {
+  position: absolute; font-size: 1.2rem; opacity: 0;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  0%   { transform: translateY(-60px) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.18; }
+  90%  { opacity: 0.08; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* Big radial glow */
+.hero-glow {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  width: 800px; height: 800px;
+  background: radial-gradient(ellipse at center,
+    rgba(212,82,30,0.14) 0%,
+    rgba(212,82,30,0.04) 45%,
+    transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.2em; color: var(--maple);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  animation: fadeUp 0.8s ease forwards;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; display: block; height: 1px;
+  width: 40px; background: var(--maple); opacity: 0.5;
+}
+
+.hero-h1 {
+  font-family: 'Lora', serif;
+  font-size: clamp(2.6rem, 6.5vw, 5.2rem);
+  line-height: 1.12; font-weight: 600;
+  max-width: 820px; margin: 0 auto 1.5rem;
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+.hero-h1 .line2 {
+  font-style: italic; color: var(--maple2);
+  display: block;
+}
+.hero-h1 .accent { color: var(--ember); }
+
+.hero-sub {
+  font-size: 1.05rem; color: var(--mist); max-width: 540px;
+  margin: 0 auto 2.75rem; line-height: 1.75; font-weight: 300;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+
+.hero-ctas {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 3.5rem;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+.btn-main {
+  background: var(--maple); color: var(--ink);
+  padding: 0.9rem 2.2rem; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 0.06em; text-decoration: none;
+  border: none; cursor: none;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn-main:hover { background: var(--maple2); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent; color: var(--mist);
+  padding: 0.9rem 2rem; border-radius: 4px;
+  border: 1px solid var(--border); text-decoration: none;
+  font-size: 0.85rem; font-weight: 400; cursor: none;
+  transition: border-color 0.2s, color 0.2s;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn-ghost:hover { border-color: var(--smoke); color: var(--white); }
+
+.hero-badges {
+  display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+.hero-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; color: var(--smoke);
+  display: flex; align-items: center; gap: 0.4rem;
+  letter-spacing: 0.04em;
+}
+.hero-badge span { color: var(--teal); }
+
+/* Scroll hint */
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  color: var(--smoke); font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em;
+  animation: fadeUp 1s 0.8s ease both;
+}
+.scroll-arrow {
+  width: 1px; height: 40px; background: var(--border);
+  position: relative; overflow: hidden;
+}
+.scroll-arrow::after {
+  content: ''; position: absolute; top: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--maple));
+  animation: scrollDown 1.8s ease infinite;
+}
+@keyframes scrollDown { 0%{top:-100%} 100%{top:100%} }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FOR WHOM ─────────────────────────────── */
+.section { padding: 7rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.2em; color: var(--maple);
+  margin-bottom: 1rem;
+}
+.section-h2 {
+  font-family: 'Lora', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 600; line-height: 1.2;
+  margin-bottom: 1rem;
+}
+.section-sub {
+  color: var(--mist); font-size: 1rem;
+  max-width: 560px; line-height: 1.75; margin-bottom: 3.5rem;
+  font-weight: 300;
+}
+
+.persona-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+.persona-card {
+  background: var(--ink2);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.75rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.25s;
+}
+.persona-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--card-color, var(--maple));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.persona-card:hover { border-color: #2e3245; transform: translateY(-3px); }
+.persona-card:hover::before { transform: scaleX(1); }
+
+.persona-emoji { font-size: 2rem; margin-bottom: 1rem; display: block; }
+.persona-title {
+  font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;
+  color: var(--white);
+}
+.persona-desc { color: var(--mist); font-size: 0.875rem; line-height: 1.65; font-weight: 300; }
+
+/* ── THREE MODES ────────────────────────── */
+.modes-section {
+  padding: 7rem 2rem;
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink2) 50%, var(--ink) 100%);
+}
+.modes-inner { max-width: 1200px; margin: 0 auto; }
+
+.modes-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+.mode-card {
+  border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; position: relative;
+  transition: border-color 0.3s;
+}
+.mode-card:hover { border-color: var(--mode-color, var(--maple)); }
+
+.mode-header {
+  padding: 1.5rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--ink3);
+}
+.mode-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.15em;
+  color: var(--mode-color, var(--maple));
+  background: rgba(212,82,30,0.1);
+  padding: 0.25rem 0.7rem; border-radius: 3px;
+  margin-bottom: 0.75rem; display: inline-block;
+}
+.mode-title { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 0.4rem; }
+.mode-sub { color: var(--mist); font-size: 0.85rem; line-height: 1.6; font-weight: 300; }
+
+.mode-body { padding: 1.5rem 1.75rem; }
+.mode-feature {
+  display: flex; align-items: center; gap: 0.65rem;
+  color: var(--mist); font-size: 0.85rem; padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.mode-feature:last-child { border-bottom: none; }
+.mode-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── KITSUNE ────────────────────────────── */
+.kitsune-section {
+  padding: 7rem 2rem;
+  max-width: 1100px; margin: 0 auto;
+}
+.kitsune-inner {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+}
+.kitsune-chat {
+  background: var(--ink2); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.chat-topbar {
+  padding: 0.85rem 1.25rem;
+  background: var(--ink3); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--smoke);
+}
+.chat-dot { width: 8px; height: 8px; border-radius: 50%; }
+.chat-messages { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.chat-msg {
+  border-radius: 10px; padding: 0.85rem 1.1rem;
+  font-size: 0.85rem; line-height: 1.65; max-width: 90%;
+}
+.chat-user { background: var(--ink3); color: var(--mist); align-self: flex-end; border-bottom-right-radius: 3px; }
+.chat-kitsune { background: rgba(212,82,30,0.1); border: 1px solid rgba(212,82,30,0.2); color: var(--white); align-self: flex-start; border-bottom-left-radius: 3px; }
+.chat-kitsune-name { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--maple); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+.chat-code { background: var(--ink); border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.6rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--teal); line-height: 1.7; }
+.chat-cursor { display: inline-block; width: 2px; height: 12px; background: var(--maple); animation: blink 1.1s step-end infinite; vertical-align: middle; margin-left: 2px; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.kitsune-copy .section-h2 { margin-bottom: 1.25rem; }
+.kitsune-trait {
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+}
+.kitsune-trait:last-child { border-bottom: none; }
+.trait-icon {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: rgba(212,82,30,0.1); border: 1px solid rgba(212,82,30,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0;
+}
+.trait-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem; }
+.trait-desc { color: var(--mist); font-size: 0.82rem; line-height: 1.6; font-weight: 300; }
+
+/* ── CANVA MOMENT ───────────────────────── */
+.vision-section {
+  padding: 8rem 2rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.vision-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(212,82,30,0.1) 0%, transparent 65%);
+}
+.vision-quote {
+  font-family: 'Lora', serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-style: italic; font-weight: 400;
+  max-width: 800px; margin: 0 auto 1.5rem;
+  line-height: 1.5;
+  position: relative; z-index: 1;
+}
+.vision-quote em { color: var(--maple2); font-style: normal; font-weight: 600; }
+.vision-sub {
+  color: var(--mist); font-size: 1rem; max-width: 500px;
+  margin: 0 auto; line-height: 1.75; position: relative; z-index: 1;
+  font-weight: 300;
+}
+
+/* ── FEATURES STRIP ─────────────────────── */
+.features-section { padding: 7rem 2rem; max-width: 1200px; margin: 0 auto; }
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 3.5rem;
+}
+.feat-card {
+  background: var(--ink2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.5rem;
+  transition: border-color 0.3s;
+}
+.feat-card:hover { border-color: #2e3245; }
+.feat-icon-box {
+  width: 38px; height: 38px; border-radius: 8px;
+  background: rgba(212,82,30,0.08); border: 1px solid rgba(212,82,30,0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; margin-bottom: 1rem;
+}
+.feat-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; }
+.feat-desc { color: var(--mist); font-size: 0.83rem; line-height: 1.65; font-weight: 300; }
+
+/* ── PROVIDERS ──────────────────────────── */
+.providers-section {
+  padding: 5rem 2rem;
+  background: var(--ink2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.providers-inner { max-width: 1000px; margin: 0 auto; text-align: center; }
+.providers-h { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; color: var(--smoke); margin-bottom: 2rem; }
+.providers-row { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2rem; }
+.provider-chip {
+  background: var(--ink); border: 1px solid var(--border);
+  border-radius: 100px; padding: 0.5rem 1.1rem;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+  color: var(--mist); display: flex; align-items: center; gap: 0.5rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+.provider-chip:hover { border-color: var(--maple); color: var(--white); }
+.provider-chip .free-tag { background: rgba(43,191,173,0.15); color: var(--teal); font-size: 0.6rem; padding: 0.1rem 0.45rem; border-radius: 3px; letter-spacing: 0.06em; }
+.byok-note { color: var(--smoke); font-size: 0.82rem; line-height: 1.7; }
+.byok-note strong { color: var(--maple2); font-weight: 600; }
+
+/* ── DOWNLOAD ───────────────────────────── */
+.download-section {
+  padding: 8rem 2rem; text-align: center;
+}
+.dl-card {
+  max-width: 680px; margin: 0 auto;
+  background: var(--ink2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 3.5rem;
+  position: relative; overflow: hidden;
+}
+.dl-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,82,30,0.1) 0%, transparent 65%);
+}
+.dl-version {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; color: var(--smoke); letter-spacing: 0.12em;
+  margin-bottom: 1.5rem; position: relative;
+}
+.dl-title {
+  font-family: 'Lora', serif; font-size: 2.2rem;
+  font-weight: 600; margin-bottom: 0.75rem;
+  position: relative;
+}
+.dl-sub { color: var(--mist); font-size: 0.95rem; margin-bottom: 2.5rem; font-weight: 300; position: relative; }
+.dl-buttons { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 2rem; position: relative; }
+.dl-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--ink3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.85rem 1.25rem;
+  color: var(--white); text-decoration: none; font-size: 0.88rem;
+  transition: border-color 0.2s, background 0.2s; cursor: none;
+}
+.dl-btn:hover { border-color: var(--maple); background: rgba(212,82,30,0.05); }
+.dl-btn-left { display: flex; align-items: center; gap: 0.75rem; }
+.dl-btn-os { font-weight: 700; }
+.dl-btn-arch { font-size: 0.75rem; color: var(--smoke); }
+.dl-btn-icon { color: var(--maple); font-size: 0.8rem; }
+.dl-footer { color: var(--smoke); font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; position: relative; }
+.dl-footer a { color: var(--maple); text-decoration: none; }
+
+/* ── FOOTER ─────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 3rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1.5rem; max-width: 1200px; margin: 0 auto;
+}
+.footer-logo { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--maple); font-weight: 700; }
+.footer-links { display: flex; gap: 1.75rem; }
+.footer-links a { color: var(--smoke); font-size: 0.8rem; text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--white); }
+.footer-copy { color: var(--smoke); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
+
+/* ── STICKY BOTTOM BAR ──────────────────── */
+.sticky-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 400;
+  background: rgba(10,11,15,0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.85rem 3rem;
+  display: flex; align-items: center; justify-content: space-between;
+  transform: translateY(100%); transition: transform 0.4s ease;
+}
+.sticky-bar.visible { transform: translateY(0); }
+.sticky-bar-left { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--smoke); }
+.sticky-bar-left strong { color: var(--maple); }
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .modes-grid, .features-grid { grid-template-columns: 1fr; }
+  .kitsune-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .kitsune-copy { order: -1; }
+}
+@media (max-width: 600px) {
+  .persona-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <span class="nav-logo-leaf">🍁</span> MOMIJI IDE
+  </a>
+  <ul class="nav-links">
+    <li><a href="#for-whom">For You</a></li>
+    <li><a href="#kitsune">Kitsune AI</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#download">Pricing</a></li>
+    <li><a href="https://github.com/momiji-ide/momiji-ide">GitHub</a></li>
+  </ul>
+  <a href="#download" class="nav-dl">⬇ DOWNLOAD FREE</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="leaf-bg" id="leafBg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-eyebrow">AI-NATIVE CREATIVE STUDIO</div>
+
+  <h1 class="hero-h1">
+    Build games, apps & tools.
+    <span class="line2">Even if you've never coded before.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Momiji IDE is the creative platform where ideas become software — guided by Kitsune AI from your first block to production-ready code.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="#download" class="btn-main">⬇ Download Free</a>
+    <a href="https://github.com/momiji-ide/momiji-ide" class="btn-ghost">★ View on GitHub</a>
+  </div>
+
+  <div class="hero-badges">
+    <span class="hero-badge">🪟 Windows</span>
+    <span class="hero-badge">🍎 macOS</span>
+    <span class="hero-badge">🐧 Linux</span>
+    <span class="hero-badge"><span>FREE</span> Forever · No account needed</span>
+    <span class="hero-badge">v<span>1.2.0</span> Latest</span>
+  </div>
+
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- FOR WHOM -->
+<div id="for-whom"></div>
+<section class="section">
+  <div class="section-label">WHO IT'S FOR</div>
+  <h2 class="section-h2">One platform.<br>Every kind of creator.</h2>
+  <p class="section-sub">Momiji IDE was built for the people that every other code editor ignores.</p>
+
+  <div class="persona-grid">
+    <div class="persona-card" style="--card-color: var(--teal)">
+      <span class="persona-emoji">🧒</span>
+      <div class="persona-title">Students & Kids</div>
+      <div class="persona-desc">Start with blocks and visual logic. Graduate to real code at your own pace — with Kitsune explaining every step.</div>
+    </div>
+    <div class="persona-card" style="--card-color: #A855F7">
+      <span class="persona-emoji">🎮</span>
+      <div class="persona-title">Game Developers</div>
+      <div class="persona-desc">Visual flow scripting meets a full code editor. Build game logic, generate assets, and iterate fast with AI as your co-designer.</div>
+    </div>
+    <div class="persona-card" style="--card-color: var(--sakura)">
+      <span class="persona-emoji">🎨</span>
+      <div class="persona-title">Designers & Animators</div>
+      <div class="persona-desc">Automate your creative pipeline. Write no syntax — just describe what you want and Kitsune handles the rest.</div>
+    </div>
+    <div class="persona-card" style="--card-color: var(--maple)">
+      <span class="persona-emoji">⚡</span>
+      <div class="persona-title">Developers</div>
+      <div class="persona-desc">Full Monaco editor. 7 AI agents. Git, SQL explorer, HTTP client, and a coding companion that knows your entire codebase.</div>
+    </div>
+    <div class="persona-card" style="--card-color: var(--ember)">
+      <span class="persona-emoji">🏢</span>
+      <div class="persona-title">Teams & Studios</div>
+      <div class="persona-desc">Share workspace memory, customize Kitsune for your stack, and build together — from indie studio to enterprise.</div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE MODES -->
+<section class="modes-section">
+  <div class="modes-inner">
+    <div class="section-label">THREE WAYS TO BUILD</div>
+    <h2 class="section-h2">Your level.<br>Your mode. Always AI-guided.</h2>
+    <p class="section-sub">Switch between modes anytime. Kitsune AI works seamlessly across all three — explaining, generating, and translating between them.</p>
+
+    <div class="modes-grid">
+      <div class="mode-card" style="--mode-color: var(--teal)">
+        <div class="mode-header">
+          <div class="mode-tag" style="background:rgba(43,191,173,0.1);color:var(--teal)">BLOCK MODE</div>
+          <div class="mode-title">🧩 Visual Blocks</div>
+          <div class="mode-sub">Drag-and-drop logic. No syntax, no errors. Perfect for first-time builders and visual learners.</div>
+        </div>
+        <div class="mode-body">
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--teal)"></div>Blockly-powered drag & drop</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--teal)"></div>Beginner / Intermediate / Advanced toolboxes</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--teal)"></div>Kitsune explains in plain language</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--teal)"></div>Live code preview alongside</div>
+        </div>
+      </div>
+
+      <div class="mode-card" style="--mode-color: var(--ember)">
+        <div class="mode-header">
+          <div class="mode-tag" style="background:rgba(245,169,64,0.1);color:var(--ember)">FLOW MODE</div>
+          <div class="mode-title">🔗 Visual Flow</div>
+          <div class="mode-sub">Node-graph programming for people who think visually. Ideal for game logic, automation, and creative pipelines.</div>
+        </div>
+        <div class="mode-body">
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--ember)"></div>Node-graph visual editor</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--ember)"></div>Connect logic without syntax</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--ember)"></div>AI-generated node suggestions</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--ember)"></div>Export to runnable code</div>
+        </div>
+      </div>
+
+      <div class="mode-card" style="--mode-color: var(--maple)">
+        <div class="mode-header">
+          <div class="mode-tag" style="background:rgba(212,82,30,0.1);color:var(--maple)">CODE MODE</div>
+          <div class="mode-title">⚡ Full Code</div>
+          <div class="mode-sub">The full power of Monaco — the same engine as VS Code — with Kitsune as your pair programmer.</div>
+        </div>
+        <div class="mode-body">
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--maple)"></div>Monaco editor (VS Code engine)</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--maple)"></div>IntelliSense + 50+ languages</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--maple)"></div>Kitsune inline ghost completions</div>
+          <div class="mode-feature"><div class="mode-dot" style="background:var(--maple)"></div>7 autonomous AI agents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KITSUNE AI -->
+<div id="kitsune"></div>
+<section class="kitsune-section">
+  <div class="kitsune-inner">
+
+    <div class="kitsune-chat">
+      <div class="chat-topbar">
+        <div class="chat-dot" style="background:#f87171"></div>
+        <div class="chat-dot" style="background:var(--ember)"></div>
+        <div class="chat-dot" style="background:var(--teal)"></div>
+        <span style="margin-left:0.5rem">🦊 Kitsune AI — game-project</span>
+      </div>
+      <div class="chat-messages">
+        <div class="chat-msg chat-user">I want to make my character jump when I press space</div>
+        <div class="chat-msg chat-kitsune">
+          <div class="chat-kitsune-name">KITSUNE</div>
+          Got it! Here's a simple jump mechanic using a rigidbody. I'll add a ground check too so you can't double-jump:
+          <div class="chat-code">
+            void Update() {<br>
+            &nbsp;&nbsp;if (Input.GetKeyDown(KeyCode.Space)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&& isGrounded) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;rb.AddForce(Vector2.up * jumpForce,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ForceMode2D.Impulse);<br>
+            &nbsp;&nbsp;}<br>
+            }
+          </div>
+        </div>
+        <div class="chat-msg chat-user">can you explain what ForceMode2D.Impulse does?</div>
+        <div class="chat-msg chat-kitsune">
+          <div class="chat-kitsune-name">KITSUNE</div>
+          Think of it like a kick — it applies the full force instantly, like a jump. The alternative is continuous force (like wind). For jumping, Impulse feels way more natural!<span class="chat-cursor"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kitsune-copy">
+      <div class="section-label">MEET KITSUNE AI</div>
+      <h2 class="section-h2">Your AI that<br><em style="color:var(--maple2);font-style:italic">actually explains</em> things.</h2>
+      <p class="section-sub" style="margin-bottom:2rem">Kitsune doesn't just write code. It teaches, debugs, translates, and thinks — adapting to whether you're a 12-year-old or a senior engineer.</p>
+
+      <div class="kitsune-trait">
+        <div class="trait-icon">🧠</div>
+        <div><div class="trait-title">Full project awareness</div><div class="trait-desc">Kitsune reads every file in your project — no manual attaching. It understands context across your whole codebase.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">🤖</div>
+        <div><div class="trait-title">7 autonomous agents</div><div class="trait-desc">Code Reviewer, Bug Hunter, Test Writer, Security Auditor, Doc Writer, Refactor Assistant. Build your own too.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">👁️</div>
+        <div><div class="trait-title">Vision — paste screenshots</div><div class="trait-desc">Screenshot an error, a UI design, or a diagram — Kitsune sees, understands, and acts on it.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">🔑</div>
+        <div><div class="trait-title">Your keys, your data</div><div class="trait-desc">BYOK model — connect your own API keys. Keys stay on your machine. We never see them.</div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- VISION QUOTE -->
+<section class="vision-section">
+  <div class="vision-bg"></div>
+  <p class="vision-quote">
+    Canva didn't win by converting designers.<br>
+    It won because <em>non-designers could finally design.</em>
+  </p>
+  <p class="vision-sub" style="margin-top:1.5rem">
+    Momiji is built on the same idea.<br>
+    Not "a better tool for developers" —<br>
+    but the place where <strong style="color:var(--maple2)">non-programmers finally build.</strong>
+  </p>
+</section>
+
+<!-- FEATURES -->
+<div id="features"></div>
+<section class="features-section">
+  <div class="section-label">EVERYTHING INCLUDED FREE</div>
+  <h2 class="section-h2">A full studio.<br>Not just an editor.</h2>
+
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon-box">🌿</div>
+      <div class="feat-title">Git + Inline Blame</div>
+      <div class="feat-desc">Stage, commit, diff — all in sidebar. Inline git blame shows author and commit hash per line. AI writes your commit message.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">🗄️</div>
+      <div class="feat-title">SQLite Explorer</div>
+      <div class="feat-desc">Browse, query and edit SQLite databases without leaving the IDE. Run SQL, inspect results in grid view.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">🎨</div>
+      <div class="feat-title">Live Color Picker</div>
+      <div class="feat-desc">Click any hex, rgb, or hsl value in code to edit live. Visual picker updates your file in real time.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">📡</div>
+      <div class="feat-title">HTTP Client</div>
+      <div class="feat-desc">Test APIs without leaving the IDE. Send requests, inspect responses, and let Kitsune analyze the output.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">🔍</div>
+      <div class="feat-title">Command Palette</div>
+      <div class="feat-desc">Ctrl+P fuzzy file search. Type &gt; to run any command. Keyboard-first, instant results. Feels like magic.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">📄</div>
+      <div class="feat-title">Universal Viewer</div>
+      <div class="feat-desc">PDF, image viewer with zoom, hex viewer for binaries. 25+ format detection. Open anything without leaving Momiji.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">📦</div>
+      <div class="feat-title">Package Manager</div>
+      <div class="feat-desc">npm, pip, cargo — manage dependencies from the sidebar. One-click install with Kitsune suggesting what you need.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">🎯</div>
+      <div class="feat-title">Regex Playground</div>
+      <div class="feat-desc">Test regular expressions live with highlighted matches. Kitsune can explain and build patterns from plain English.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-box">🖼️</div>
+      <div class="feat-title">Code Screenshot</div>
+      <div class="feat-desc">Generate beautiful code screenshots for social media, documentation, or presentations — right from the editor.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROVIDERS -->
+<section class="providers-section">
+  <div class="providers-inner">
+    <div class="providers-h">WORKS WITH EVERY MAJOR AI PROVIDER</div>
+    <div class="providers-row">
+      <div class="provider-chip">🌸 Claude · Anthropic</div>
+      <div class="provider-chip">🔷 Gemini · Google</div>
+      <div class="provider-chip">🟢 GPT-4o · OpenAI</div>
+      <div class="provider-chip">⚡ Groq <span class="free-tag">FREE</span></div>
+      <div class="provider-chip">🌐 OpenRouter <span class="free-tag">FREE MODELS</span></div>
+      <div class="provider-chip">🐳 DeepSeek</div>
+      <div class="provider-chip">🌊 Mistral</div>
+      <div class="provider-chip">🦙 Ollama · Local <span class="free-tag">OFFLINE</span></div>
+    </div>
+    <p class="byok-note">
+      <strong>Bring Your Own Key.</strong> Connect your own API keys — stored locally, never on our servers.<br>
+      Switch providers anytime mid-conversation. Start with Groq for free, no key required.
+    </p>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<div id="download"></div>
+<section class="download-section">
+  <div class="dl-card">
+    <div class="dl-version">v1.2.0 — STABLE RELEASE</div>
+    <div class="dl-title">Ready to build something?</div>
+    <div class="dl-sub">Free forever. No account. No subscription. Installs in under a minute.</div>
+
+    <div class="dl-buttons">
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-Setup-1.2.0.exe" class="dl-btn">
+        <div class="dl-btn-left">
+          <span>🪟</span>
+          <div>
+            <div class="dl-btn-os">Windows</div>
+            <div class="dl-btn-arch">.exe installer · x64</div>
+          </div>
+        </div>
+        <span class="dl-btn-icon">↓</span>
+      </a>
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.2.0-arm64.dmg" class="dl-btn">
+        <div class="dl-btn-left">
+          <span>🍎</span>
+          <div>
+            <div class="dl-btn-os">macOS Silicon</div>
+            <div class="dl-btn-arch">.dmg · Apple M1/M2/M3</div>
+          </div>
+        </div>
+        <span class="dl-btn-icon">↓</span>
+      </a>
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.2.0-x64.dmg" class="dl-btn">
+        <div class="dl-btn-left">
+          <span>🍎</span>
+          <div>
+            <div class="dl-btn-os">macOS Intel</div>
+            <div class="dl-btn-arch">.dmg · x64</div>
+          </div>
+        </div>
+        <span class="dl-btn-icon">↓</span>
+      </a>
+      <a href="https://github.com/momiji-ide/momiji-ide/releases/download/v1.2.0/Momiji-IDE-1.2.0.AppImage" class="dl-btn">
+        <div class="dl-btn-left">
+          <span>🐧</span>
+          <div>
+            <div class="dl-btn-os">Linux</div>
+            <div class="dl-btn-arch">.AppImage · x64</div>
+          </div>
+        </div>
+        <span class="dl-btn-icon">↓</span>
+      </a>
+    </div>
+
+    <div class="dl-footer">
+      All releases & source code on <a href="https://github.com/momiji-ide/momiji-ide/releases">GitHub Releases →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">🍁 MOMIJI IDE</div>
+  <div class="footer-links">
+    <a href="https://github.com/momiji-ide/momiji-ide">GitHub</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/releases">Releases</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/issues">Issues</a>
+    <a href="https://github.com/momiji-ide/momiji-ide/blob/main/LICENSE">License</a>
+  </div>
+  <div class="footer-copy">Built with ♥ using Electron · React · Monaco · Kitsune AI</div>
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <div class="sticky-bar-left"><strong>🍁 Momiji IDE</strong> — Free forever · v1.2.0</div>
+  <a href="#download" class="btn-main" style="padding:0.6rem 1.5rem;font-size:0.8rem">⬇ Download Free</a>
+</div>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animate() {
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animate);
+})();
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '18px'; cursor.style.height = '18px'; ring.style.width = '48px'; ring.style.height = '48px'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '10px'; cursor.style.height = '10px'; ring.style.width = '32px'; ring.style.height = '32px'; });
+});
+
+// Leaf particles
+const leafBg = document.getElementById('leafBg');
+const leafChars = ['🍁','🍂','🍃'];
+for (let i = 0; i < 18; i++) {
+  const l = document.createElement('span');
+  l.className = 'leaf';
+  l.textContent = leafChars[Math.floor(Math.random() * leafChars.length)];
+  l.style.left = Math.random() * 100 + '%';
+  l.style.animationDuration = (12 + Math.random() * 16) + 's';
+  l.style.animationDelay    = (Math.random() * 20) + 's';
+  l.style.fontSize = (0.8 + Math.random() * 0.8) + 'rem';
+  leafBg.appendChild(l);
+}
+
+// Sticky bar on scroll
+const bar = document.getElementById('stickyBar');
+window.addEventListener('scroll', () => {
+  bar.classList.toggle('visible', window.scrollY > window.innerHeight * 0.6);
+});
+
+// Intersection observer fade-in
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.persona-card, .mode-card, .feat-card, .kitsune-trait, .provider-chip').forEach(el => {
+  el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
