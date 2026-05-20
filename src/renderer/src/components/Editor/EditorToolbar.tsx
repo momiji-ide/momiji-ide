@@ -199,6 +199,39 @@ export function EditorToolbar() {
           </button>
         )}
 
+        {/* Kitsune Review button */}
+        {activeTab && !activeTab.filePath.startsWith('__') && (
+          <button
+            onClick={() => {
+              const code = activeTab.content
+              if (!code.trim()) { toast.warning('Nothing to review!'); return }
+              const prompt = `Please review this ${activeTab.language} code using the Mentor Mode format:
+
+\`\`\`${activeTab.language}
+${code.slice(0, 6000)}
+\`\`\`
+
+Respond with this exact JSON structure:
+{
+  "score": { "quality": "X/10", "style": "X/10" },
+  "praise": ["what was done well 1", "what was done well 2"],
+  "tips": [{ "line": 0, "head": "tip title", "body": "explanation" }],
+  "challenge": "One specific thing to improve next"
+}
+
+Be encouraging first, then constructive. Adapt tone to the active persona.`
+              window.dispatchEvent(new CustomEvent('kitsune:askWithPrompt', { detail: { prompt } }))
+              toast.info('🦊 Kitsune is reviewing your code…')
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--accent-mauve)22' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-surface0)' }}
+            title="Ask Kitsune to review this file (Mentor Mode)">
+            🦊 Review
+          </button>
+        )}
+
         {/* HTML Preview button */}
         {isHtml && (
           <button

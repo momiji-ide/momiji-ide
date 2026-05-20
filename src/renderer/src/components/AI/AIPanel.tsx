@@ -80,6 +80,61 @@ function renderInline(text: string): React.ReactNode[] {
   return parts
 }
 
+// ─── Mentor Review card renderer ────────────────────────────────────────────
+function tryRenderReview(content: string): React.ReactNode | null {
+  const jsonMatch = content.match(/\{[\s\S]*"score"[\s\S]*"praise"[\s\S]*"tips"[\s\S]*"challenge"[\s\S]*\}/)
+  if (!jsonMatch) return null
+  try {
+    const r = JSON.parse(jsonMatch[0])
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        {/* Score */}
+        <div className="flex gap-2 mb-1">
+          {Object.entries(r.score ?? {}).map(([k, v]) => (
+            <span key={k} className="text-xs px-2 py-0.5 rounded-full font-semibold"
+              style={{ background: 'var(--bg-surface1)', color: 'var(--accent-mauve)' }}>
+              {k}: {v as string}
+            </span>
+          ))}
+        </div>
+
+        {/* Praise — green */}
+        {(r.praise as string[] ?? []).map((p: string, i: number) => (
+          <div key={i} className="flex gap-2 items-start rounded-lg px-3 py-2 text-xs"
+            style={{ background: 'var(--accent-green)15', border: '1px solid var(--accent-green)44' }}>
+            <span style={{ color: 'var(--accent-green)', flexShrink: 0 }}>✓</span>
+            <span style={{ color: 'var(--text)' }}>{p}</span>
+          </div>
+        ))}
+
+        {/* Tips — blue */}
+        {(r.tips as { line: number; head: string; body: string }[] ?? []).map((t, i) => (
+          <div key={i} className="flex flex-col gap-1 rounded-lg px-3 py-2 text-xs cursor-pointer"
+            style={{ background: 'var(--accent-blue)12', border: '1px solid var(--accent-blue)44' }}
+            onClick={() => t.line > 0 && window.dispatchEvent(new CustomEvent('editor:jumpToLine', { detail: { line: t.line } }))}>
+            <div className="flex items-center gap-2">
+              <span style={{ color: 'var(--accent-blue)', flexShrink: 0 }}>💡</span>
+              <span className="font-semibold" style={{ color: 'var(--accent-blue)' }}>{t.head}</span>
+              {t.line > 0 && <span className="ml-auto opacity-60" style={{ fontFamily: 'monospace' }}>:{t.line}</span>}
+            </div>
+            <p style={{ color: 'var(--text-muted)', paddingLeft: 20 }}>{t.body}</p>
+          </div>
+        ))}
+
+        {/* Challenge — orange */}
+        <div className="flex gap-2 items-start rounded-lg px-3 py-2 text-xs"
+          style={{ background: 'var(--accent-mauve)15', border: '1px solid var(--accent-mauve)55' }}>
+          <span style={{ color: 'var(--accent-mauve)', flexShrink: 0 }}>🎯</span>
+          <div>
+            <p className="font-semibold mb-0.5" style={{ color: 'var(--accent-mauve)' }}>Next challenge</p>
+            <p style={{ color: 'var(--text)' }}>{r.challenge}</p>
+          </div>
+        </div>
+      </div>
+    )
+  } catch { return null }
+}
+
 function renderMessage(content: string): React.ReactNode {
   const blocks: React.ReactNode[] = []
   const parts = content.split(/(```[\w]*\n[\s\S]*?```|```[\w]*[\s\S]*?```)/g)
@@ -906,7 +961,7 @@ export function AIPanel() {
                     style={{ background: msg.role === 'user' ? 'var(--accent-blue)' : 'var(--bg-surface0)', color: msg.role === 'user' ? 'var(--bg-base)' : 'var(--text)', wordBreak: 'break-word' }}>
                     {msg.role === 'assistant'
                       ? <>
-                          {renderMessage(msg.content.replace('__FIX_BUTTON__', ''))}
+                          {tryRenderReview(msg.content) ?? renderMessage(msg.content.replace('__FIX_BUTTON__', ''))}
                           {msg.content.includes('__FIX_BUTTON__') && (
                             <div className="flex gap-2 mt-2 flex-wrap">
                               {['gemini-1.5-flash', 'gemini-3-flash-preview'].map(m => (
