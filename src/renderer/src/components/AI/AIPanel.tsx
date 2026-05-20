@@ -846,7 +846,6 @@ export function AIPanel() {
           </div>
         )}
       </div>
-      </div>
 
       {/* Agent tab */}
       {aiTab === 'agent' && <KitsuneAgent />}
