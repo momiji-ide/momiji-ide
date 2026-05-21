@@ -1,6 +1,12 @@
 # Claude Code internal files
 .claude/
 
+# Private / internal docs — never push these
+Improvement From Claude AI/
+kitsune_animation_demo.html
+MOMIJI_CONTEXT_FOR_CLAUDE_CODE.md
+KitsuneSpritebreak*
+
 # Generated icon intermediates
 resources/icons/
 
