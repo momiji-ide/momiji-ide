@@ -15,6 +15,7 @@ import { MenuBar } from './components/MenuBar/MenuBar'
 import { OnboardingWizard } from './components/Onboarding/OnboardingWizard'
 import { AboutDialog } from './components/About/AboutDialog'
 import { CanvasPlayground } from './components/Playground/CanvasPlayground'
+import { CreativeHub } from './components/Playground/CreativeHub'
 import { CodeScreenshot } from './components/Editor/CodeScreenshot'
 import { RegexPlayground } from './components/Playground/RegexPlayground'
 
@@ -200,7 +201,7 @@ export default function App() {
       {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 
       {/* Canvas Playground */}
-      {showPlayground && <CanvasPlayground onClose={() => setShowPlayground(false)} />}
+      {showPlayground && <CreativeHub onClose={() => setShowPlayground(false)} />}
 
       {/* Code Screenshot */}
       {showScreenshot && <CodeScreenshot onClose={() => setShowScreenshot(false)} />}
