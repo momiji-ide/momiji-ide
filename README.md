@@ -2,107 +2,135 @@
 
 # Momiji IDE 🍁
 
-> **AI-native IDE platform, powered by Kitsune AI**
-
-A desktop code editor built for everyone — from first-time coders to seasoned developers. Ships with **Kitsune AI** as a built-in coding assistant that can read, write, and reason about your entire project.
+> **The AI-native creative studio where anyone can build games, apps, and tools — from their first block to production-ready code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-orange)](https://github.com/momiji-ide/momiji-ide/releases)
-[![Version](https://img.shields.io/badge/version-1.2.0-f97316)](https://github.com/momiji-ide/momiji-ide/releases)
+[![Version](https://img.shields.io/badge/version-1.3.0-f97316)](https://github.com/momiji-ide/momiji-ide/releases)
+[![Stars](https://img.shields.io/github/stars/momiji-ide/momiji-ide?color=f97316)](https://github.com/momiji-ide/momiji-ide/stargazers)
+
+[**Download**](https://github.com/momiji-ide/momiji-ide/releases) · [**Website**](https://momiji-ide.github.io/momiji-ide) · [**Report a bug**](https://github.com/momiji-ide/momiji-ide/issues)
 
 ---
 
-## What makes it different
+## What makes Momiji different
 
-Most editors are built for developers who already know what they're doing. Momiji tries to meet people wherever they are — with a visual block editor for beginners, a full Monaco-powered code editor for pros, and an AI layer that actually *does* things instead of just suggesting them.
+Most IDEs are built for developers who already know what they're doing. Momiji meets people wherever they are.
 
-Kitsune AI isn't just a chat window. Give it a task and it'll explore your project, read the relevant files, write the code, and tell you what it changed. Like having a senior dev who never sleeps.
+- A **beginner** drags a "repeat" block → sees real JavaScript appear instantly → edits the code → blocks update automatically. That's the magic moment.
+- A **developer** gets Kitsune AI with 8 provider choices, 7 built-in agents, project memory, inline completions, and full Monaco power.
+- A **game dev** gets quests, visual flow editor, canvas playground, and an AI that speaks Unity/Godot/Blender analogies.
+
+Not competing with VS Code. Competing in a new arena — the **beginner→pro progression platform**.
 
 ---
 
-## Features
+## What's new in v1.3.0
+
+### 🦊 Kitsune Avatar — Reactive Emotional States
+A small Kitsune character in the sidebar reacts to your code in real time:
+- 😵 **Error** — wiggles when Monaco detects errors. Click to open Problems panel.
+- 🎉 **Success** — jumps when your code runs clean.
+- 🤔 **Thinking** — animates while Kitsune processes your request.
+- 💡 **Proactive** — quietly suggests a tip after 10 minutes of idle time.
+
+### ⟳ Block ↔ Code Bi-directional Sync
+The "magic moment" feature. Three sync modes in the Block Editor:
+- **Live** — drag blocks → code updates instantly (original)
+- **Edit** — type freely → one-click `↑ Sync to Blocks` button
+- **Auto-sync** — code changes automatically parse back to blocks (350ms debounce)
+
+Built a zero-dependency JS→Blockly XML parser from scratch. Handles variables, for/while loops, if/else, arithmetic, comparisons, logic, function definitions — the full subset Blockly itself generates.
+
+### 🎬 Algorithm Animator
+Step-through visualization of code execution, right in the IDE:
+- Drag-to-analyze any open file
+- Variable tracker shows all values changing in real time
+- Animated bar chart for numeric arrays
+- Play/Pause/Step controls with adjustable speed
+
+### 🗺️ Coding Quests + XP System
+Kitsune gives coding challenges inside your project:
+- 14 quests across 4 tracks: Game Dev, Web, Python, General
+- Level up from Baby Coder → Grand Master
+- "Check My Code" auto-verifies against quest success patterns
+- XP and progress sync to `.momiji/kitsune-memory.md`
+
+---
+
+## Core Features
 
 ### 🦊 Kitsune AI
 
 - Chat with **Claude, Gemini, GPT, Groq, DeepSeek, Mistral, OpenRouter, or Ollama** — streaming
-- **7 built-in agents** — Code Reviewer, Test Writer, Doc Writer, Security Scanner, Refactor Pro, Bug Hunter, + General
-- **Custom Agent Manager** — create your own agents with custom system prompts, roles, and tool access
-- **Project Memory** — write project context once (`.momiji/kitsune-memory.md`), auto-included in every prompt
-- **Auto tech-stack detection** — Kitsune reads `package.json`, `go.mod`, `Cargo.toml`, etc. automatically
-- **Agent mode** — give it a task, it autonomously reads/writes files with tool calls until done
-- **Inline AI completions** — Copilot-style ghost text as you type (toggle with toolbar)
-- Paste screenshots directly into chat — Kitsune sees and understands your UI/errors
-- `⚡ Apply to Editor` — shows a diff before touching your files
-- Context window bar so you know exactly how much runway you have
+- **3 Explanation Personas** — Beginner (warm, analogies), Developer (direct, technical), Creative (visual, game-dev context)
+- **7 built-in agents** — Code Reviewer, Test Writer, Doc Writer, Security Scanner, Refactor Pro, Bug Hunter, Custom
+- **Custom Agent Manager** — build your own agents with custom system prompts, roles, and tools
+- **Mentor Mode** — structured code review: praise first → tips → one challenge (JSON cards UI)
+- **Error Explanation** — "Ask Kitsune" on any error in Problems panel → plain-language fix
+- **Project Memory** — write context once (`.momiji/kitsune-memory.md`), auto-included in every prompt
+- **Custom OpenAI-compatible endpoint** — plug in any API (company VPN, Azure OpenAI, LM Studio)
+- Paste screenshots directly into chat — vision support across all providers
+- Inline AI completions — Copilot-style ghost text (toggleable)
+- `⚡ Apply to Editor` — shows a diff before touching files
 
 ### 🖊️ Editor
 
-- Monaco editor (same engine as VS Code) with warm Momiji dark/light theme
-- **PDF Viewer** — open `.pdf` files natively in editor tabs
+- Monaco editor (VS Code engine) — IntelliSense, 50+ languages, warm Momiji theme
 - **Hex Viewer** — binary file inspector with magic byte detection (25+ formats)
-- **Image Viewer** — PNG, JPG, GIF, SVG, WebP with zoom controls and checkerboard bg
-- Split editor, tab management, minimap, IntelliSense
-- **Git Blame** — inline per-line annotations with author, date, and commit hash
-- Inline Python linting, Go to Definition, Rename Symbol, Find All References
-- Markdown split preview, syntax highlighting for 30+ languages
+- **PDF Viewer** — open `.pdf` natively in editor tabs
+- **Image Viewer** — PNG, JPG, GIF, SVG, WebP with zoom controls
+- **Git Blame** — inline per-line annotations with author, date, commit hash
+- Split editor, minimap, IntelliSense, Go to Definition, Rename Symbol
 - Inline color picker — click any `#hex` / `rgb()` / `hsl()` value to edit live
+- Markdown split preview, Voice-to-Code (speech → code insertion)
 - Auto-save, format on save, bracket colorization
+
+### 🧩 For Beginners & Creative Devs
+
+- **Block Editor** — Blockly with Beginner/Pro/Expert toolboxes + **bi-directional code sync**
+- **Visual Flow Editor** — node-graph programming with React Flow
+- **Algorithm Animator** — watch your code execute step by step with data visualization
+- **Coding Quests + XP** — gamified learning challenges with Kitsune hints
+- Onboarding wizard with free-tier AI setup in 60 seconds
+- Template Gallery — scaffold common project types instantly
 
 ### 🔀 Git
 
-- Stage, unstage, commit, push, pull — all from the sidebar
+- Stage, unstage, commit, push, pull — sidebar
 - Branch switcher with one-click create
 - Inline diff viewer per file
-- AI-generated commit messages from your staged diff
+- AI-generated commit messages from staged diff
 
-### 🔍 Command Palette
+### 🛠️ Developer Tools
 
-- `Ctrl+P` — fuzzy file search with recent files
-- `> command` — run any IDE action by name
-- Keyboard-first navigation throughout
-
-### 🛠️ Playground & Tools
-
-- **Canvas Playground** — 10 interactive JS animation templates (particles, gravity, Game of Life...)
-- **Regex Playground** — live match highlighting, named groups, quick reference
-- **Code Screenshot** — export beautiful code images with gradient backgrounds
-- **HTTP Client** — REST client with history, collections, and env variables
+- **HTTP Client** — REST client with history, collections, env variables
 - **SQLite Browser** — run queries, browse tables without leaving the IDE
-- **TODO Scanner** — finds every `TODO/FIXME/HACK` across the whole project
-
-### 🧩 For Beginners
-
-- Block Editor with Beginner / Intermediate / Advanced toolboxes (Blockly)
-- Visual Flow Editor for node-graph programming
-- Onboarding wizard on first launch
-- Template Gallery — scaffold common project types instantly
-
-### 📦 Everything Else
-
-- Package Manager — npm, pip, cargo, go + npm scripts runner
-- Snippet Manager — save and reuse code fragments
-- Extensions panel — 8 themes (Dracula, Tokyo Night, Nord, One Dark...) + integrations
-- Time-Travel Debugger — step through code execution history
-- Symbol Outline — jump to any function/class/variable, tracks cursor
-- Toast notifications with auto-dismiss
-- 9 UI languages
+- **Canvas Playground** — 10 interactive JS animation templates
+- **Regex Playground** — live match highlighting, named groups
+- **Time-Travel Debugger** — step through JavaScript execution history
+- **Package Manager** — npm, pip, cargo, go + npm scripts runner
+- **TODO Scanner** — finds every `TODO/FIXME/HACK` across the project
+- **Code Screenshot** — export beautiful code images with gradient backgrounds
+- **Snippet Manager**, **Symbol Outline**, **Command Palette** (`Ctrl+P`)
 
 ---
 
 ## AI Providers
 
-| Provider | Free tier | Model |
+| Provider | Free tier | Default model |
 |---|---|---|
-| 🟠 Google Gemini | ✅ Free | `gemini-3.1-flash-lite` |
+| 🟠 Google Gemini | ✅ Free | `gemini-2.0-flash` |
 | 🟢 Groq | ✅ Free | `llama-3.3-70b-versatile` |
 | 🟤 OpenRouter | ✅ Free models | `meta-llama/llama-3.3-70b-instruct:free` |
-| 🔵 Anthropic Claude | ❌ BYOK | `claude-sonnet-4-5` |
-| 🟡 OpenAI GPT | ❌ BYOK | `gpt-4o-mini` |
-| 🟣 DeepSeek | ❌ BYOK | `deepseek-chat` |
-| ⚪ Mistral AI | ❌ BYOK | `mistral-small-latest` |
+| 🔵 Anthropic Claude | BYOK | `claude-sonnet-4-5` |
+| 🟡 OpenAI GPT | BYOK | `gpt-4o-mini` |
+| 🟣 DeepSeek | BYOK | `deepseek-chat` |
+| ⚪ Mistral AI | BYOK | `mistral-small-latest` |
 | 🏠 Ollama | ✅ Local | `qwen2.5-coder:7b` |
+| ⚙️ Custom | Any | OpenAI-compatible endpoint |
 
-Open Settings → AI & API Keys, paste your key, enable the provider. Keys stay on your machine — never sent to Momiji servers.
+Open **Settings → AI & API Keys**, paste your key, enable the provider. Keys stay on your machine — never sent to Momiji servers.
 
 ---
 
@@ -118,7 +146,6 @@ Open Settings → AI & API Keys, paste your key, enable the provider. Keys stay 
 | Flow editor | React Flow |
 | Terminal | xterm.js + node-pty |
 | Build | electron-vite + electron-builder |
-| Updates | electron-updater |
 
 ---
 
@@ -126,27 +153,24 @@ Open Settings → AI & API Keys, paste your key, enable the provider. Keys stay 
 
 ### Download
 
-Grab the latest installer from [Releases](https://github.com/momiji-ide/momiji-ide/releases).
+Grab the latest installer from [**Releases →**](https://github.com/momiji-ide/momiji-ide/releases)
 
-- **Windows** — `.exe` (NSIS installer)
-- **macOS** — `.dmg`
-- **Linux** — `.AppImage`
+| Platform | File |
+|---|---|
+| Windows | `Momiji-IDE-Setup-1.3.0.exe` |
+| macOS | `Momiji-IDE-1.3.0.dmg` |
+| Linux | `Momiji-IDE-1.3.0.AppImage` |
 
 ### Build from source
 
-You'll need Node.js 20+ and npm.
+Requires Node.js 20+.
 
 ```bash
 git clone https://github.com/momiji-ide/momiji-ide.git
 cd momiji-ide
 npm install
-npm run dev
-```
-
-To build a distributable:
-
-```bash
-npm run dist
+npm run dev       # dev mode with hot reload
+npm run dist      # build distributable
 ```
 
 ---
@@ -155,40 +179,47 @@ npm run dist
 
 | Shortcut | Action |
 |---|---|
-| `Ctrl+P` | Command palette |
+| `Ctrl+P` | Command palette / file search |
 | `Ctrl+S` | Save |
-| `Ctrl+Shift+S` | Save all |
 | `Ctrl+W` | Close tab |
 | `Ctrl+B` | Toggle sidebar |
 | `` Ctrl+` `` | Toggle terminal |
-| `Ctrl+Shift+P` | Canvas Playground |
-| `Ctrl+Shift+R` | Regex Playground |
-| `Ctrl+Shift+X` | Code Screenshot |
-| `Ctrl+Shift+D` | Time-Travel Debugger |
 | `F5` | Run file |
 | `F12` | Go to definition |
+| `Ctrl+Shift+D` | Time-Travel Debugger |
+| `Ctrl+Shift+X` | Code Screenshot |
 
 ---
 
 ## Project Memory
 
-Momiji saves a per-project context file at `.momiji/kitsune-memory.md`. Write your stack, conventions, and preferences there — Kitsune reads it automatically with every message.
+Momiji saves per-project context at `.momiji/kitsune-memory.md`. Write your stack, conventions, and anything Kitsune should always know — it's included automatically in every AI request.
 
-```
-Stack: React 18 + FastAPI + PostgreSQL
-Style: functional, no classes, strict TypeScript
-Avoid: lodash, moment.js
-API base: http://localhost:8000
+```markdown
+# My Project
+
+## Stack
+React 18 + FastAPI + PostgreSQL
+
+## Conventions
+- Functional only, no classes
+- Strict TypeScript
+- Tailwind for styling
+
+## Kitsune, remember:
+- API runs on localhost:8000
+- Don't use lodash
+- I'm a beginner, explain everything step by step
 ```
 
 ---
 
 ## Contributing
 
-Issues and PRs welcome. If you're adding something big, open an issue first.
+Issues and PRs are welcome. If you're adding something big, open an issue first so we can discuss.
 
 ---
 
 ## License
 
-MIT © Momiji IDE contributors
+MIT © 2025 Momiji IDE · Haikal Hakim Baiqunni
