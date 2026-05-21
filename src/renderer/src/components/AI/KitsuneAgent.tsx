@@ -638,10 +638,31 @@ export function KitsuneAgent() {
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Enable Claude or Gemini in ⚙️ Settings → AI & API Keys</p>
         </div>
       ) : !currentFolder ? (
-        <div className="flex flex-col items-center justify-center flex-1 gap-2 p-4 text-center">
-          <span className="text-3xl">📁</span>
-          <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>No project folder open</p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Open a folder so the agent knows where to work</p>
+        <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">
+          <span style={{ fontSize: 40 }}>📁</span>
+          <div>
+            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>No project folder open</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Kitsune needs a folder to read and write files.</p>
+          </div>
+          <button
+            onClick={async () => {
+              const folder = await window.api.dialog.openFolder()
+              if (folder) {
+                useAppStore.getState().setCurrentFolder(folder)
+                const tree = await window.api.fs.readDir(folder)
+                useAppStore.getState().setFileTree(tree ?? [])
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            📂 Open Folder
+          </button>
+          <p className="text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+            Or use <kbd style={{ background: 'var(--bg-surface1)', padding: '1px 5px', borderRadius: 3, border: '1px solid var(--border)' }}>File → Open Folder</kbd>
+          </p>
         </div>
       ) : (
         <>

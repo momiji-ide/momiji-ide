@@ -107,7 +107,7 @@ export function OnboardingWizard({ onComplete }: Props) {
                 <MomijiLogo size={40} />
                 <div className="text-left">
                   <h1 className="text-2xl font-black tracking-widest" style={{ color: 'var(--accent-mauve)' }}>MOMIJI</h1>
-                  <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>CODE FROM EVERY ANGLE</p>
+                  <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>Where anyone becomes a developer.</p>
                 </div>
               </div>
               <div className="flex flex-col items-center gap-3">
