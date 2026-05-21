@@ -1052,7 +1052,7 @@ export function AIPanel() {
             <div className="flex items-center gap-2 mt-1.5">
               <ModelSelector
                 selectedProviderId={selectedProviderId}
-                onProviderChange={setSelectedProviderId}
+                onProviderChange={(providerId, _model) => setSelectedProviderId(providerId)}
               />
               <div className="flex items-center gap-1.5 ml-auto">
                 {activeProvider?.id === 'claude' && (
