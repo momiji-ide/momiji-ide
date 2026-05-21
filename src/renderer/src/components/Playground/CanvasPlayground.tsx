@@ -382,9 +382,9 @@ ctx.fillText('Hello, Canvas! 🎨', 200, 150)`
   }
 ]
 
-interface Props { onClose: () => void }
+interface Props { onClose: () => void; embedded?: boolean }
 
-export function CanvasPlayground({ onClose }: Props) {
+export function CanvasPlayground({ onClose, embedded }: Props) {
   const { settings } = useAppStore()
   const [code, setCode] = useState(STARTER_TEMPLATES[0].code)
   const [selected, setSelected] = useState(0)
@@ -443,7 +443,7 @@ export function CanvasPlayground({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col"
+    <div className={embedded ? 'flex flex-col h-full' : 'fixed inset-0 z-50 flex flex-col'}
       style={{ background: 'var(--bg-base)' }}>
 
       {/* Header */}
@@ -475,11 +475,13 @@ export function CanvasPlayground({ onClose }: Props) {
         </div>
 
         <div className="flex-1" />
-        <button onClick={onClose}
-          className="px-3 py-1 rounded text-xs font-medium"
-          style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)' }}>
-          ✕ Close
-        </button>
+        {!embedded && (
+          <button onClick={onClose}
+            className="px-3 py-1 rounded text-xs font-medium"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+            ✕ Close
+          </button>
+        )}
       </div>
 
       {/* Main split view */}
