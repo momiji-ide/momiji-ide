@@ -34,17 +34,17 @@ export function TitleBar({ onCommandPalette }: Props) {
       className="drag-region flex items-center h-9 flex-shrink-0"
       style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}
     >
-      {/* Left: Logo */}
-      <div className="no-drag flex items-center gap-2 px-3 flex-shrink-0">
+      {/* Left: Logo — draggable */}
+      <div className="flex items-center gap-2 px-3 flex-shrink-0">
         <MomijiLogo size={18} />
         <span className="brand-text">MOMIJI</span>
       </div>
 
-      {/* Center: Command palette button (acts as search) */}
-      <div className="flex-1 flex justify-center px-4 no-drag">
+      {/* Center: drag-region wrapper, button itself is no-drag */}
+      <div className="flex-1 flex justify-center px-4 drag-region">
         <button
           onClick={onCommandPalette}
-          className="flex items-center gap-2 px-4 py-1 rounded-lg text-xs transition-all max-w-sm w-full"
+          className="no-drag flex items-center gap-2 px-4 py-1 rounded-lg text-xs transition-all max-w-sm w-full"
           style={{
             background: 'var(--bg-surface0)',
             color: 'var(--text-subtle)',
