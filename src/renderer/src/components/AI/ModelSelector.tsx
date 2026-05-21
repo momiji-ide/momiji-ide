@@ -61,13 +61,7 @@ function shortLabel(entry: ModelEntry): string {
   return entry.label.replace('Claude ', '').replace('Gemini ', '').replace('GPT-', '').slice(0, 22)
 }
 
-// Check user tier from license key (placeholder — will connect to Supabase later)
-function getUserTier(): 'free' | 'pro' | 'studio' {
-  const key = localStorage.getItem('momiji:license-tier')
-  if (key === 'studio') return 'studio'
-  if (key === 'pro') return 'pro'
-  return 'free'
-}
+const CHECKOUT_URL = 'https://momiji-ide.lemonsqueezy.com/checkout/buy/495febcd-8f43-44cc-9fab-7cd2896874a5'
 
 const TIER_ORDER: Tier[] = ['free', 'pro', 'studio', 'local']
 
@@ -97,14 +91,14 @@ interface Props {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
-  const { aiProviders, updateAIProvider } = useAppStore()
+  const { aiProviders, updateAIProvider, licenseTier } = useAppStore()
   const [open, setOpen]               = useState(false)
   const [search, setSearch]           = useState('')
   const [localModels, setLocalModels] = useState<string[]>([])
   const [customModel, setCustomModel] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
-  const userTier = getUserTier()
+  const userTier = licenseTier
 
   // Active provider + model
   const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama' || p.id === 'custom'))
@@ -375,7 +369,7 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
             <div className="flex-1" />
             {userTier === 'free' && (
               <button
-                onClick={() => { setOpen(false); window.open('https://momiji-ide.lemonsqueezy.com', '_blank') }}
+                onClick={() => { setOpen(false); window.open(CHECKOUT_URL, '_blank') }}
                 className="text-xs px-2 py-1 rounded-lg font-semibold"
                 style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', cursor: 'pointer' }}>
                 Upgrade to Pro →
