@@ -19,7 +19,12 @@ import { CodeScreenshot } from './components/Editor/CodeScreenshot'
 import { RegexPlayground } from './components/Playground/RegexPlayground'
 
 export default function App() {
-  const { settings, showBottomPanel, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt } = useAppStore()
+  const { settings, showBottomPanel, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt, restoreLastFolder } = useAppStore()
+
+  // ── Auto-restore last folder on startup ──────────────────────────────────
+  useEffect(() => {
+    restoreLastFolder()
+  }, []) // eslint-disable-line
 
   // ── Global handler for right-click "Ask Kitsune" — always mounted ──────────
   useEffect(() => {

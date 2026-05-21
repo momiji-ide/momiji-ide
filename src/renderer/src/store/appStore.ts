@@ -23,6 +23,9 @@ interface AppStore extends AppState {
   // Folder actions
   setCurrentFolder: (folder: string | null) => void
   setFileTree: (tree: FileNode[]) => void
+  recentFolders: string[]
+  addRecentFolder: (folder: string) => void
+  restoreLastFolder: () => Promise<void>
 
   // Tab actions
   openTab: (filePath: string, fileName: string, content: string) => void
@@ -65,6 +68,7 @@ export const useAppStore = create<AppStore>()(
     (set, get) => ({
       currentFolder: null,
       fileTree: [],
+      recentFolders: [],
       tabs: [],
       activeTabId: null,
       activePanel: 'explorer',
@@ -89,9 +93,32 @@ export const useAppStore = create<AppStore>()(
 
       setCurrentFolder: (folder) => {
         set({ currentFolder: folder })
-        if (folder) get().loadWorkspaceSettings(folder)
+        if (folder) {
+          get().loadWorkspaceSettings(folder)
+          get().addRecentFolder(folder)
+        }
       },
       setFileTree: (tree) => set({ fileTree: tree }),
+
+      addRecentFolder: (folder) => set((s) => ({
+        recentFolders: [folder, ...s.recentFolders.filter(f => f !== folder)].slice(0, 10)
+      })),
+
+      restoreLastFolder: async () => {
+        const { currentFolder, recentFolders } = get()
+        const target = currentFolder ?? recentFolders[0]
+        if (!target) return
+        try {
+          const tree = await window.api.fs.readDir(target)
+          if (tree) {
+            set({ currentFolder: target, fileTree: tree })
+            get().loadWorkspaceSettings(target)
+          }
+        } catch {
+          // Folder no longer exists — silently skip
+          set({ currentFolder: null })
+        }
+      },
 
       openTab: (filePath, fileName, content) => {
         const { tabs } = get()
@@ -230,7 +257,9 @@ export const useAppStore = create<AppStore>()(
         customAgents: state.customAgents,
         sidebarWidth: state.sidebarWidth,
         showSidebar: state.showSidebar,
-        bottomPanelHeight: state.bottomPanelHeight
+        bottomPanelHeight: state.bottomPanelHeight,
+        currentFolder: state.currentFolder,
+        recentFolders: state.recentFolders,
       })
     }
   )
