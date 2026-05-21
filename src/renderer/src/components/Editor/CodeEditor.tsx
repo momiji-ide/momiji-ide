@@ -817,7 +817,7 @@ function WelcomeScreen() {
           <h1 className="text-xl font-black tracking-widest mb-1" style={{ color: 'var(--accent-mauve)', letterSpacing: '0.15em' }}>
             MOMIJI
           </h1>
-          <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)', letterSpacing: '0.08em' }}>CODE FROM EVERY ANGLE</p>
+          <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)', letterSpacing: '0.08em' }}>Where anyone becomes a developer.</p>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
             style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
             <KitsuneLogo size={13} />
