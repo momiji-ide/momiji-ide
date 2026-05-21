@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/appStore'
 import type { AIProvider } from '../../types'
 import { LANGUAGES, getLang, setLang, type Language } from '../../utils/i18n'
 import { toast } from '../../utils/toast'
+import { AISettings } from './AISettings'
 
 type SettingsTab = 'editor' | 'ai' | 'appearance'
 
@@ -260,11 +261,12 @@ export function SettingsPanel() {
         )}
 
         {activeTab === 'ai' && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              🔐 API keys are stored locally and never sent to any server except the AI provider you choose.
+              🔐 API keys stored locally — never sent anywhere except the AI provider you choose.
             </p>
-            {aiProviders.map((provider) => (
+            <AISettings />
+            {false && aiProviders.map((provider) => (
               <AIProviderCard
                 key={provider.id}
                 provider={provider}
