@@ -16,6 +16,7 @@ const INITIAL_NODES: Node[] = [
 ]
 const INITIAL_EDGES: Edge[] = []
 
+type RunLine = { id: number; text: string; type: 'out' | 'err' | 'sys' }
 type Lang = 'javascript' | 'python'
 
 function FlowCanvas() {
@@ -29,6 +30,17 @@ function FlowCanvas() {
   const [code, setCode] = useState('')
   const [showCode, setShowCode] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
+  const [showFlowTemplates, setShowFlowTemplates] = useState(false)
+
+  // ─── Inline run output ────────────────────────────────────────────
+  const [rightTab, setRightTab]       = useState<'code'|'output'>('code')
+  const [runLines, setRunLines]       = useState<RunLine[]>([])
+  const [runStatus, setRunStatus]     = useState<'idle'|'running'|'done'|'error'>('idle')
+  const [runElapsed, setRunElapsed]   = useState<number|null>(null)
+  const runStartTime = useRef(0)
+  const runTimer     = useRef<ReturnType<typeof setInterval>|null>(null)
+  const runOutputRef = useRef<HTMLDivElement>(null)
+  const runLineId    = useRef(0)
 
   const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
@@ -47,6 +59,37 @@ function FlowCanvas() {
     window.addEventListener('flow:updateNode', handler as EventListener)
     return () => window.removeEventListener('flow:updateNode', handler as EventListener)
   }, [setNodes])
+
+  // ─── Inline run output listeners ─────────────────────────────────
+  useEffect(() => {
+    const addLine = (text: string, type: RunLine['type']) => {
+      text.split('\n').filter(l => l !== '').forEach(t => {
+        setRunLines(prev => [...prev, { id: runLineId.current++, text: t, type }])
+      })
+    }
+    const onStart = (e: CustomEvent) => {
+      if (e.detail?.processId !== 'runner-main') return
+      setRunLines([]); setRunStatus('running'); setRunElapsed(null)
+      setRightTab('output')    // auto-switch to output tab
+      runStartTime.current = Date.now()
+      if (runTimer.current) clearInterval(runTimer.current)
+      runTimer.current = setInterval(() => setRunElapsed(Date.now() - runStartTime.current), 200)
+    }
+    const offOut  = window.api.process.onStdout((id, data) => { if (id === 'runner-main') addLine(data, 'out') })
+    const offErr  = window.api.process.onStderr((id, data) => { if (id === 'runner-main') addLine(data, 'err') })
+    const offExit = window.api.process.onExit((id, code) => {
+      if (id !== 'runner-main') return
+      if (runTimer.current) clearInterval(runTimer.current)
+      const ms = Date.now() - runStartTime.current
+      setRunElapsed(ms); setRunStatus(code === 0 ? 'done' : 'error')
+      addLine(code === 0 ? `✓ Done in ${(ms/1000).toFixed(2)}s` : `✗ Exit code ${code} (${(ms/1000).toFixed(2)}s)`, 'sys')
+    })
+    window.addEventListener('runner:start', onStart as EventListener)
+    return () => { window.removeEventListener('runner:start', onStart as EventListener); offOut(); offErr(); offExit() }
+  }, [])
+
+  // Auto-scroll run output
+  useEffect(() => { runOutputRef.current?.scrollIntoView({ behavior: 'auto' }) }, [runLines])
 
   const onConnect = useCallback((connection: Connection) => {
     setEdges(eds => addEdge({
@@ -108,6 +151,13 @@ function FlowCanvas() {
     toast.success(`Opened as ${name}`)
   }
 
+  const loadFlowTemplate = useCallback((tpl: typeof FLOW_TEMPLATES[number]) => {
+    setNodes(tpl.nodes as Node[])
+    setEdges(tpl.edges as Edge[])
+    setShowFlowTemplates(false)
+    toast.success(`"${tpl.name}" loaded!`)
+  }, [setNodes, setEdges])
+
   const handleRun = useCallback(async () => {
     if (!code.trim() || code.startsWith('//') || code.startsWith('#')) {
       toast.warning('Build a flow first! Drag nodes and connect them.')
@@ -150,6 +200,42 @@ function FlowCanvas() {
           {nodes.length} nodes · {edges.length} edges
         </span>
         <div className="flex-1" />
+
+        {/* Templates dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowFlowTemplates(s => !s)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium"
+            style={{
+              background: showFlowTemplates ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
+              color: showFlowTemplates ? 'white' : 'var(--text-muted)',
+              border: '1px solid var(--border)'
+            }}>
+            📋 Templates
+          </button>
+          {showFlowTemplates && (
+            <div className="absolute top-9 right-0 z-30 rounded-xl overflow-hidden shadow-2xl"
+              style={{ background: 'var(--bg-mantle)', border: '1px solid var(--border)', width: 250 }}>
+              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider"
+                style={{ color: 'var(--text-subtle)', borderBottom: '1px solid var(--border)' }}>
+                Flow Templates
+              </div>
+              {FLOW_TEMPLATES.map(t => (
+                <button key={t.id} onClick={() => loadFlowTemplate(t)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors"
+                  style={{ color: 'var(--text)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>{t.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold">{t.name}</p>
+                    <p style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{t.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <select value={lang} onChange={e => setLang(e.target.value as Lang)}
           className="text-xs px-2 py-1 rounded-lg outline-none"
@@ -248,33 +334,94 @@ function FlowCanvas() {
           )}
         </div>
 
-        {/* Right: Code output */}
+        {/* Right: Code + Output */}
         {showCode && (
           <div className="flex flex-col flex-shrink-0" style={{ width: 320, borderLeft: '1px solid var(--border)' }}>
-            <div className="flex items-center justify-between px-3 flex-shrink-0"
+            {/* Tab bar */}
+            <div className="flex items-center flex-shrink-0"
               style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: '36px' }}>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Generated Code</span>
-                <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>● live</span>
+              {(['code', 'output'] as const).map(tab => (
+                <button key={tab} onClick={() => setRightTab(tab)}
+                  className="flex items-center gap-1.5 px-3 h-full text-xs font-medium transition-colors"
+                  style={{
+                    color: rightTab === tab ? 'var(--text)' : 'var(--text-muted)',
+                    borderBottom: rightTab === tab ? '2px solid var(--accent-mauve)' : '2px solid transparent',
+                    background: 'transparent'
+                  }}>
+                  {tab === 'code' ? '📝 Code' : '▶ Output'}
+                  {tab === 'output' && runStatus === 'running' && (
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ background: 'var(--accent-yellow)' }} />
+                  )}
+                  {tab === 'output' && runStatus === 'error' && (
+                    <span className="w-1.5 h-1.5 rounded-full ml-0.5" style={{ background: 'var(--accent-red)' }} />
+                  )}
+                  {tab === 'output' && runStatus === 'done' && (
+                    <span className="w-1.5 h-1.5 rounded-full ml-0.5" style={{ background: 'var(--accent-green)' }} />
+                  )}
+                </button>
+              ))}
+              <div className="flex-1" />
+              {rightTab === 'code' && (
+                <>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse mr-2"
+                    style={{ background: 'var(--accent-green)', color: 'var(--bg-base)', fontSize: 10 }}>● live</span>
+                  <button onClick={() => navigator.clipboard.writeText(code).then(() => toast.success('Copied!'))}
+                    className="text-xs px-2 py-0.5 rounded mr-2"
+                    style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                    📋
+                  </button>
+                </>
+              )}
+              {rightTab === 'output' && runLines.length > 0 && (
+                <button onClick={() => { setRunLines([]); setRunStatus('idle') }}
+                  className="text-xs px-2 py-0.5 rounded mr-2"
+                  style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Code panel */}
+            {rightTab === 'code' && (
+              <div className="flex-1 overflow-hidden">
+                <MonacoEditor
+                  language={lang}
+                  value={code}
+                  theme={monacoTheme}
+                  options={{
+                    readOnly: true, fontSize: 12, fontFamily: "'JetBrains Mono', monospace",
+                    minimap: { enabled: false }, lineNumbers: 'on', scrollBeyondLastLine: false,
+                    wordWrap: 'on', padding: { top: 8 }, scrollbar: { verticalScrollbarSize: 4 }
+                  }}
+                />
               </div>
-              <button onClick={() => navigator.clipboard.writeText(code).then(() => toast.success('Copied!'))}
-                className="text-xs px-2 py-0.5 rounded"
-                style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                📋
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <MonacoEditor
-                language={lang}
-                value={code}
-                theme={monacoTheme}
-                options={{
-                  readOnly: true, fontSize: 12, fontFamily: "'JetBrains Mono', monospace",
-                  minimap: { enabled: false }, lineNumbers: 'on', scrollBeyondLastLine: false,
-                  wordWrap: 'on', padding: { top: 8 }, scrollbar: { verticalScrollbarSize: 4 }
-                }}
-              />
-            </div>
+            )}
+
+            {/* Output panel */}
+            {rightTab === 'output' && (
+              <div className="flex-1 overflow-y-auto p-3"
+                style={{ background: 'var(--bg-crust)', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
+                {runStatus === 'idle' && runLines.length === 0 && (
+                  <p style={{ color: 'var(--text-subtle)', fontSize: 11 }}>
+                    Click ▶ Run to execute the flow code.<br/>
+                    Output will appear here.
+                  </p>
+                )}
+                {runStatus === 'running' && runLines.length === 0 && (
+                  <p className="animate-pulse" style={{ color: 'var(--accent-yellow)', fontSize: 11 }}>
+                    ⟳ Running… {runElapsed != null ? `${(runElapsed/1000).toFixed(1)}s` : ''}
+                  </p>
+                )}
+                {runLines.map(l => (
+                  <div key={l.id} style={{
+                    color: l.type === 'err' ? 'var(--accent-red)' : l.type === 'sys' ? 'var(--text-muted)' : 'var(--text)',
+                    whiteSpace: 'pre-wrap', lineHeight: 1.7,
+                    fontStyle: l.type === 'sys' ? 'italic' : 'normal'
+                  }}>{l.text}</div>
+                ))}
+                <div ref={runOutputRef} />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -318,6 +465,108 @@ function NodePalette() {
     </div>
   )
 }
+
+// ─── Flow Templates ──────────────────────────────────────────────────────────
+const E = (id: string, source: string, sh: string, target: string, th: string, stroke = '#89b4fa') => ({
+  id, source, sourceHandle: sh, target, targetHandle: th, animated: true,
+  style: { stroke, strokeWidth: 2 }
+})
+const N = (id: string, type: string, x: number, y: number, data: object) => ({
+  id, type, position: { x, y }, data: { type, label: type.charAt(0).toUpperCase() + type.slice(1), ...data }
+})
+
+const FLOW_TEMPLATES = [
+  {
+    id: 'player-move', name: 'Player Movement', icon: '🎮',
+    desc: 'Variables → input check → update position',
+    nodes: [
+      N('s1',  'start',     220,  50,  {}),
+      N('v1',  'variable',  220, 165,  { varKind:'let',   varName:'playerX', varValue:'0' }),
+      N('v2',  'variable',  220, 285,  { varKind:'let',   varName:'playerY', varValue:'0' }),
+      N('v3',  'variable',  220, 405,  { varKind:'const', varName:'speed',   varValue:'5' }),
+      N('c1',  'condition', 220, 525,  { condition:"key === 'ArrowRight'" }),
+      N('m1',  'math',       50, 680,  { mathExpr:'playerX += speed' }),
+      N('o1',  'output',     50, 800,  { outputValue:'"Moved right! X: " + playerX' }),
+      N('o2',  'output',    420, 680,  { outputValue:'"No input — player idle"' }),
+    ],
+    edges: [
+      E('e1','s1', 'next',  'v1','in'),
+      E('e2','v1','next',   'v2','in'),
+      E('e3','v2','next',   'v3','in'),
+      E('e4','v3','next',   'c1','in'),
+      E('e5','c1','true',   'm1','in', '#a6e3a1'),
+      E('e6','m1','next',   'o1','in'),
+      E('e7','c1','false',  'o2','in', '#f38ba8'),
+    ]
+  },
+  {
+    id: 'fizzbuzz', name: 'FizzBuzz', icon: '⚡',
+    desc: 'Classic loop + nested conditions',
+    nodes: [
+      N('s1',  'start',     290,  50,  {}),
+      N('lp',  'loop',      290, 165,  { loopVar:'i', loopFrom:'1', loopTo:'15', loopStep:'1' }),
+      N('c1',  'condition', 160, 320,  { condition:'i % 3 === 0' }),
+      N('c2',  'condition', 390, 320,  { condition:'i % 5 === 0' }),
+      N('oF',  'output',     70, 480,  { outputValue:'"Fizz 🟢"' }),
+      N('oB',  'output',    300, 480,  { outputValue:'"Buzz 🔵"' }),
+      N('oN',  'output',    510, 480,  { outputValue:'i + ""' }),
+    ],
+    edges: [
+      E('e1','s1', 'next', 'lp', 'in'),
+      E('e2','lp', 'body', 'c1', 'in', '#94e2d5'),
+      E('e3','c1', 'true', 'oF', 'in', '#a6e3a1'),
+      E('e4','c1', 'false','c2', 'in', '#f38ba8'),
+      E('e5','c2', 'true', 'oB', 'in', '#a6e3a1'),
+      E('e6','c2', 'false','oN', 'in', '#f38ba8'),
+    ]
+  },
+  {
+    id: 'grade-calc', name: 'Grade Calculator', icon: '📊',
+    desc: 'Multi-branch condition chain',
+    nodes: [
+      N('s1',  'start',     270,  50,  {}),
+      N('v1',  'variable',  270, 165,  { varKind:'let', varName:'score', varValue:'85' }),
+      N('c1',  'condition', 270, 295,  { condition:'score >= 90' }),
+      N('oA',  'output',     80, 445,  { outputValue:'"A — Excellent! 🌟"' }),
+      N('c2',  'condition', 460, 445,  { condition:'score >= 70' }),
+      N('oB',  'output',    370, 600,  { outputValue:'"B/C — Good job! 👍"' }),
+      N('oF',  'output',    580, 600,  { outputValue:'"F — Study more 📚"' }),
+    ],
+    edges: [
+      E('e1','s1','next',  'v1','in'),
+      E('e2','v1','next',  'c1','in'),
+      E('e3','c1','true',  'oA','in', '#a6e3a1'),
+      E('e4','c1','false', 'c2','in', '#f38ba8'),
+      E('e5','c2','true',  'oB','in', '#a6e3a1'),
+      E('e6','c2','false', 'oF','in', '#f38ba8'),
+    ]
+  },
+  {
+    id: 'fibonacci', name: 'Fibonacci Sequence', icon: '🔢',
+    desc: 'Loop accumulates the sequence',
+    nodes: [
+      N('s1',  'start',    250,  50,  {}),
+      N('v1',  'variable', 250, 165,  { varKind:'let', varName:'a', varValue:'0' }),
+      N('v2',  'variable', 250, 285,  { varKind:'let', varName:'b', varValue:'1' }),
+      N('o0',  'output',   250, 405,  { outputValue:'"Start: " + a + ", " + b' }),
+      N('lp',  'loop',     250, 525,  { loopVar:'i', loopFrom:'0', loopTo:'8', loopStep:'1' }),
+      N('m1',  'math',      90, 680,  { mathExpr:'temp = a + b' }),
+      N('m2',  'math',      90, 800,  { mathExpr:'a = b' }),
+      N('m3',  'math',      90, 920,  { mathExpr:'b = temp' }),
+      N('o1',  'output',    90, 1040, { outputValue:'b' }),
+    ],
+    edges: [
+      E('e1','s1','next',  'v1','in'),
+      E('e2','v1','next',  'v2','in'),
+      E('e3','v2','next',  'o0','in'),
+      E('e4','o0','next',  'lp','in'),
+      E('e5','lp','body',  'm1','in', '#94e2d5'),
+      E('e6','m1','next',  'm2','in'),
+      E('e7','m2','next',  'm3','in'),
+      E('e8','m3','next',  'o1','in'),
+    ]
+  },
+]
 
 export function FlowEditor() {
   return (
