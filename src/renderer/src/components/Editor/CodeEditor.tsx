@@ -754,26 +754,21 @@ export function CodeEditor() {
   )
 }
 
-// Track recently opened folders
+// Legacy helper — kept for FileExplorer compatibility
 export function addRecentFolder(folderPath: string) {
-  try {
-    const raw = localStorage.getItem('momiji:recent-folders') ?? '[]'
-    const list: string[] = JSON.parse(raw)
-    const updated = [folderPath, ...list.filter(f => f !== folderPath)].slice(0, 8)
-    localStorage.setItem('momiji:recent-folders', JSON.stringify(updated))
-  } catch {}
+  useAppStore.getState().addRecentFolder(folderPath)
 }
 
 function WelcomeScreen() {
-  const { setActivePanel } = useAppStore()
+  const { setActivePanel, recentFolders } = useAppStore()
 
   const openFolder = async (folderPath?: string) => {
     const { setCurrentFolder, setFileTree } = useAppStore.getState()
     const folder = folderPath ?? await window.api.dialog.openFolder()
     if (folder) {
-      setCurrentFolder(folder)
+      setCurrentFolder(folder)   // addRecentFolder called inside setCurrentFolder
       const tree = await window.api.fs.readDir(folder)
-      if (tree) { setFileTree(tree); addRecentFolder(folder) }
+      if (tree) setFileTree(tree)
     }
   }
 
@@ -788,10 +783,6 @@ function WelcomeScreen() {
       }
     }
   }
-
-  const recentFolders: string[] = (() => {
-    try { return JSON.parse(localStorage.getItem('momiji:recent-folders') ?? '[]') } catch { return [] }
-  })()
 
   const recentFiles: string[] = (() => {
     try { return JSON.parse(localStorage.getItem('momiji:recent-files') ?? '[]') } catch { return [] }
