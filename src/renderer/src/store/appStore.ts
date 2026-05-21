@@ -61,6 +61,13 @@ interface AppStore extends AppState {
   // Kitsune quick-ask (right-click from editor)
   pendingAIPrompt: string | null
   setPendingAIPrompt: (prompt: string | null) => void
+
+  // License / Pro tier
+  licenseKey:    string | null
+  licenseTier:   'free' | 'pro' | 'studio'
+  licenseExpiry: string | null
+  activateLicense: (key: string) => Promise<{ ok: boolean; error?: string }>
+  deactivateLicense: () => void
 }
 
 export const useAppStore = create<AppStore>()(
@@ -229,6 +236,38 @@ export const useAppStore = create<AppStore>()(
       })),
 
       setPendingAIPrompt: (prompt) => set({ pendingAIPrompt: prompt }),
+
+      licenseKey:    null,
+      licenseTier:   'free',
+      licenseExpiry: null,
+
+      activateLicense: async (key) => {
+        try {
+          const r = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ license_key: key.trim(), instance_name: 'Momiji IDE' })
+          })
+          const d = await r.json()
+          if (!d.valid) return { ok: false, error: d.error ?? 'Invalid license key' }
+
+          const productName = (d.meta?.product_name ?? d.license_key?.product_name ?? '').toLowerCase()
+          const tier: 'pro' | 'studio' = productName.includes('studio') ? 'studio' : 'pro'
+          const expiry = d.license_key?.expires_at ?? null
+
+          set({ licenseKey: key.trim(), licenseTier: tier, licenseExpiry: expiry })
+          // Also sync to localStorage for ModelSelector backward compat
+          localStorage.setItem('momiji:license-tier', tier)
+          return { ok: true }
+        } catch (e: any) {
+          return { ok: false, error: e.message ?? 'Network error' }
+        }
+      },
+
+      deactivateLicense: () => {
+        set({ licenseKey: null, licenseTier: 'free', licenseExpiry: null })
+        localStorage.removeItem('momiji:license-tier')
+      },
     }),
     {
       name: 'momiji-store',
@@ -258,8 +297,11 @@ export const useAppStore = create<AppStore>()(
         sidebarWidth: state.sidebarWidth,
         showSidebar: state.showSidebar,
         bottomPanelHeight: state.bottomPanelHeight,
-        currentFolder: state.currentFolder,
-        recentFolders: state.recentFolders,
+        currentFolder:  state.currentFolder,
+        recentFolders:  state.recentFolders,
+        licenseKey:     state.licenseKey,
+        licenseTier:    state.licenseTier,
+        licenseExpiry:  state.licenseExpiry,
       })
     }
   )

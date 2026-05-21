@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { MomijiLogo } from '../Logo/MomijiLogo'
 
+const CHECKOUT_URL = 'https://momiji-ide.lemonsqueezy.com/checkout/buy/495febcd-8f43-44cc-9fab-7cd2896874a5'
+
 interface Props {
   onCommandPalette: () => void
 }
 
 export function TitleBar({ onCommandPalette }: Props) {
   const currentFolder = useAppStore((s) => s.currentFolder)
-  const tabs = useAppStore((s) => s.tabs)
-  const activeTabId = useAppStore((s) => s.activeTabId)
+  const tabs          = useAppStore((s) => s.tabs)
+  const activeTabId   = useAppStore((s) => s.activeTabId)
+  const licenseTier   = useAppStore((s) => s.licenseTier)
   const [isMaximized, setIsMaximized] = useState(false)
 
   const activeTab = tabs.find((t) => t.id === activeTabId)
@@ -34,10 +37,29 @@ export function TitleBar({ onCommandPalette }: Props) {
       className="drag-region flex items-center h-9 flex-shrink-0"
       style={{ background: 'var(--bg-crust)', borderBottom: '1px solid var(--border)' }}
     >
-      {/* Left: Logo — draggable */}
+      {/* Left: Logo + tier badge — draggable */}
       <div className="flex items-center gap-2 px-3 flex-shrink-0">
         <MomijiLogo size={18} />
         <span className="brand-text">MOMIJI</span>
+        {licenseTier === 'free' ? (
+          <button
+            onClick={() => window.open(CHECKOUT_URL, '_blank')}
+            className="no-drag text-xs px-1.5 py-0.5 rounded-full font-bold"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', border: '1px solid var(--border)', fontSize: 9, cursor: 'pointer' }}
+            title="Upgrade to Pro">
+            Free
+          </button>
+        ) : (
+          <span className="text-xs px-1.5 py-0.5 rounded-full font-bold"
+            style={{
+              background: licenseTier === 'studio' ? 'var(--accent-yellow)22' : 'var(--accent-mauve)22',
+              color:      licenseTier === 'studio' ? 'var(--accent-yellow)' : 'var(--accent-mauve)',
+              border:     `1px solid ${licenseTier === 'studio' ? 'var(--accent-yellow)44' : 'var(--accent-mauve)44'}`,
+              fontSize: 9,
+            }}>
+            {licenseTier === 'studio' ? '🏆 Studio' : '🦊 Pro'}
+          </span>
+        )}
       </div>
 
       {/* Center: drag-region wrapper, button itself is no-drag */}

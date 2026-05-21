@@ -3,9 +3,10 @@ import { useAppStore } from '../../store/appStore'
 import type { AIProvider } from '../../types'
 import { LANGUAGES, getLang, setLang, type Language } from '../../utils/i18n'
 import { toast } from '../../utils/toast'
-import { AISettings } from './AISettings'
+import { AISettings }    from './AISettings'
+import { LicensePanel } from './LicensePanel'
 
-type SettingsTab = 'editor' | 'ai' | 'appearance'
+type SettingsTab = 'editor' | 'ai' | 'appearance' | 'pro'
 
 export function SettingsPanel() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('editor')
@@ -22,10 +23,12 @@ export function SettingsPanel() {
 
   const isSaved = Date.now() - savedAt < 2000 && savedAt > 0
 
+  const { licenseTier } = useAppStore()
   const tabs: { id: SettingsTab; label: string; icon: string }[] = [
-    { id: 'editor', label: 'Editor', icon: '📝' },
+    { id: 'editor',     label: 'Editor',     icon: '📝' },
     { id: 'appearance', label: 'Appearance', icon: '🎨' },
-    { id: 'ai', label: 'AI & API Keys', icon: '✨' }
+    { id: 'ai',         label: 'AI & Keys',  icon: '✨' },
+    { id: 'pro',        label: licenseTier === 'free' ? 'Upgrade' : licenseTier === 'pro' ? '🦊 Pro' : '🏆 Studio', icon: licenseTier === 'free' ? '⭐' : '' },
   ]
 
   return (
@@ -257,6 +260,15 @@ export function SettingsPanel() {
                 ]}
               />
             </SettingRow>
+          </div>
+        )}
+
+        {activeTab === 'pro' && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>
+              🦊 Momiji Pro
+            </p>
+            <LicensePanel />
           </div>
         )}
 
