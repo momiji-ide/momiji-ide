@@ -28,6 +28,7 @@ function FlowCanvas() {
   const [lang, setLang] = useState<Lang>('javascript')
   const [code, setCode] = useState('')
   const [showCode, setShowCode] = useState(true)
+  const [isRunning, setIsRunning] = useState(false)
 
   const monacoTheme = settings.theme === 'dark' ? 'momiji-dark' : 'momiji-light'
 
@@ -107,6 +108,38 @@ function FlowCanvas() {
     toast.success(`Opened as ${name}`)
   }
 
+  const handleRun = useCallback(async () => {
+    if (!code.trim() || code.startsWith('//') || code.startsWith('#')) {
+      toast.warning('Build a flow first! Drag nodes and connect them.')
+      return
+    }
+    const { currentFolder, toggleBottomPanel, showBottomPanel } = useAppStore.getState()
+    const ext     = lang === 'python' ? 'py' : 'js'
+    const fname   = `flow_output.${ext}`
+    const command = lang === 'python' ? (settings.pythonPath || 'python') : 'node'
+    const tmpPath = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/${fname}`
+
+    try { await window.api.fs.writeFile(tmpPath, code) }
+    catch { toast.error('Could not write temp file — open a folder first'); return }
+
+    if (!showBottomPanel) toggleBottomPanel()
+    window.dispatchEvent(new CustomEvent('bottomPanel:switchTab', { detail: { tab: 'output' } }))
+
+    setIsRunning(true)
+    window.dispatchEvent(new CustomEvent('runner:start', {
+      detail: { processId: 'runner-main', command, args: [tmpPath], cwd: currentFolder ?? '', label: fname, fileName: fname }
+    }))
+    await window.api.process.run('runner-main', command, [tmpPath], currentFolder ?? '')
+
+    const unsub = window.api.process.onExit((id, code) => {
+      if (id === 'runner-main') {
+        setIsRunning(false)
+        window.dispatchEvent(new CustomEvent('runner:exit', { detail: { code } }))
+        unsub()
+      }
+    })
+  }, [code, lang, settings.pythonPath])
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Toolbar */}
@@ -145,9 +178,25 @@ function FlowCanvas() {
           </button>
         ))}
 
+        {/* ▶ Run directly */}
+        {isRunning ? (
+          <button onClick={() => { window.api.process.kill('runner-main'); setIsRunning(false) }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold"
+            style={{ background: 'var(--accent-red)', color: 'white' }}>
+            ■ Stop
+          </button>
+        ) : (
+          <button onClick={handleRun}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold"
+            style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}
+            title="Run the generated code">
+            ▶ Run
+          </button>
+        )}
+
         <button onClick={handleOpenInEditor}
           className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium"
-          style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
+          style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
           Open in Editor →
         </button>
       </div>
