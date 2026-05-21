@@ -19,7 +19,7 @@ export function BlockEditor() {
 
   const [code, setCode]         = useState('// Drag blocks from the toolbox to generate code\n')
   const [lang, setLang]         = useState<Lang>('javascript')
-  const [syncMode, setSyncMode] = useState<SyncMode>('blocks-primary')
+  const [syncMode, setSyncMode] = useState<SyncMode>('code-primary')
   const [blockCount, setBlockCount] = useState(0)
   const [ready, setReady]       = useState(false)
   const [level, setLevel]       = useState<Level>('beginner')
@@ -111,19 +111,19 @@ export function BlockEditor() {
       if (!MEANINGFUL.has(e.type)) return
       setBlockCount(ws.getAllBlocks(false).length)
       setSyncMode((current) => {
-        if (current === 'blocks-primary' || current === 'bidirectional') {
-          const gen = ws.getAllBlocks(false).length === 0
-            ? '// Drag blocks from the toolbox to generate code\n'
-            : (lang === 'javascript'
-                ? javascriptGenerator.workspaceToCode(ws)
-                : pythonGenerator.workspaceToCode(ws))
-          const newCode = gen || '// Add blocks to generate code\n'
-          blockGenRef.current = true  // mark: code came from blocks, not user typing
-          setCode(newCode)
-          codeRef.current = newCode
-          setCodeChanged(false)
-          setTimeout(() => { blockGenRef.current = false }, 50)
-        }
+        // Always update code when blocks change (except when user is manually editing code)
+        // In code-primary, we still reflect block changes but mark as block-generated
+        const gen = ws.getAllBlocks(false).length === 0
+          ? '// Drag blocks from the toolbox to generate code\n'
+          : (lang === 'javascript'
+              ? javascriptGenerator.workspaceToCode(ws)
+              : pythonGenerator.workspaceToCode(ws))
+        const newCode = gen || '// Add blocks to generate code\n'
+        blockGenRef.current = true  // mark: code came from blocks, not user typing
+        setCode(newCode)
+        codeRef.current = newCode
+        setCodeChanged(false)
+        setTimeout(() => { blockGenRef.current = false }, 50)
         return current
       })
     })
@@ -603,14 +603,23 @@ ${code}
           </div>
 
           {/* Monaco */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden relative">
             <MonacoEditor
               language={lang}
               value={code}
               theme={monacoTheme}
               onChange={(v) => { if (v !== undefined && syncMode !== 'blocks-primary') handleCodeChange(v) }}
+              onMount={(editor) => {
+                // When user tries to type in read-only mode → auto-unlock to code-primary
+                editor.onDidAttemptReadOnlyEdit(() => {
+                  setSyncMode('code-primary')
+                  setCodeChanged(true)
+                  toast.info('✏️ Switched to Edit mode — type freely! Click ↑ Sync to update blocks.')
+                })
+              }}
               options={{
                 readOnly: syncMode === 'blocks-primary',
+                readOnlyMessage: { value: 'Click here or press any key to edit code freely ✏️' },
                 fontSize: settings.fontSize,
                 fontFamily: settings.fontFamily,
                 fontLigatures: true,
@@ -621,9 +630,21 @@ ${code}
                 padding: { top: 12, bottom: 12 },
                 scrollbar: { verticalScrollbarSize: 4, horizontalScrollbarSize: 4 },
                 bracketPairColorization: { enabled: true },
-                renderLineHighlight: syncMode !== 'blocks-primary' ? 'line' : 'none'
+                renderLineHighlight: syncMode !== 'blocks-primary' ? 'line' : 'none',
+                cursorStyle: syncMode === 'blocks-primary' ? 'underline' : 'line',
               }}
             />
+            {/* Clickable unlock overlay in blocks-primary mode */}
+            {syncMode === 'blocks-primary' && (
+              <div
+                onClick={() => { setSyncMode('code-primary'); toast.info('✏️ Edit mode — type freely, then click ↑ Sync to Blocks') }}
+                style={{
+                  position: 'absolute', inset: 0, cursor: 'text',
+                  background: 'rgba(0,0,0,0.01)', zIndex: 2,
+                }}
+                title="Click to edit code freely"
+              />
+            )}
           </div>
 
           {/* Bottom hint / sync bar */}
@@ -631,8 +652,13 @@ ${code}
             style={{ background: 'var(--bg-mantle)', borderTop: '1px solid var(--border)', color: 'var(--text-subtle)' }}>
             {syncMode === 'blocks-primary' && (
               <>
-                <span>🔒 Read-only — drag blocks to update</span>
-                <button onClick={handleToggleSync} className="ml-auto underline" style={{ color: 'var(--accent-mauve)' }}>Edit code →</button>
+                <span>⟳ Code auto-updates from blocks</span>
+                <button
+                  onClick={() => { setSyncMode('code-primary'); toast.info('✏️ Edit mode — type freely!') }}
+                  className="ml-auto px-2.5 py-1 rounded-lg font-semibold"
+                  style={{ background: 'var(--bg-surface1)', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44' }}>
+                  ✏️ Edit code
+                </button>
               </>
             )}
             {syncMode === 'code-primary' && (
