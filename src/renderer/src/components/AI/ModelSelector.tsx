@@ -21,38 +21,43 @@ interface ModelEntry {
 
 const ALL_MODELS: ModelEntry[] = [
   // ── FREE tier ─────────────────────────────────────────────────────────────
-  { id: 'groq-llama-70b',    label: 'Llama 3.3 70B',      sublabel: 'fast · versatile',     providerId: 'groq',       model: 'llama-3.3-70b-versatile',                    tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-llama-8b',     label: 'Llama 3.1 8B',       sublabel: 'fastest · light',       providerId: 'groq',       model: 'llama-3.1-8b-instant',                       tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-deepseek-r1',  label: 'DeepSeek R1',        sublabel: 'reasoning',             providerId: 'groq',       model: 'deepseek-r1-distill-llama-70b',               tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-qwen',         label: 'Qwen QwQ 32B',       sublabel: 'reasoning',             providerId: 'groq',       model: 'qwen-qwq-32b',                               tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'gemini-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: '500 RPD',            providerId: 'gemini',     model: 'gemini-3.1-flash-lite',                      tier: 'free',   badge: 'FREE',  emoji: '🟠' },
-  { id: 'gemini-3-flash',    label: 'Gemini 3 Flash',     sublabel: '20 RPD',                providerId: 'gemini',     model: 'gemini-3-flash',                             tier: 'free',   badge: 'FREE',  emoji: '🟠' },
-  { id: 'or-llama-free',     label: 'Llama 3.3 70B',      sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free',     tier: 'free',   badge: 'FREE',  emoji: '🌐' },
-  { id: 'or-deepseek-free',  label: 'DeepSeek R1',        sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'deepseek/deepseek-r1:free',                  tier: 'free',   badge: 'FREE',  emoji: '🌐' },
-  { id: 'or-gemma-free',     label: 'Gemma 3 27B',        sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'google/gemma-3-27b-it:free',                 tier: 'free',   badge: 'FREE',  emoji: '🌐' },
+  { id: 'groq-llama-70b',    label: 'Llama 3.3 70B',         sublabel: 'fast · versatile',      providerId: 'groq',       model: 'llama-3.3-70b-versatile',                tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'groq-llama-8b',     label: 'Llama 3.1 8B',          sublabel: 'fastest · light',        providerId: 'groq',       model: 'llama-3.1-8b-instant',                   tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'groq-deepseek-r1',  label: 'DeepSeek R1',           sublabel: 'reasoning · free',       providerId: 'groq',       model: 'deepseek-r1-distill-llama-70b',          tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'groq-qwen',         label: 'Qwen QwQ 32B',          sublabel: 'reasoning · free',       providerId: 'groq',       model: 'qwen-qwq-32b',                           tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'gemini-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: '500 req/day free',       providerId: 'gemini',     model: 'gemini-3.1-flash-lite',                  tier: 'free',   badge: 'FREE',  emoji: '🟠' },
+  { id: 'gemini-3-flash-f',  label: 'Gemini 3 Flash',        sublabel: '20 req/day free',        providerId: 'gemini',     model: 'gemini-3-flash',                         tier: 'free',   badge: 'FREE',  emoji: '🟠' },
+  { id: 'or-llama-free',     label: 'Llama 3.3 70B',         sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', tier: 'free',   badge: 'FREE',  emoji: '🌐' },
+  { id: 'or-deepseek-free',  label: 'DeepSeek R1',           sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'deepseek/deepseek-r1:free',              tier: 'free',   badge: 'FREE',  emoji: '🌐' },
+  { id: 'or-gemma-free',     label: 'Gemma 3 27B',           sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'google/gemma-3-27b-it:free',             tier: 'free',   badge: 'FREE',  emoji: '🌐' },
 
   // ── PRO tier ──────────────────────────────────────────────────────────────
-  { id: 'gemini-25-flash',   label: 'Gemini 2.5 Flash',   sublabel: 'best balance · 1M ctx', providerId: 'gemini',     model: 'gemini-2.5-flash',                           tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
-  { id: 'gemini-25-lite',    label: 'Gemini 2.5 Flash-Lite', sublabel: 'ultra cheap',        providerId: 'gemini',     model: 'gemini-2.5-flash-lite',                      tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
-  { id: 'claude-haiku',      label: 'Claude Haiku 4.5',   sublabel: 'fastest Anthropic',     providerId: 'claude',     model: 'claude-haiku-4-5',                           tier: 'pro',    badge: 'Pro',   emoji: '🟣' },
-  { id: 'gpt-4o-mini',       label: 'GPT-4o Mini',        sublabel: 'recommended OpenAI',    providerId: 'openai',     model: 'gpt-4o-mini',                                tier: 'pro',    badge: 'Pro',   emoji: '🟢' },
-  { id: 'deepseek-chat',     label: 'DeepSeek Chat V3',   sublabel: 'very cheap BYOK',       providerId: 'deepseek',   model: 'deepseek-chat',                              tier: 'pro',    badge: 'Pro',   emoji: '🔵' },
-  { id: 'mistral-small',     label: 'Mistral Small',      sublabel: 'fast & cheap',          providerId: 'mistral',    model: 'mistral-small-latest',                       tier: 'pro',    badge: 'Pro',   emoji: '⚪' },
+  { id: 'gemini-35-flash-p', label: 'Gemini 3.5 Flash',      sublabel: 'newest Google · fast',   providerId: 'gemini',     model: 'gemini-3.5-flash',                       tier: 'pro',    badge: 'New',   emoji: '🟠' },
+  { id: 'gemini-25-flash',   label: 'Gemini 2.5 Flash',      sublabel: 'balanced · 1M ctx',      providerId: 'gemini',     model: 'gemini-2.5-flash',                       tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
+  { id: 'gemini-25-lite',    label: 'Gemini 2.5 Flash-Lite', sublabel: 'ultra cheap',             providerId: 'gemini',     model: 'gemini-2.5-flash-lite',                  tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
+  { id: 'claude-haiku',      label: 'Claude Haiku 4.5',      sublabel: 'fastest Anthropic',       providerId: 'claude',     model: 'claude-haiku-4-5',                       tier: 'pro',    badge: 'Pro',   emoji: '🟣' },
+  { id: 'gpt-5-mini',        label: 'GPT-5 Mini',            sublabel: 'fast · affordable',       providerId: 'openai',     model: 'gpt-5-mini',                             tier: 'pro',    badge: 'New',   emoji: '🟢' },
+  { id: 'deepseek-chat',     label: 'DeepSeek V3',           sublabel: 'very cheap · capable',    providerId: 'deepseek',   model: 'deepseek-chat',                          tier: 'pro',    badge: 'Pro',   emoji: '🔵' },
+  { id: 'mistral-small',     label: 'Mistral Small 3.1',     sublabel: 'fast & cheap',            providerId: 'mistral',    model: 'mistral-small-latest',                   tier: 'pro',    badge: 'Pro',   emoji: '⚪' },
 
   // ── STUDIO tier ───────────────────────────────────────────────────────────
-  { id: 'claude-sonnet',     label: 'Claude Sonnet 4.5',  sublabel: 'recommended · best',    providerId: 'claude',     model: 'claude-sonnet-4-5',                          tier: 'studio', badge: 'Studio', emoji: '🟣' },
-  { id: 'claude-opus',       label: 'Claude Opus 4.5',    sublabel: 'most capable',          providerId: 'claude',     model: 'claude-opus-4-5',                            tier: 'studio', badge: 'Studio', emoji: '🟣' },
-  { id: 'gemini-35-flash',   label: 'Gemini 3.5 Flash',   sublabel: 'newest · fastest',      providerId: 'gemini',     model: 'gemini-3.5-flash',                           tier: 'studio', badge: 'Studio', emoji: '🟠' },
-  { id: 'gemini-25-pro',     label: 'Gemini 2.5 Pro',     sublabel: 'best reasoning',        providerId: 'gemini',     model: 'gemini-2.5-pro',                             tier: 'studio', badge: 'Studio', emoji: '🟠' },
-  { id: 'gpt-4o',            label: 'GPT-4o',             sublabel: 'flagship OpenAI',       providerId: 'openai',     model: 'gpt-4o',                                     tier: 'studio', badge: 'Studio', emoji: '🟢' },
-  { id: 'mistral-large',     label: 'Mistral Large',      sublabel: 'most capable',          providerId: 'mistral',    model: 'mistral-large-latest',                       tier: 'studio', badge: 'Studio', emoji: '⚪' },
-  { id: 'deepseek-r1',       label: 'DeepSeek R1',        sublabel: 'reasoning specialist',  providerId: 'deepseek',   model: 'deepseek-reasoner',                          tier: 'studio', badge: 'Studio', emoji: '🔵' },
+  { id: 'claude-sonnet',     label: 'Claude Sonnet 4.6',     sublabel: 'best speed+intel ⭐',    providerId: 'claude',     model: 'claude-sonnet-4-6',                      tier: 'studio', badge: 'New',    emoji: '🟣' },
+  { id: 'claude-opus',       label: 'Claude Opus 4.7',       sublabel: 'most capable · 1M ctx',  providerId: 'claude',     model: 'claude-opus-4-7',                        tier: 'studio', badge: 'New',    emoji: '🟣' },
+  { id: 'gemini-3-pro',      label: 'Gemini 3 Pro',          sublabel: 'best reasoning Google',   providerId: 'gemini',     model: 'gemini-3-pro',                           tier: 'studio', badge: 'Studio', emoji: '🟠' },
+  { id: 'gemini-25-pro',     label: 'Gemini 2.5 Pro',        sublabel: 'advanced reasoning',      providerId: 'gemini',     model: 'gemini-2.5-pro',                         tier: 'studio', badge: 'Studio', emoji: '🟠' },
+  { id: 'gpt-5',             label: 'GPT-5',                 sublabel: 'flagship OpenAI',         providerId: 'openai',     model: 'gpt-5',                                  tier: 'studio', badge: 'New',    emoji: '🟢' },
+  { id: 'gpt-5-5',           label: 'GPT-5.5',               sublabel: 'latest OpenAI',           providerId: 'openai',     model: 'gpt-5.5',                                tier: 'studio', badge: 'New',    emoji: '🟢' },
+  { id: 'grok-4',            label: 'Grok 4',                sublabel: 'xAI · reasoning',         providerId: 'custom',     model: 'grok-4',                                 tier: 'studio', badge: 'Studio', emoji: '𝕏' },
+  { id: 'mistral-large',     label: 'Mistral Large 2',       sublabel: 'most capable Mistral',    providerId: 'mistral',    model: 'mistral-large-latest',                   tier: 'studio', badge: 'Studio', emoji: '⚪' },
+  { id: 'deepseek-r1',       label: 'DeepSeek R1',           sublabel: 'reasoning specialist',    providerId: 'deepseek',   model: 'deepseek-reasoner',                      tier: 'studio', badge: 'Studio', emoji: '🔵' },
 ]
 
 const OLLAMA_DEFAULTS: ModelEntry[] = [
-  { id: 'ollama-qwen',    label: 'Qwen2.5 Coder 7B',  sublabel: 'best for code ⭐', providerId: 'ollama', model: 'qwen2.5-coder:7b',  tier: 'local', badge: 'Local', emoji: '🏠' },
-  { id: 'ollama-qwen32',  label: 'Qwen2.5 Coder 32B', sublabel: 'GPT-4 level',      providerId: 'ollama', model: 'qwen2.5-coder:32b', tier: 'local', badge: 'Local', emoji: '🏠' },
-  { id: 'ollama-llama',   label: 'Llama 3.3 70B',      sublabel: 'most capable',     providerId: 'ollama', model: 'llama3.3:70b',      tier: 'local', badge: 'Local', emoji: '🏠' },
+  { id: 'ollama-qwen',       label: 'Qwen2.5 Coder 7B',      sublabel: 'best for code ⭐',       providerId: 'ollama', model: 'qwen2.5-coder:7b',   tier: 'local', badge: 'Local', emoji: '🏠' },
+  { id: 'ollama-qwen32',     label: 'Qwen2.5 Coder 32B',     sublabel: 'GPT-4 level',             providerId: 'ollama', model: 'qwen2.5-coder:32b',  tier: 'local', badge: 'Local', emoji: '🏠' },
+  { id: 'ollama-llama',      label: 'Llama 3.3 70B',         sublabel: 'most capable',            providerId: 'ollama', model: 'llama3.3:70b',       tier: 'local', badge: 'Local', emoji: '🏠' },
+  { id: 'ollama-gemma3',     label: 'Gemma 3 12B',           sublabel: 'Google · balanced',       providerId: 'ollama', model: 'gemma3:12b',         tier: 'local', badge: 'Local', emoji: '🏠' },
+  { id: 'ollama-deepseek',   label: 'DeepSeek Coder V2',     sublabel: 'code specialist',         providerId: 'ollama', model: 'deepseek-coder-v2',  tier: 'local', badge: 'Local', emoji: '🏠' },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

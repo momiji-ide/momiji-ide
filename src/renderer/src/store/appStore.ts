@@ -81,15 +81,15 @@ export const useAppStore = create<AppStore>()(
       activePanel: 'explorer',
       settings: defaultSettings,
       aiProviders: [
-        { id: 'claude',     name: 'Claude (Anthropic)', apiKey: '', model: 'claude-sonnet-4-5',        enabled: false },
-        { id: 'gemini',     name: 'Gemini (Google)',    apiKey: '', model: 'gemini-3.1-flash-lite',           enabled: false },
-        { id: 'openai',     name: 'GPT (OpenAI)',       apiKey: '', model: 'gpt-4o-mini',               enabled: false },
+        { id: 'claude',     name: 'Claude (Anthropic)', apiKey: '', model: 'claude-sonnet-4-6',        enabled: false },
+        { id: 'gemini',     name: 'Gemini (Google)',    apiKey: '', model: 'gemini-3.5-flash',           enabled: false },
+        { id: 'openai',     name: 'GPT (OpenAI)',       apiKey: '', model: 'gpt-5-mini',                 enabled: false },
         { id: 'groq',       name: 'Groq (Free)',        apiKey: '', model: 'llama-3.3-70b-versatile',   enabled: false },
         { id: 'openrouter', name: 'OpenRouter',         apiKey: '', model: 'meta-llama/llama-3.3-70b-instruct:free', enabled: false },
         { id: 'deepseek',   name: 'DeepSeek',           apiKey: '', model: 'deepseek-chat',             enabled: false },
         { id: 'mistral',    name: 'Mistral AI',         apiKey: '', model: 'mistral-small-latest',      enabled: false },
         { id: 'ollama',     name: 'Ollama (Local)',     apiKey: '', model: 'qwen2.5-coder:7b',          enabled: false, baseUrl: 'http://localhost:11434' },
-        { id: 'custom',     name: 'Custom (OpenAI Compatible)', apiKey: '', model: 'gpt-4o',            enabled: false, baseUrl: 'https://api.openai.com' },
+        { id: 'custom',     name: 'Custom (OpenAI Compatible)', apiKey: '', model: 'gpt-5',             enabled: false, baseUrl: 'https://api.openai.com' },
       ],
       sidebarWidth: 260,
       showSidebar: true,
@@ -275,7 +275,16 @@ export const useAppStore = create<AppStore>()(
       merge: (persisted: any, current) => {
         // Migrate deprecated Gemini models that don't work on free tier
         const DEPRECATED_MODELS: Record<string, string> = {
-          'gemini-pro': 'gemini-1.5-flash',
+          'gemini-pro':            'gemini-3.5-flash',
+          'gemini-1.5-flash':      'gemini-3.5-flash',
+          'gemini-2.0-flash':      'gemini-3.5-flash',
+          'claude-sonnet-4-5':     'claude-sonnet-4-6',
+          'claude-opus-4-5':       'claude-opus-4-7',
+          'claude-haiku-3-5':      'claude-haiku-4-5',
+          'gpt-4o':                'gpt-5',
+          'gpt-4o-mini':           'gpt-5-mini',
+          'claude-3-5-sonnet-20241022': 'claude-sonnet-4-6',
+          'claude-3-5-haiku-20241022':  'claude-haiku-4-5',
         }
         const migratedProviders = current.aiProviders.map((curr: any) => {
           const saved = (persisted?.aiProviders ?? []).find((p: any) => p.id === curr.id)
