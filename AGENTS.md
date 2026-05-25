@@ -492,6 +492,7 @@ Format: `YYYY-MM-DD | <agent name> | <one-line summary> | <sections touched>`
 2026-05-25 | Claude Sonnet 4.6 | Initial AGENTS.md handover, v1.3.1 era | all sections (initial)
 2026-05-25 | Claude Sonnet 4.6 | Documented v1.3.1 auto-update bug + correct release procedure | §6, §8, §11.1
 2026-05-25 | Claude Sonnet 4.6 | Re-released v1.3.1 with correct latest.yml plumbing — auto-update functional from this version onward | (no doc change, status update)
+2026-05-25 | Claude Sonnet 4.6 | Added RELEASE_NOTES_v1.3.1.md + migration banner in docs/index.html for v1.2 users who can't auto-update | docs/, release notes
 ```
 
 **Note on stale release assets:** When you delete and re-push a git tag, the GitHub Release sometimes retains the previously-uploaded assets even though the tag is "new". The v1.3.1 release ended up with both 1.3.0-named files (from the broken first build) and 1.3.1-named files (from the fixed build). `latest.yml` correctly references only the 1.3.1 file, so auto-update works — but manual cleanup via the GitHub web UI is needed to keep the release page tidy. To avoid this in the future, delete the GitHub Release explicitly (not just the tag) before re-pushing.

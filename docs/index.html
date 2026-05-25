@@ -543,6 +543,34 @@ footer {
 </head>
 <body>
 
+<!-- ── v1.2 → v1.3.1 MIGRATION NOTICE ────────────────────────────────────── -->
+<style>
+  .migration-banner {
+    position: relative; z-index: 200;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    padding: 0.6rem 1.2rem; text-align: center; line-height: 1.5;
+  }
+  .migration-banner a { color: #fff; text-decoration: underline; font-weight: 700; }
+  .migration-banner button {
+    background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
+    margin-left: 0.8rem; padding: 0.15rem 0.55rem; border-radius: 4px;
+    font-family: inherit; font-size: 0.7rem; cursor: pointer;
+  }
+  .migration-banner button:hover { background: rgba(255,255,255,0.15); }
+</style>
+<div class="migration-banner" id="migrationBanner">
+  &#9888;&#65039; <strong>v1.2.x users:</strong> auto-update is broken for your version &mdash;
+  please <a href="https://github.com/momiji-ide/momiji-ide/releases/tag/v1.3.1">download v1.3.1 manually</a>
+  (one time only). Your settings and AI keys carry over.
+  <button onclick="document.getElementById('migrationBanner').style.display='none'; localStorage.setItem('momiji-mig-dismissed','1')">Dismiss &times;</button>
+</div>
+<script>
+  if (localStorage.getItem('momiji-mig-dismissed') === '1') {
+    document.getElementById('migrationBanner').style.display = 'none';
+  }
+</script>
+
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 
