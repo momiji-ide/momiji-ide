@@ -454,9 +454,18 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
   // ── Three.js 3D with camera orbit + scroll zoom ─────────────────────────
   useEffect(() => {
     if (viewMode !== '3D' || !container3dRef.current) return
-    const container = container3dRef.current
-    const W = container.clientWidth  || 360
-    const H = container.clientHeight || 260
+
+    let tid: ReturnType<typeof setTimeout>
+    let outerCleanup: (() => void) | null = null
+
+    // Defer one frame so the browser has time to lay out the container
+    // (clientWidth === 0 if read synchronously right after mount)
+    tid = setTimeout(() => {
+      const container = container3dRef.current
+      if (!container) return
+      const rect  = container.getBoundingClientRect()
+      const W = Math.round(rect.width)  || container.offsetWidth  || 360
+      const H = Math.round(rect.height) || container.offsetHeight || 260
 
     const scene  = new THREE.Scene(); scene.background = new THREE.Color('#141210')
     let camTheta = 0.4, camPhi = 0.85, camR = 220
@@ -590,7 +599,8 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     }
     animate()
 
-    return () => {
+    // Store cleanup for the outer setTimeout wrapper to call
+    outerCleanup = () => {
       running = false
       renderer.domElement.removeEventListener('mousedown', onMD)
       window.removeEventListener('mousemove', onMM)
@@ -599,6 +609,12 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       if (container.contains(hintDiv)) container.removeChild(hintDiv)
       renderer.dispose(); scene.clear()
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement)
+    }
+    }, 0) // end setTimeout
+
+    return () => {
+      clearTimeout(tid)
+      outerCleanup?.()
     }
   }, [viewMode, arenaPreset, obstacles])
 

@@ -463,6 +463,7 @@ export function BlockEditor() {
   const [runStatus, setRunStatus]       = useState<'idle'|'running'|'done'|'error'>('idle')
   const [runElapsed, setRunElapsed]     = useState<number|null>(null)
   const [showRunOutput, setShowRunOutput] = useState(false)
+  const [showArena, setShowArena]         = useState(false)
   const runStartTime = useRef(0)
   const runTimer     = useRef<ReturnType<typeof setInterval>|null>(null)
   const runOutputRef = useRef<HTMLDivElement>(null)
@@ -1244,6 +1245,19 @@ ${code}
           style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
           Open in Editor →
         </button>
+
+        {/* 🤖 Arena toggle — always accessible, not just when running */}
+        <button
+          onClick={() => setShowArena(s => !s)}
+          title="Toggle Kitsune Robot Arena"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+          style={{
+            background: showArena ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
+            color: showArena ? 'white' : 'var(--text-muted)',
+            border: '1px solid var(--border)'
+          }}>
+          🤖 Arena
+        </button>
       </div>
 
       {/* Kitsune beginner guide */}
@@ -1424,8 +1438,8 @@ ${code}
                   <div ref={runOutputRef} />
                 </div>
 
-                {/* Right panel: Mascot 2D Arena Simulator */}
-                {code.includes('robot.') && (
+                {/* Right panel: Kitsune Arena Simulator — toggle with 🤖 Arena button */}
+                {showArena && (
                   <div className="w-full md:w-[600px] flex-shrink-0 overflow-y-auto border-t md:border-t-0 md:border-l" style={{ background: 'var(--bg-mantle)', borderColor: 'var(--border)' }}>
                     <RobotSimulator
                       runLines={runLines}
