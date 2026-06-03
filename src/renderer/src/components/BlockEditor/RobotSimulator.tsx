@@ -87,7 +87,7 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
   const [paintSize, setPaintSize]       = useState(8)
 
   const [robot, setRobot] = useState<RobotPhysics>({
-    x: 180, y: 55, angle: Math.PI / 2,
+    x: 180, y: 60, angle: 0,   // ON the oval top, facing RIGHT along the tangent
     speed: 0, dir: 'STOP', ledColor: 'OFF', servoAngle: 90, oledLines: []
   })
   const robotRef = useRef(robot)
@@ -124,7 +124,7 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
 
   // ── Preset switch ────────────────────────────────────────────────────────
   useEffect(() => {
-    setRobot(r => ({ ...r, x: 180, y: 55, angle: Math.PI / 2, speed: 0, dir: 'STOP' }))
+    setRobot(r => ({ ...r, x: 180, y: 60, angle: 0, speed: 0, dir: 'STOP' }))
     setMission({ active: false, laps: 0, targetLaps: 3, status: 'idle', lastCrossed: false })
     if (arenaPreset === 'custom') {
       // Clear paint canvas
@@ -146,8 +146,10 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       return d[3] > 50
     }
     const set = PRESET_PIXELS[arenaPreset as Exclude<ArenaPreset, 'custom'>]
-    for (let dx = -3; dx <= 3; dx++) {
-      for (let dy = -3; dy <= 3; dy++) {
+    // ±1 slop — sensors now sit 6px lateral (just outside TW=3 track), so
+    // tight detection triggers only when robot actually drifts ~3px off-center.
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
         if (set.has(`${Math.round(px + dx)},${Math.round(py + dy)}`)) return true
       }
     }
@@ -211,11 +213,15 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
   // ── Sensor calc + state write ────────────────────────────────────────────
   useEffect(() => {
     const r  = robotRef.current
-    const sD = 18
-    const lx = r.x + Math.cos(r.angle - Math.PI / 6) * sD
-    const ly = r.y + Math.sin(r.angle - Math.PI / 6) * sD
-    const rx = r.x + Math.cos(r.angle + Math.PI / 6) * sD
-    const ry = r.y + Math.sin(r.angle + Math.PI / 6) * sD
+    // Sensors placed laterally (perpendicular to heading) for proper line following.
+    // fwd = slight forward offset so they're in front of the robot body
+    // side = lateral distance — just outside the track half-width (TW=3 + 3 margin = 6)
+    const fwd = 8, side = 6
+    // Left direction: (sin(a), -cos(a))   Right direction: (-sin(a), cos(a))
+    const lx = r.x + Math.cos(r.angle) * fwd + Math.sin(r.angle) * side
+    const ly = r.y + Math.sin(r.angle) * fwd - Math.cos(r.angle) * side
+    const rx = r.x + Math.cos(r.angle) * fwd - Math.sin(r.angle) * side
+    const ry = r.y + Math.sin(r.angle) * fwd + Math.cos(r.angle) * side
     const ll = isOnTrack(lx, ly) ? 1 : 0
     const lr = isOnTrack(rx, ry) ? 1 : 0
     setLineLeft(ll); setLineRight(lr)
@@ -364,18 +370,23 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       ctx.restore()
     }
 
-    // Sensor rays
+    // Sensor rays (match the actual sensor positions used for detection)
     {
-      const r  = robot; const sD = 18
-      const lx = r.x + Math.cos(r.angle - Math.PI/6) * sD
-      const ly = r.y + Math.sin(r.angle - Math.PI/6) * sD
-      const rx = r.x + Math.cos(r.angle + Math.PI/6) * sD
-      const ry = r.y + Math.sin(r.angle + Math.PI/6) * sD
+      const r = robot; const fwd = 8, side = 6
+      const lx = r.x + Math.cos(r.angle)*fwd + Math.sin(r.angle)*side
+      const ly = r.y + Math.sin(r.angle)*fwd - Math.cos(r.angle)*side
+      const rx = r.x + Math.cos(r.angle)*fwd - Math.sin(r.angle)*side
+      const ry = r.y + Math.sin(r.angle)*fwd + Math.cos(r.angle)*side
       ctx.save(); ctx.lineWidth = 1.5
       ctx.strokeStyle = lineLeft  ? '#ea580c' : 'rgba(100,100,100,0.25)'
       ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(lx, ly); ctx.stroke()
+      // sensor dot
+      ctx.fillStyle = lineLeft ? '#ea580c' : 'rgba(100,100,100,0.4)'
+      ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI*2); ctx.fill()
       ctx.strokeStyle = lineRight ? '#ea580c' : 'rgba(100,100,100,0.25)'
       ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(rx, ry); ctx.stroke()
+      ctx.fillStyle = lineRight ? '#ea580c' : 'rgba(100,100,100,0.4)'
+      ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI*2); ctx.fill()
       ctx.restore()
     }
 
@@ -455,18 +466,15 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
   useEffect(() => {
     if (viewMode !== '3D' || !container3dRef.current) return
 
-    let tid: ReturnType<typeof setTimeout>
+    // Use fixed pixel dimensions identical to the 2D canvas (CW×CH = 360×260).
+    // CSS width/height:100% on the renderer domElement stretches it to fill the
+    // container visually — no need to read container dimensions from the DOM.
+    const container = container3dRef.current
+    if (!container) return
     let outerCleanup: (() => void) | null = null
-
-    // Defer so the browser finishes CSS flex layout before reading dimensions.
-    // 0ms is not enough for flex containers — 50ms is reliable across platforms.
-    tid = setTimeout(() => {
-      const container = container3dRef.current
-      if (!container) return
-      const rect  = container.getBoundingClientRect()
-      // Try multiple dimension sources: getBoundingClientRect → offsetWidth → fixed fallback
-      const W = (Math.round(rect.width)  > 0 ? Math.round(rect.width)  : 0) || container.offsetWidth  || container.parentElement?.offsetWidth  || 360
-      const H = (Math.round(rect.height) > 0 ? Math.round(rect.height) : 0) || container.offsetHeight || container.parentElement?.offsetHeight || 260
+    const W = CW   // 360
+    const H = CH   // 260
+    {
 
     const scene  = new THREE.Scene(); scene.background = new THREE.Color('#141210')
     let camTheta = 0.4, camPhi = 0.85, camR = 220
@@ -484,6 +492,10 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
 
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(W, H); renderer.shadowMap.enabled = true
+    // Stretch canvas to fill the container (CSS, not pixel buffer)
+    renderer.domElement.style.width  = '100%'
+    renderer.domElement.style.height = '100%'
+    renderer.domElement.style.display = 'block'
     container.appendChild(renderer.domElement)
 
     // Lights
@@ -600,7 +612,8 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     }
     animate()
 
-    // Store cleanup for the outer setTimeout wrapper to call
+    } // end plain block
+
     outerCleanup = () => {
       running = false
       renderer.domElement.removeEventListener('mousedown', onMD)
@@ -611,16 +624,9 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       renderer.dispose(); scene.clear()
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement)
     }
-    }, 50) // end setTimeout — 50ms gives CSS flex time to resolve dimensions
 
-    return () => {
-      clearTimeout(tid)
-      outerCleanup?.()
-    }
-  // NOTE: 'obstacles' intentionally omitted — obstacle positions are read via
-  // obstaclesRef.current inside the animation loop, not via effect deps.
-  // Including obstacles would tear down and rebuild the entire Three.js scene
-  // on every obstacle drag event (very expensive + causes flicker).
+    return () => { outerCleanup?.() }
+  // NOTE: 'obstacles' intentionally omitted — positions read via obstaclesRef inside loop
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode, arenaPreset])
 
