@@ -6,6 +6,7 @@ import MonacoEditor from '@monaco-editor/react'
 import { useAppStore } from '../../store/appStore'
 import { toast } from '../../utils/toast'
 import { codeToBlocklyXML } from '../../utils/codeToBlockly'
+import { RobotSimulator } from './RobotSimulator'
 
 // ─── Fix Blockly JS generators so they work in Node.js (not browser-only) ────
 // Default text_print generates window.alert() — crashes in Node.
@@ -40,8 +41,400 @@ import { codeToBlocklyXML } from '../../utils/codeToBlockly'
   }
 }
 
+// ─── Custom STEM & Robotics Blocks ───────────────────────────────────────────
+Blockly.Blocks['robot_move'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("🤖 Robot Move")
+        .appendField(new Blockly.FieldDropdown([
+          ["forward ⬆️", "FORWARD"],
+          ["backward ⬇️", "BACKWARD"],
+          ["turn left ⬅️", "LEFT"],
+          ["turn right ➡️", "RIGHT"],
+          ["stop 🛑", "STOP"]
+        ]), "DIRECTION")
+        .appendField("speed")
+        .appendField(new Blockly.FieldNumber(80, 0, 100), "SPEED")
+        .appendField("%")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Control the robot's movement direction and speed.")
+  }
+}
+
+Blockly.Blocks['robot_led'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("💡 Set Robot LED")
+        .appendField(new Blockly.FieldDropdown([
+          ["red 🔴", "RED"],
+          ["green 🟢", "GREEN"],
+          ["blue 🔵", "BLUE"],
+          ["orange 🟠", "ORANGE"],
+          ["off ⚪", "OFF"]
+        ]), "COLOR")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Set the color of the robot's onboard LED.")
+  }
+}
+
+Blockly.Blocks['robot_sensor'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("👁️ Read Sensor")
+        .appendField(new Blockly.FieldDropdown([
+          ["ultrasonic distance 📏", "ultrasonic"],
+          ["line tracker left ⬅️", "line_left"],
+          ["line tracker right ➡️", "line_right"],
+          ["light sensor ☀️", "light"],
+          ["temperature sensor 🌡️", "temperature"]
+        ]), "SENSOR")
+    this.setOutput(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Read data from the robot's sensors.")
+  }
+}
+
+Blockly.Blocks['robot_tone'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("🎵 Play Tone")
+        .appendField("freq")
+        .appendField(new Blockly.FieldNumber(440, 20, 20000), "FREQ")
+        .appendField("Hz for")
+        .appendField(new Blockly.FieldNumber(500, 10, 5000), "DURATION")
+        .appendField("ms")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Play a tone at a specific frequency (Hz) for a duration (ms).")
+  }
+}
+
+Blockly.Blocks['robot_sleep'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("⏳ Robot Sleep")
+        .appendField(new Blockly.FieldNumber(1, 0.01, 60), "SECONDS")
+        .appendField("sec")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Pause robot operations for a given number of seconds.")
+  }
+}
+
+Blockly.Blocks['robot_show_text'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("📺 Display Text")
+        .appendField(new Blockly.FieldTextInput("Hello"), "TEXT")
+        .appendField("at x")
+        .appendField(new Blockly.FieldNumber(0, 0, 128), "X")
+        .appendField("y")
+        .appendField(new Blockly.FieldNumber(0, 0, 64), "Y")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Display text on the robot's OLED screen at specific coordinates.")
+  }
+}
+
+Blockly.Blocks['robot_clear_screen'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("📺 Clear Screen")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Clear the robot's OLED screen.")
+  }
+}
+
+Blockly.Blocks['robot_button'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("🔘 Button")
+        .appendField(new Blockly.FieldDropdown([
+          ["A", "A"],
+          ["B", "B"]
+        ]), "BUTTON")
+        .appendField("is pressed?")
+    this.setOutput(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Check if button A or B is currently pressed on the robot.")
+  }
+}
+
+Blockly.Blocks['robot_servo'] = {
+  init: function(this: Blockly.Block) {
+    this.appendDummyInput()
+        .appendField("🦾 Set Servo Pin")
+        .appendField(new Blockly.FieldDropdown([
+          ["P0", "P0"],
+          ["P1", "P1"],
+          ["P2", "P2"],
+          ["P8", "P8"],
+          ["P12", "P12"]
+        ]), "PIN")
+        .appendField("to angle")
+        .appendField(new Blockly.FieldNumber(90, 0, 180), "ANGLE")
+        .appendField("°")
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
+    this.setColour('#e85d04')
+    this.setTooltip("Set the angle of a servo motor connected to a specific pin.")
+  }
+}
+
+// JS Generators
+;(javascriptGenerator as any).forBlock['robot_move'] = function(block: any, _gen: any) {
+  const dir = block.getFieldValue('DIRECTION')
+  const speed = block.getFieldValue('SPEED')
+  return `robot.move("${dir}", ${speed});\n`
+}
+;(javascriptGenerator as any).forBlock['robot_led'] = function(block: any, _gen: any) {
+  const color = block.getFieldValue('COLOR')
+  return `robot.setLed("${color}");\n`
+}
+;(javascriptGenerator as any).forBlock['robot_sensor'] = function(block: any, _gen: any) {
+  const sensor = block.getFieldValue('SENSOR')
+  return [`robot.readSensor("${sensor}")`, 0]
+}
+;(javascriptGenerator as any).forBlock['robot_tone'] = function(block: any, _gen: any) {
+  const freq = block.getFieldValue('FREQ')
+  const dur = block.getFieldValue('DURATION')
+  return `robot.playTone(${freq}, ${dur});\n`
+}
+;(javascriptGenerator as any).forBlock['robot_sleep'] = function(block: any, _gen: any) {
+  const sec = block.getFieldValue('SECONDS')
+  return `robot.sleep(${sec});\n`
+}
+;(javascriptGenerator as any).forBlock['robot_show_text'] = function(block: any, _gen: any) {
+  const text = block.getFieldValue('TEXT')
+  const x = block.getFieldValue('X')
+  const y = block.getFieldValue('Y')
+  return `robot.showText("${text}", ${x}, ${y});\n`
+}
+;(javascriptGenerator as any).forBlock['robot_clear_screen'] = function(block: any, _gen: any) {
+  return `robot.clearScreen();\n`
+}
+;(javascriptGenerator as any).forBlock['robot_button'] = function(block: any, _gen: any) {
+  const btn = block.getFieldValue('BUTTON')
+  return [`robot.isButtonPressed("${btn}")`, 0]
+}
+;(javascriptGenerator as any).forBlock['robot_servo'] = function(block: any, _gen: any) {
+  const pin = block.getFieldValue('PIN')
+  const angle = block.getFieldValue('ANGLE')
+  return `robot.setServo("${pin}", ${angle});\n`
+}
+
+// Python Generators
+;(pythonGenerator as any).forBlock['robot_move'] = function(block: any, _gen: any) {
+  const dir = block.getFieldValue('DIRECTION')
+  const speed = block.getFieldValue('SPEED')
+  return `robot.move("${dir}", ${speed})\n`
+}
+;(pythonGenerator as any).forBlock['robot_led'] = function(block: any, _gen: any) {
+  const color = block.getFieldValue('COLOR')
+  return `robot.setLed("${color}")\n`
+}
+;(pythonGenerator as any).forBlock['robot_sensor'] = function(block: any, _gen: any) {
+  const sensor = block.getFieldValue('SENSOR')
+  return [`robot.readSensor("${sensor}")`, 0]
+}
+;(pythonGenerator as any).forBlock['robot_tone'] = function(block: any, _gen: any) {
+  const freq = block.getFieldValue('FREQ')
+  const dur = block.getFieldValue('DURATION')
+  return `robot.playTone(${freq}, ${dur})\n`
+}
+;(pythonGenerator as any).forBlock['robot_sleep'] = function(block: any, _gen: any) {
+  const sec = block.getFieldValue('SECONDS')
+  return `robot.sleep(${sec})\n`
+}
+;(pythonGenerator as any).forBlock['robot_show_text'] = function(block: any, _gen: any) {
+  const text = block.getFieldValue('TEXT')
+  const x = block.getFieldValue('X')
+  const y = block.getFieldValue('Y')
+  return `robot.showText("${text}", ${x}, ${y})\n`
+}
+;(pythonGenerator as any).forBlock['robot_clear_screen'] = function(block: any, _gen: any) {
+  return `robot.clearScreen()\n`
+}
+;(pythonGenerator as any).forBlock['robot_button'] = function(block: any, _gen: any) {
+  const btn = block.getFieldValue('BUTTON')
+  return [`robot.isButtonPressed("${btn}")`, 0]
+}
+;(pythonGenerator as any).forBlock['robot_servo'] = function(block: any, _gen: any) {
+  const pin = block.getFieldValue('PIN')
+  const angle = block.getFieldValue('ANGLE')
+  return `robot.setServo("${pin}", ${angle})\n`
+}
+
+// Arduino C++ Generators
+const arduinoGenerator = new (Blockly.Generator as any)('ARDUINO')
+;(arduinoGenerator as any).PRECEDENCE = 0
+;(arduinoGenerator as any).init = function(workspace: Blockly.Workspace) {
+  this.definitions_ = Object.create(null);
+  
+  // Find all variables in the workspace and declare them globally
+  const variables = workspace.getAllVariables();
+  const declarations = variables.map(v => `double ${v.name} = 0;`).join('\n');
+  if (declarations) {
+    this.definitions_['variables'] = declarations;
+  }
+}
+;(arduinoGenerator as any).finish = function(code: string) {
+  const defs = [];
+  for (const name in this.definitions_) {
+    defs.push(this.definitions_[name]);
+  }
+  return `// Momiji IDE — Generated Arduino Sketch 🍁\n` +
+         `#include <Servo.h>\n\n` +
+         (defs.length ? defs.join('\n') + '\n\n' : '') +
+         `void setup() {\n` +
+         `  Serial.begin(9600);\n` +
+         `  // Initialize components here\n` +
+         `}\n\n` +
+         `void loop() {\n` +
+         code.split('\n').map(line => line ? '  ' + line : '').join('\n') + '\n' +
+         `}\n`;
+}
+;(arduinoGenerator as any).scrub_ = function(block: Blockly.Block, code: string, thisOnly: boolean) {
+  const nextBlock = block.nextConnection && block.nextConnection.targetBlock()
+  const nextCode = (thisOnly || !nextBlock) ? '' : (arduinoGenerator as any).blockToCode(nextBlock)
+  return code + nextCode
+}
+;(arduinoGenerator as any).valueToCode = function(block: Blockly.Block, name: string, _prec: number) {
+  const targetBlock = block.getInputTargetBlock(name)
+  if (!targetBlock) return ''
+  const code = (arduinoGenerator as any).blockToCode(targetBlock)
+  return code
+}
+;(arduinoGenerator as any).statementToCode = function(block: Blockly.Block, name: string) {
+  const targetBlock = block.getInputTargetBlock(name)
+  let code = (arduinoGenerator as any).blockToCode(targetBlock)
+  if (typeof code === 'string') {
+    return code.split('\n').map(line => '  ' + line).join('\n')
+  }
+  return ''
+}
+
+;(arduinoGenerator as any).forBlock['robot_move'] = function(block: any, _gen: any) {
+  const dir = block.getFieldValue('DIRECTION')
+  const speed = block.getFieldValue('SPEED')
+  return `robot.move("${dir}", ${speed});\n`
+}
+;(arduinoGenerator as any).forBlock['robot_led'] = function(block: any, _gen: any) {
+  const color = block.getFieldValue('COLOR')
+  return `robot.setLed("${color}");\n`
+}
+;(arduinoGenerator as any).forBlock['robot_sensor'] = function(block: any, _gen: any) {
+  const sensor = block.getFieldValue('SENSOR')
+  return [`robot.readSensor("${sensor}")`, 0]
+}
+;(arduinoGenerator as any).forBlock['robot_tone'] = function(block: any, _gen: any) {
+  const freq = block.getFieldValue('FREQ')
+  const dur = block.getFieldValue('DURATION')
+  return `robot.playTone(${freq}, ${dur});\n`
+}
+;(arduinoGenerator as any).forBlock['robot_sleep'] = function(block: any, _gen: any) {
+  const sec = block.getFieldValue('SECONDS')
+  return `robot.sleep(${sec});\n`
+}
+;(arduinoGenerator as any).forBlock['robot_show_text'] = function(block: any, _gen: any) {
+  const text = block.getFieldValue('TEXT')
+  const x = block.getFieldValue('X')
+  const y = block.getFieldValue('Y')
+  return `robot.showText("${text}", ${x}, ${y});\n`
+}
+;(arduinoGenerator as any).forBlock['robot_clear_screen'] = function(block: any, _gen: any) {
+  return `robot.clearScreen();\n`
+}
+;(arduinoGenerator as any).forBlock['robot_button'] = function(block: any, _gen: any) {
+  const btn = block.getFieldValue('BUTTON')
+  return [`robot.isButtonPressed("${btn}")`, 0]
+}
+;(arduinoGenerator as any).forBlock['robot_servo'] = function(block: any, _gen: any) {
+  const pin = block.getFieldValue('PIN')
+  const angle = block.getFieldValue('ANGLE')
+  return `robot.setServo("${pin}", ${angle});\n`
+}
+
+;(arduinoGenerator as any).forBlock['controls_repeat_ext'] = function(block: any, _gen: any) {
+  const times = (arduinoGenerator as any).valueToCode(block, 'TIMES', 0) || '0'
+  const branch = (arduinoGenerator as any).statementToCode(block, 'DO') || ''
+  return `for (int i = 0; i < ${times}; i++) {\n${branch}}\n`
+}
+;(arduinoGenerator as any).forBlock['controls_whileUntil'] = function(block: any, _gen: any) {
+  const cond = (arduinoGenerator as any).valueToCode(block, 'BOOL', 0) || 'true'
+  const branch = (arduinoGenerator as any).statementToCode(block, 'DO') || ''
+  return `while (${cond}) {\n${branch}}\n`
+}
+;(arduinoGenerator as any).forBlock['controls_if'] = function(block: any, _gen: any) {
+  const cond = (arduinoGenerator as any).valueToCode(block, 'IF0', 0) || 'false'
+  const branch = (arduinoGenerator as any).statementToCode(block, 'DO0') || ''
+  const elseBranch = (arduinoGenerator as any).statementToCode(block, 'ELSE') || ''
+  let code = `if (${cond}) {\n${branch}}`
+  if (elseBranch) code += ` else {\n${elseBranch}}`
+  return code + '\n'
+}
+;(arduinoGenerator as any).forBlock['controls_ifelse'] = function(block: any, _gen: any) {
+  const cond = (arduinoGenerator as any).valueToCode(block, 'IF0', 0) || 'false'
+  const branch = (arduinoGenerator as any).statementToCode(block, 'DO0') || ''
+  const elseBranch = (arduinoGenerator as any).statementToCode(block, 'ELSE') || ''
+  return `if (${cond}) {\n${branch}} else {\n${elseBranch}}\n`
+}
+;(arduinoGenerator as any).forBlock['logic_compare'] = function(block: any, _gen: any) {
+  const op = block.getFieldValue('OP')
+  const a = (arduinoGenerator as any).valueToCode(block, 'A', 0) || '0'
+  const b = (arduinoGenerator as any).valueToCode(block, 'B', 0) || '0'
+  const opMap: Record<string, string> = { EQ: '==', NEQ: '!=', LT: '<', LTE: '<=', GT: '>', GTE: '>=' }
+  return [`(${a} ${opMap[op] || '=='} ${b})`, 0]
+}
+;(arduinoGenerator as any).forBlock['logic_operation'] = function(block: any, _gen: any) {
+  const op = block.getFieldValue('OP')
+  const a = (arduinoGenerator as any).valueToCode(block, 'A', 0) || 'false'
+  const b = (arduinoGenerator as any).valueToCode(block, 'B', 0) || 'false'
+  return [`(${a} ${op === 'AND' ? '&&' : '||'} ${b})`, 0]
+}
+;(arduinoGenerator as any).forBlock['logic_negate'] = function(block: any, _gen: any) {
+  const val = (arduinoGenerator as any).valueToCode(block, 'BOOL', 0) || 'false'
+  return [`!(${val})`, 0]
+}
+;(arduinoGenerator as any).forBlock['logic_boolean'] = function(block: any, _gen: any) {
+  const val = block.getFieldValue('BOOL')
+  return [val === 'TRUE' ? 'true' : 'false', 0]
+}
+;(arduinoGenerator as any).forBlock['math_number'] = function(block: any, _gen: any) {
+  return [block.getFieldValue('NUM'), 0]
+}
+;(arduinoGenerator as any).forBlock['math_arithmetic'] = function(block: any, _gen: any) {
+  const op = block.getFieldValue('OP')
+  const a = (arduinoGenerator as any).valueToCode(block, 'A', 0) || '0'
+  const b = (arduinoGenerator as any).valueToCode(block, 'B', 0) || '0'
+  const opMap: Record<string, string> = { ADD: '+', MINUS: '-', MULTIPLY: '*', DIVIDE: '/', POWER: '^' }
+  return [`(${a} ${opMap[op] || '+'} ${b})`, 0]
+}
+;(arduinoGenerator as any).forBlock['variables_get'] = function(block: any, _gen: any) {
+  const varName = block.getField('VAR') ? block.getFieldValue('VAR') : 'x'
+  return [varName, 0]
+}
+;(arduinoGenerator as any).forBlock['variables_set'] = function(block: any, _gen: any) {
+  const varName = block.getField('VAR') ? block.getFieldValue('VAR') : 'x'
+  const val = (arduinoGenerator as any).valueToCode(block, 'VALUE', 0) || '0'
+  return `${varName} = ${val};\n`
+}
+;(arduinoGenerator as any).forBlock['text'] = function(block: any, _gen: any) {
+  const txt = block.getFieldValue('TEXT') || ''
+  return [`"${txt}"`, 0]
+}
+
 type RunLine    = { id: number; text: string; type: 'out' | 'err' | 'sys' }
-type Lang       = 'javascript' | 'python'
+type Lang       = 'javascript' | 'python' | 'arduino'
 type SyncMode   = 'blocks-primary' | 'code-primary' | 'bidirectional'
 type Level      = 'beginner' | 'intermediate' | 'advanced'
 
@@ -49,9 +442,10 @@ export function BlockEditor() {
   const containerRef  = useRef<HTMLDivElement>(null)
   const splitWrapRef  = useRef<HTMLDivElement>(null)
   const workspaceRef  = useRef<Blockly.WorkspaceSvg | null>(null)
-  const { settings, openTab, aiProviders, toggleBottomPanel, showBottomPanel, currentFolder } = useAppStore()
+  const { settings, openTab, aiProviders, toggleBottomPanel, showBottomPanel, currentFolder, showSidebar, toggleSidebar } = useAppStore()
 
   const [code, setCode]         = useState('// Drag blocks from the toolbox to generate code\n')
+  const [isPaused, setIsPaused] = useState(false)
   const [lang, setLang]         = useState<Lang>('javascript')
   const [syncMode, setSyncMode] = useState<SyncMode>('code-primary')
   const [blockCount, setBlockCount] = useState(0)
@@ -84,9 +478,14 @@ export function BlockEditor() {
   const generateCode = useCallback((): string => {
     if (!workspaceRef.current) return ''
     try {
-      return lang === 'javascript'
-        ? javascriptGenerator.workspaceToCode(workspaceRef.current)
-        : pythonGenerator.workspaceToCode(workspaceRef.current)
+      if (lang === 'javascript') {
+        return javascriptGenerator.workspaceToCode(workspaceRef.current)
+      } else if (lang === 'python') {
+        return pythonGenerator.workspaceToCode(workspaceRef.current)
+      } else if (lang === 'arduino') {
+        return (arduinoGenerator as any).workspaceToCode(workspaceRef.current)
+      }
+      return ''
     } catch {
       return ''
     }
@@ -158,11 +557,16 @@ export function BlockEditor() {
       setSyncMode((current) => {
         // Always update code when blocks change (except when user is manually editing code)
         // In code-primary, we still reflect block changes but mark as block-generated
-        const gen = ws.getAllBlocks(false).length === 0
-          ? '// Drag blocks from the toolbox to generate code\n'
-          : (lang === 'javascript'
-              ? javascriptGenerator.workspaceToCode(ws)
-              : pythonGenerator.workspaceToCode(ws))
+        let gen = '// Drag blocks from the toolbox to generate code\n'
+        if (ws.getAllBlocks(false).length > 0) {
+          if (lang === 'javascript') {
+            gen = javascriptGenerator.workspaceToCode(ws)
+          } else if (lang === 'python') {
+            gen = pythonGenerator.workspaceToCode(ws)
+          } else if (lang === 'arduino') {
+            gen = (arduinoGenerator as any).workspaceToCode(ws)
+          }
+        }
         const newCode = gen || '// Add blocks to generate code\n'
         blockGenRef.current = true  // mark: code came from blocks, not user typing
         setCode(newCode)
@@ -361,8 +765,141 @@ export function BlockEditor() {
     const tmpPath  = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/${fname}`
     const command  = lang === 'python' ? (settings.pythonPath || 'python') : 'node'
 
+    const JS_SIMULATOR_STUB = `
+// ── Momiji STEM Robotics Local Simulator Stub ──
+const fs = require('fs');
+const robot = {
+  move: (dir, speed) => console.log(\`[Robotics] 🤖 Motor: \${dir} at speed \${speed}%\`),
+  setLed: (color) => console.log(\`[Robotics] 💡 LED set to \${color}\`),
+  readSensor: (sensor) => {
+    // Throttle loop execution to prevent Electron IPC flooding (keeps UI butter-smooth at 60fps)
+    const sleepStart = Date.now();
+    while (Date.now() - sleepStart < 15) {}
+
+    let val = 0;
+    if (sensor === 'ultrasonic') {
+      try {
+        const data = JSON.parse(fs.readFileSync(\`\${__filename}_state.json\`, 'utf8'));
+        val = data.distance != null ? Math.round(data.distance) : 40;
+      } catch(e) {
+        val = Math.floor(Math.random() * 80) + 10;
+      }
+    } else if (sensor === 'line_left' || sensor === 'line_right') {
+      try {
+        const data = JSON.parse(fs.readFileSync(\`\${__filename}_state.json\`, 'utf8'));
+        val = data[sensor] != null ? Number(data[sensor]) : 0;
+      } catch(e) {
+        val = 0;
+      }
+    } else if (sensor === 'light') {
+      val = Math.floor(Math.random() * 500) + 100;
+    } else if (sensor === 'temperature') {
+      val = Math.floor(Math.random() * 15) + 20;
+    } else {
+      val = Math.floor(Math.random() * 2);
+    }
+    console.log(\`[Robotics] 👁️ Sensor \${sensor}: \${val}\\n\`);
+    return val;
+  },
+  playTone: (freq, duration) => console.log(\`[Robotics] 🎵 Tone playing: \${freq}Hz for \${duration}ms\`),
+  sleep: (seconds) => {
+    const ms = seconds * 1000;
+    const start = Date.now();
+    while (Date.now() - start < ms) {}
+  },
+  showText: (text, x, y) => console.log(\`[Robotics] 📺 Display: "\${text}" at (\${x}, \${y})\`),
+  clearScreen: () => console.log(\`[Robotics] 📺 Screen cleared\`),
+  isButtonPressed: (btn) => {
+    let pressed = false;
     try {
-      await window.api.fs.writeFile(tmpPath, code)
+      const data = JSON.parse(fs.readFileSync(\`\${__filename}_buttons.json\`, 'utf8'));
+      pressed = !!data[btn];
+    } catch(e) {
+      pressed = Math.random() > 0.5;
+    }
+    console.log(\`[Robotics] 🔘 Button \${btn} pressed? \${pressed}\\n\`);
+    return pressed;
+  },
+  setServo: (pin, angle) => console.log(\`[Robotics] 🦾 Servo \${pin} set to \${angle}°\`)
+};
+// ───────────────────────────────────────────────\n\n`;
+
+    const PY_SIMULATOR_STUB = `
+# ── Momiji STEM Robotics Local Simulator Stub ──
+import time
+import random
+import os
+import json
+
+class MomijiRobotSimulator:
+    def move(self, direction, speed):
+        print(f"[Robotics] 🤖 Motor: {direction} at speed {speed}%")
+    def setLed(self, color):
+        print(f"[Robotics] 💡 LED set to {color}")
+    def readSensor(self, sensor):
+        # Throttle loop execution to prevent Electron IPC flooding
+        time.sleep(0.015)
+        val = 0
+        if sensor == "ultrasonic":
+            try:
+                state_path = __file__ + "_state.json"
+                with open(state_path, "r") as f:
+                    data = json.load(f)
+                    val = int(data.get("distance", 40))
+            except:
+                val = random.randint(10, 90)
+        elif sensor in ("line_left", "line_right"):
+            try:
+                state_path = __file__ + "_state.json"
+                with open(state_path, "r") as f:
+                    data = json.load(f)
+                    val = int(data.get(sensor, 0))
+            except:
+                val = 0
+        else:
+            val = random.randint(100, 600) if sensor == "light" else \
+                  random.randint(20, 35) if sensor == "temperature" else \
+                  random.randint(0, 1)
+        print(f"[Robotics] 👁️ Sensor {sensor}: {val}\\n")
+        return val
+    def playTone(self, freq, duration):
+        print(f"[Robotics] 🎵 Tone playing: {freq}Hz for {duration}ms")
+    def sleep(self, seconds):
+        time.sleep(seconds)
+    def showText(self, text, x, y):
+        print(f"[Robotics] 📺 Display: \"{text}\" at ({x}, {y})")
+    def clearScreen(self):
+        print("[Robotics] 📺 Screen cleared")
+    def isButtonPressed(self, btn):
+        pressed = False
+        try:
+            btn_path = __file__ + "_buttons.json"
+            with open(btn_path, "r") as f:
+                data = json.load(f)
+                pressed = bool(data.get(btn, False))
+        except:
+            pressed = random.choice([True, False])
+        print(f"[Robotics] 🔘 Button {btn} pressed? {pressed}\\n")
+        return pressed
+    def setServo(self, pin, angle):
+        print(f"[Robotics] 🦾 Servo {pin} set to {angle}°")
+
+robot = MomijiRobotSimulator()
+# ───────────────────────────────────────────────\n\n`;
+
+    const stub = lang === 'python' ? PY_SIMULATOR_STUB : JS_SIMULATOR_STUB;
+    const finalCode = code.includes('robot.') ? stub + code : code;
+
+    // Create default initial simulation state files to prevent empty file crashes
+    try {
+      await window.api.fs.writeFile(tmpPath + '_buttons.json', JSON.stringify({ A: false, B: false }))
+      await window.api.fs.writeFile(tmpPath + '_state.json', JSON.stringify({ distance: 100 }))
+    } catch (e) {
+      // Ignored
+    }
+
+    try {
+      await window.api.fs.writeFile(tmpPath, finalCode)
     } catch {
       toast.error('Could not write temp file. Open a folder first.')
       return
@@ -380,6 +917,54 @@ export function BlockEditor() {
 
     toast.info(`▶ Running ${fname}…`)
   }, [code, lang, showBottomPanel, toggleBottomPanel, settings.pythonPath, currentFolder])
+
+  const handleStop = useCallback(async () => {
+    await window.api.process.kill('runner-main')
+    setRunStatus('idle')
+    setIsPaused(false)
+    toast.error('■ Stopped execution')
+  }, [])
+
+  const handlePauseToggle = useCallback(async () => {
+    if (runStatus !== 'running') return
+    const nextPaused = !isPaused
+    setIsPaused(nextPaused)
+    
+    const path = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/blocks_output.${lang === 'python' ? 'py' : 'js'}_state.json`
+    try {
+      let data: any = {}
+      try {
+        const content = await window.api.fs.readFile(path)
+        data = JSON.parse(content)
+      } catch (e) {}
+      data.paused = nextPaused
+      await window.api.fs.writeFile(path, JSON.stringify(data))
+      
+      if (nextPaused) {
+        toast.warning('⏸ Paused execution')
+      } else {
+        toast.success('▶ Resumed execution')
+      }
+    } catch(e) {}
+  }, [runStatus, isPaused, currentFolder, lang])
+
+  const handleStep = useCallback(async () => {
+    if (runStatus !== 'running') return
+    setIsPaused(true)
+    
+    const path = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/blocks_output.${lang === 'python' ? 'py' : 'js'}_state.json`
+    try {
+      let data: any = {}
+      try {
+        const content = await window.api.fs.readFile(path)
+        data = JSON.parse(content)
+      } catch (e) {}
+      data.paused = true
+      data.stepPending = true
+      await window.api.fs.writeFile(path, JSON.stringify(data))
+      toast.info('👣 Stepped one block')
+    } catch(e) {}
+  }, [runStatus, currentFolder, lang])
 
   // ─── Kitsune: convert code → blocks ──────────────────────────────
   const handleAIToBlocks = useCallback(async () => {
@@ -468,9 +1053,14 @@ ${code}
     if (!ws) return
     ws.clear()
     templateFn(ws)
-    const gen = lang === 'javascript'
-      ? javascriptGenerator.workspaceToCode(ws)
-      : pythonGenerator.workspaceToCode(ws)
+    let gen = ''
+    if (lang === 'javascript') {
+      gen = javascriptGenerator.workspaceToCode(ws)
+    } else if (lang === 'python') {
+      gen = pythonGenerator.workspaceToCode(ws)
+    } else if (lang === 'arduino') {
+      gen = (arduinoGenerator as any).workspaceToCode(ws)
+    }
     setCode(gen || '')
     setBlockCount(ws.getAllBlocks(false).length)
     setShowTemplates(false)
@@ -509,6 +1099,56 @@ ${code}
 
         <div className="flex-1" />
 
+        {/* View Layout Controls (VSCode style) */}
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg border" style={{ background: 'var(--bg-surface0)', borderColor: 'var(--border)' }}>
+          <button onClick={() => setSplitRatio(100)} title="Blocks Only Layout"
+            className="px-2 py-0.5 rounded text-[10px] font-extrabold transition-all cursor-pointer"
+            style={{
+              background: splitRatio === 100 ? 'var(--accent-mauve)' : 'transparent',
+              color: splitRatio === 100 ? 'white' : 'var(--text-muted)'
+            }}>
+            🧱 BLOCKS
+          </button>
+          <button onClick={() => setSplitRatio(50)} title="Split View Layout"
+            className="px-2 py-0.5 rounded text-[10px] font-extrabold transition-all cursor-pointer"
+            style={{
+              background: splitRatio > 0 && splitRatio < 100 ? 'var(--accent-mauve)' : 'transparent',
+              color: splitRatio > 0 && splitRatio < 100 ? 'white' : 'var(--text-muted)'
+            }}>
+            💻 SPLIT
+          </button>
+          <button onClick={() => setSplitRatio(0)} title="Code Only Layout"
+            className="px-2 py-0.5 rounded text-[10px] font-extrabold transition-all cursor-pointer"
+            style={{
+              background: splitRatio === 0 ? 'var(--accent-mauve)' : 'transparent',
+              color: splitRatio === 0 ? 'white' : 'var(--text-muted)'
+            }}>
+            📝 CODE
+          </button>
+        </div>
+
+        {/* Panel Toggles */}
+        <div className="flex gap-1">
+          <button onClick={toggleSidebar} title="Toggle Explorer Sidebar (Ctrl+B)"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-xs border cursor-pointer"
+            style={{
+              background: showSidebar ? 'var(--bg-surface1)' : 'var(--bg-base)',
+              color: showSidebar ? 'var(--accent-teal)' : 'var(--text-muted)',
+              borderColor: 'var(--border)'
+            }}>
+            📁
+          </button>
+          <button onClick={toggleBottomPanel} title="Toggle Bottom Console Panel (Ctrl+`)"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-xs border cursor-pointer"
+            style={{
+              background: showBottomPanel ? 'var(--bg-surface1)' : 'var(--bg-base)',
+              color: showBottomPanel ? 'var(--accent-teal)' : 'var(--text-muted)',
+              borderColor: 'var(--border)'
+            }}>
+            ⌨️
+          </button>
+        </div>
+
         {/* Templates */}
         <div className="relative">
           <button onClick={() => setShowTemplates(!showTemplates)}
@@ -542,6 +1182,7 @@ ${code}
           style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)' }}>
           <option value="javascript">JavaScript</option>
           <option value="python">Python</option>
+          <option value="arduino">Arduino C++</option>
         </select>
 
         {/* Sync mode cycle button */}
@@ -569,12 +1210,34 @@ ${code}
           </button>
         ))}
 
-        {/* Run */}
-        <button onClick={handleRun}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-          style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
-          ▶ Run
-        </button>
+        {/* Run / Debug Controls */}
+        {runStatus === 'running' ? (
+          <div className="flex items-center gap-1 p-0.5 rounded-lg border" style={{ background: 'var(--bg-surface0)', borderColor: 'var(--border)' }}>
+            <button onClick={handlePauseToggle} title={isPaused ? "Resume execution" : "Pause execution"}
+              className="px-2 py-1 rounded text-xs font-bold transition-colors cursor-pointer"
+              style={{ background: isPaused ? 'var(--accent-green)' : 'var(--accent-yellow)', color: 'var(--bg-base)' }}>
+              {isPaused ? '▶ Resume' : '⏸ Pause'}
+            </button>
+            {isPaused && (
+              <button onClick={handleStep} title="Step one block / instruction"
+                className="px-2 py-1 rounded text-xs font-bold transition-colors cursor-pointer"
+                style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+                👣 Step
+              </button>
+            )}
+            <button onClick={handleStop} title="Stop execution"
+              className="px-2 py-1 rounded text-xs font-bold transition-colors cursor-pointer"
+              style={{ background: 'var(--accent-red)', color: 'white' }}>
+              ■ Stop
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleRun}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer"
+            style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
+            ▶ Run
+          </button>
+        )}
 
         <button onClick={handleOpenInEditor}
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
@@ -725,11 +1388,13 @@ ${code}
           {/* Inline run output */}
           {showRunOutput && (
             <div className="flex-shrink-0 flex flex-col"
-              style={{ maxHeight: 200, borderTop: '2px solid var(--accent-mauve)', background: 'var(--bg-crust)' }}>
+              style={{ borderTop: '2px solid var(--accent-mauve)', background: 'var(--bg-crust)' }}>
+              
+              {/* Header */}
               <div className="flex items-center justify-between px-3 py-1 flex-shrink-0"
                 style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-mantle)' }}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold" style={{ color: 'var(--accent-mauve)' }}>▶ OUTPUT</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--accent-mauve)' }}>▶ RUNNER WORKSPACE</span>
                   {runStatus === 'running' && (
                     <span className="text-xs animate-pulse" style={{ color: 'var(--accent-yellow)' }}>
                       ⟳ {runElapsed != null ? `${(runElapsed/1000).toFixed(1)}s` : 'running…'}
@@ -742,18 +1407,35 @@ ${code}
                   className="text-xs px-1.5 py-0.5 rounded"
                   style={{ color: 'var(--text-subtle)', border: '1px solid var(--border)' }}>✕</button>
               </div>
-              <div className="overflow-y-auto p-2" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>
-                {runLines.length === 0 && runStatus === 'running' && (
-                  <span style={{ color: 'var(--text-subtle)' }}>Running…</span>
+
+              {/* Splitscreen layout */}
+              <div className="flex flex-col md:flex-row overflow-hidden" style={{ maxHeight: 320 }}>
+                {/* Left panel: Log Console */}
+                <div className="flex-1 overflow-y-auto p-2" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, minHeight: 120 }}>
+                  {runLines.length === 0 && runStatus === 'running' && (
+                    <span style={{ color: 'var(--text-subtle)' }}>Running…</span>
+                  )}
+                  {runLines.map(l => (
+                    <div key={l.id} style={{
+                      color: l.type === 'err' ? 'var(--accent-red)' : l.type === 'sys' ? 'var(--text-muted)' : 'var(--text)',
+                      whiteSpace: 'pre-wrap', lineHeight: 1.6
+                    }}>{l.text}</div>
+                  ))}
+                  <div ref={runOutputRef} />
+                </div>
+
+                {/* Right panel: Mascot 2D Arena Simulator */}
+                {code.includes('robot.') && (
+                  <div className="w-full md:w-[600px] flex-shrink-0 overflow-y-auto border-t md:border-t-0 md:border-l" style={{ background: 'var(--bg-mantle)', borderColor: 'var(--border)' }}>
+                    <RobotSimulator
+                      runLines={runLines}
+                      runStatus={runStatus}
+                      tmpPath={`${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/blocks_output.${lang === 'python' ? 'py' : 'js'}`}
+                    />
+                  </div>
                 )}
-                {runLines.map(l => (
-                  <div key={l.id} style={{
-                    color: l.type === 'err' ? 'var(--accent-red)' : l.type === 'sys' ? 'var(--text-muted)' : 'var(--text)',
-                    whiteSpace: 'pre-wrap', lineHeight: 1.6
-                  }}>{l.text}</div>
-                ))}
-                <div ref={runOutputRef} />
               </div>
+
             </div>
           )}
 
@@ -808,25 +1490,127 @@ ${code}
 // ─── Templates ──────────────────────────────────────────────────────
 const TEMPLATES: { id: string; name: string; desc: string; icon: string; load: (ws: Blockly.WorkspaceSvg) => void }[] = [
   {
-    id: 'hello', name: 'Hello World', icon: '👋',
-    desc: 'Print your first message',
+    id: 'line-follower', name: 'Line Follower', icon: '🔄',
+    desc: 'Steer robot along a neon floor track',
     load: (ws) => {
-      const print = ws.newBlock('text_print'); print.initSvg(); print.render(); print.moveBy(80, 80)
-      const txt = ws.newBlock('text'); txt.setFieldValue('Hello, World! 🌍', 'TEXT'); txt.initSvg(); txt.render()
-      print.getInput('VALUE')?.connection?.connect(txt.outputConnection!)
+      const loop = ws.newBlock('controls_whileUntil'); loop.initSvg(); loop.render(); loop.moveBy(80, 80)
+      const cond = ws.newBlock('logic_boolean'); cond.setFieldValue('TRUE', 'BOOL'); cond.initSvg(); cond.render()
+      loop.getInput('BOOL')?.connection?.connect(cond.outputConnection!)
+
+      const ifBlock = ws.newBlock('controls_if'); ifBlock.initSvg(); ifBlock.render()
+      loop.getInput('DO')?.connection?.connect(ifBlock.previousConnection!)
+
+      // 1. Condition IF: left == 1 && right == 0
+      const checkLeft = ws.newBlock('logic_operation'); checkLeft.setFieldValue('AND', 'OP'); checkLeft.initSvg(); checkLeft.render()
+      ifBlock.getInput('IF0')?.connection?.connect(checkLeft.outputConnection!)
+
+      const leftEq = ws.newBlock('logic_compare'); leftEq.setFieldValue('EQ', 'OP'); leftEq.initSvg(); leftEq.render()
+      const sLeft = ws.newBlock('robot_sensor'); sLeft.setFieldValue('line_left', 'SENSOR'); sLeft.initSvg(); sLeft.render()
+      const n1 = ws.newBlock('math_number'); n1.setFieldValue('1', 'NUM'); n1.initSvg(); n1.render()
+      leftEq.getInput('A')?.connection?.connect(sLeft.outputConnection!)
+      leftEq.getInput('B')?.connection?.connect(n1.outputConnection!)
+      checkLeft.getInput('A')?.connection?.connect(leftEq.outputConnection!)
+
+      const rightEq0 = ws.newBlock('logic_compare'); rightEq0.setFieldValue('EQ', 'OP'); rightEq0.initSvg(); rightEq0.render()
+      const sRight = ws.newBlock('robot_sensor'); sRight.setFieldValue('line_right', 'SENSOR'); sRight.initSvg(); sRight.render()
+      const n0 = ws.newBlock('math_number'); n0.setFieldValue('0', 'NUM'); n0.initSvg(); n0.render()
+      rightEq0.getInput('A')?.connection?.connect(sRight.outputConnection!)
+      rightEq0.getInput('B')?.connection?.connect(n0.outputConnection!)
+      checkLeft.getInput('B')?.connection?.connect(rightEq0.outputConnection!)
+
+      const turnLeft = ws.newBlock('robot_move'); turnLeft.setFieldValue('LEFT', 'DIRECTION'); turnLeft.setFieldValue('40', 'SPEED'); turnLeft.initSvg(); turnLeft.render()
+      ifBlock.getInput('DO0')?.connection?.connect(turnLeft.previousConnection!)
+
+      // 2. Else IF 1: left == 0 && right == 1
+      ;(ifBlock as any).elseifCount_ = 2;
+      ;(ifBlock as any).elseCount_ = 1;
+      (ifBlock as any).updateShape_?.()
+
+      const checkRight = ws.newBlock('logic_operation'); checkRight.setFieldValue('AND', 'OP'); checkRight.initSvg(); checkRight.render()
+      ifBlock.getInput('IF1')?.connection?.connect(checkRight.outputConnection!)
+
+      const leftEq0 = ws.newBlock('logic_compare'); leftEq0.setFieldValue('EQ', 'OP'); leftEq0.initSvg(); leftEq0.render()
+      const sLeft2 = ws.newBlock('robot_sensor'); sLeft2.setFieldValue('line_left', 'SENSOR'); sLeft2.initSvg(); sLeft2.render()
+      const n0_2 = ws.newBlock('math_number'); n0_2.setFieldValue('0', 'NUM'); n0_2.initSvg(); n0_2.render()
+      leftEq0.getInput('A')?.connection?.connect(sLeft2.outputConnection!)
+      leftEq0.getInput('B')?.connection?.connect(n0_2.outputConnection!)
+      checkRight.getInput('A')?.connection?.connect(leftEq0.outputConnection!)
+
+      const rightEq1 = ws.newBlock('logic_compare'); rightEq1.setFieldValue('EQ', 'OP'); rightEq1.initSvg(); rightEq1.render()
+      const sRight2 = ws.newBlock('robot_sensor'); sRight2.setFieldValue('line_right', 'SENSOR'); sRight2.initSvg(); sRight2.render()
+      const n1_2 = ws.newBlock('math_number'); n1_2.setFieldValue('1', 'NUM'); n1_2.initSvg(); n1_2.render()
+      rightEq1.getInput('A')?.connection?.connect(sRight2.outputConnection!)
+      rightEq1.getInput('B')?.connection?.connect(n1_2.outputConnection!)
+      checkRight.getInput('B')?.connection?.connect(rightEq1.outputConnection!)
+
+      const turnRight = ws.newBlock('robot_move'); turnRight.setFieldValue('RIGHT', 'DIRECTION'); turnRight.setFieldValue('40', 'SPEED'); turnRight.initSvg(); turnRight.render()
+      ifBlock.getInput('DO1')?.connection?.connect(turnRight.previousConnection!)
+
+      // 3. Else IF 2: left == 0 && right == 0 (both off line, move forward!)
+      const checkBoth0 = ws.newBlock('logic_operation'); checkBoth0.setFieldValue('AND', 'OP'); checkBoth0.initSvg(); checkBoth0.render()
+      ifBlock.getInput('IF2')?.connection?.connect(checkBoth0.outputConnection!)
+
+      const leftEq0_3 = ws.newBlock('logic_compare'); leftEq0_3.setFieldValue('EQ', 'OP'); leftEq0_3.initSvg(); leftEq0_3.render()
+      const sLeft3 = ws.newBlock('robot_sensor'); sLeft3.setFieldValue('line_left', 'SENSOR'); sLeft3.initSvg(); sLeft3.render()
+      const n0_3 = ws.newBlock('math_number'); n0_3.setFieldValue('0', 'NUM'); n0_3.initSvg(); n0_3.render()
+      leftEq0_3.getInput('A')?.connection?.connect(sLeft3.outputConnection!)
+      leftEq0_3.getInput('B')?.connection?.connect(n0_3.outputConnection!)
+      checkBoth0.getInput('A')?.connection?.connect(leftEq0_3.outputConnection!)
+
+      const rightEq0_3 = ws.newBlock('logic_compare'); rightEq0_3.setFieldValue('EQ', 'OP'); rightEq0_3.initSvg(); rightEq0_3.render()
+      const sRight3 = ws.newBlock('robot_sensor'); sRight3.setFieldValue('line_right', 'SENSOR'); sRight3.initSvg(); sRight3.render()
+      const n0_3_r = ws.newBlock('math_number'); n0_3_r.setFieldValue('0', 'NUM'); n0_3_r.initSvg(); n0_3_r.render()
+      rightEq0_3.getInput('A')?.connection?.connect(sRight3.outputConnection!)
+      rightEq0_3.getInput('B')?.connection?.connect(n0_3_r.outputConnection!)
+      checkBoth0.getInput('B')?.connection?.connect(rightEq0_3.outputConnection!)
+
+      const forward = ws.newBlock('robot_move'); forward.setFieldValue('FORWARD', 'DIRECTION'); forward.setFieldValue('50', 'SPEED'); forward.initSvg(); forward.render()
+      ifBlock.getInput('DO2')?.connection?.connect(forward.previousConnection!)
+
+      // 4. Else: stop
+      const stop = ws.newBlock('robot_move'); stop.setFieldValue('STOP', 'DIRECTION'); stop.setFieldValue('0', 'SPEED'); stop.initSvg(); stop.render()
+      ifBlock.getInput('ELSE')?.connection?.connect(stop.previousConnection!)
     }
   },
   {
-    id: 'count', name: 'Count 1 to 10', icon: '🔢',
-    desc: 'Loop that prints numbers',
+    id: 'obstacle-avoid', name: 'Obstacle Avoidance', icon: '🤖',
+    desc: 'Avoid obstacles using distance sensor',
     load: (ws) => {
-      const loop = ws.newBlock('controls_repeat_ext'); loop.initSvg(); loop.render(); loop.moveBy(80, 80)
-      const num = ws.newBlock('math_number'); num.setFieldValue('10', 'NUM'); num.initSvg(); num.render()
-      loop.getInput('TIMES')?.connection?.connect(num.outputConnection!)
-      const print = ws.newBlock('text_print'); print.initSvg(); print.render()
-      loop.getInput('DO')?.connection?.connect(print.previousConnection!)
-      const cnt = ws.newBlock('math_arithmetic'); cnt.setFieldValue('ADD', 'OP'); cnt.initSvg(); cnt.render()
-      print.getInput('VALUE')?.connection?.connect(cnt.outputConnection!)
+      const loop = ws.newBlock('controls_whileUntil'); loop.initSvg(); loop.render(); loop.moveBy(80, 80)
+      const cond = ws.newBlock('logic_boolean'); cond.setFieldValue('TRUE', 'BOOL'); cond.initSvg(); cond.render()
+      loop.getInput('BOOL')?.connection?.connect(cond.outputConnection!)
+
+      const ifBlock = ws.newBlock('controls_if'); ifBlock.initSvg(); ifBlock.render()
+      loop.getInput('DO')?.connection?.connect(ifBlock.previousConnection!)
+
+      // condition: readSensor < 20
+      const comp = ws.newBlock('logic_compare'); comp.setFieldValue('LT', 'OP'); comp.initSvg(); comp.render()
+      ifBlock.getInput('IF0')?.connection?.connect(comp.outputConnection!)
+
+      const sensor = ws.newBlock('robot_sensor'); sensor.setFieldValue('ultrasonic', 'SENSOR'); sensor.initSvg(); sensor.render()
+      comp.getInput('A')?.connection?.connect(sensor.outputConnection!)
+
+      const dist = ws.newBlock('math_number'); dist.setFieldValue('20', 'NUM'); dist.initSvg(); dist.render()
+      comp.getInput('B')?.connection?.connect(dist.outputConnection!)
+
+      // then: back up, sleep, turn right, sleep
+      const back = ws.newBlock('robot_move'); back.setFieldValue('BACKWARD', 'DIRECTION'); back.setFieldValue('50', 'SPEED'); back.initSvg(); back.render()
+      ifBlock.getInput('DO0')?.connection?.connect(back.previousConnection!)
+
+      const s1 = ws.newBlock('robot_sleep'); s1.setFieldValue('0.5', 'SECONDS'); s1.initSvg(); s1.render()
+      back.nextConnection?.connect(s1.previousConnection!)
+
+      const turn = ws.newBlock('robot_move'); turn.setFieldValue('RIGHT', 'DIRECTION'); turn.setFieldValue('60', 'SPEED'); turn.initSvg(); turn.render()
+      s1.nextConnection?.connect(turn.previousConnection!)
+
+      const s2 = ws.newBlock('robot_sleep'); s2.setFieldValue('0.3', 'SECONDS'); s2.initSvg(); s2.render()
+      turn.nextConnection?.connect(s2.previousConnection!)
+
+      // else: move forward 80
+      ;(ifBlock as any).elseCount_ = 1; (ifBlock as any).updateShape_?.()
+      
+      const forward = ws.newBlock('robot_move'); forward.setFieldValue('FORWARD', 'DIRECTION'); forward.setFieldValue('80', 'SPEED'); forward.initSvg(); forward.render()
+      ifBlock.getInput('ELSE')?.connection?.connect(forward.previousConnection!)
     }
   },
   {
@@ -1114,6 +1898,21 @@ const TOOLBOX_BEGINNER = {
       ]
     },
     { kind: 'sep' },
+    {
+      kind: 'category', name: '🤖 STEM Robotics', colour: '#e85d04',
+      contents: [
+        { kind: 'block', type: 'robot_move' },
+        { kind: 'block', type: 'robot_led' },
+        { kind: 'block', type: 'robot_sensor' },
+        { kind: 'block', type: 'robot_tone' },
+        { kind: 'block', type: 'robot_sleep' },
+        { kind: 'block', type: 'robot_show_text' },
+        { kind: 'block', type: 'robot_clear_screen' },
+        { kind: 'block', type: 'robot_button' },
+        { kind: 'block', type: 'robot_servo' }
+      ]
+    },
+    { kind: 'sep' },
     { kind: 'category', name: '📦 Variables', categorystyle: 'variable_category', custom: 'VARIABLE' }
   ]
 }
@@ -1181,6 +1980,21 @@ const TOOLBOX_INTERMEDIATE = {
         { kind: 'block', type: 'lists_length' },
         { kind: 'block', type: 'lists_getIndex' },
         { kind: 'block', type: 'lists_setIndex' }
+      ]
+    },
+    { kind: 'sep' },
+    {
+      kind: 'category', name: '🤖 STEM Robotics', colour: '#e85d04',
+      contents: [
+        { kind: 'block', type: 'robot_move' },
+        { kind: 'block', type: 'robot_led' },
+        { kind: 'block', type: 'robot_sensor' },
+        { kind: 'block', type: 'robot_tone' },
+        { kind: 'block', type: 'robot_sleep' },
+        { kind: 'block', type: 'robot_show_text' },
+        { kind: 'block', type: 'robot_clear_screen' },
+        { kind: 'block', type: 'robot_button' },
+        { kind: 'block', type: 'robot_servo' }
       ]
     },
     { kind: 'sep' },
@@ -1257,6 +2071,21 @@ const TOOLBOX = {
         { kind: 'block', type: 'lists_setIndex' },
         { kind: 'block', type: 'lists_sort' },
         { kind: 'block', type: 'lists_reverse' }
+      ]
+    },
+    { kind: 'sep' },
+    {
+      kind: 'category', name: '🤖 STEM Robotics', colour: '#e85d04',
+      contents: [
+        { kind: 'block', type: 'robot_move' },
+        { kind: 'block', type: 'robot_led' },
+        { kind: 'block', type: 'robot_sensor' },
+        { kind: 'block', type: 'robot_tone' },
+        { kind: 'block', type: 'robot_sleep' },
+        { kind: 'block', type: 'robot_show_text' },
+        { kind: 'block', type: 'robot_clear_screen' },
+        { kind: 'block', type: 'robot_button' },
+        { kind: 'block', type: 'robot_servo' }
       ]
     },
     { kind: 'sep' },

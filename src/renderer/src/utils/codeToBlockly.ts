@@ -389,7 +389,8 @@ class Parser {
         return { type: 'procedures_callreturn', fields: { NAME: name } }
       }
 
-      // Property access: window.alert, console.log
+
+      // Property access: window.alert, console.log, robot.readSensor
       if (this.peek().value === '.') {
         this.consume()
         const prop = this.consume().value
@@ -402,6 +403,14 @@ class Parser {
           // These become text_print in block form
           if ((name === 'window' && prop === 'alert') || (name === 'console' && prop === 'log')) {
             return arg  // caller wraps in text_print
+          }
+          if (name === 'robot' && prop === 'readSensor') {
+            const sensorVal = arg?.fields?.TEXT || 'ultrasonic'
+            return { type: 'robot_sensor', fields: { SENSOR: sensorVal } }
+          }
+          if (name === 'robot' && prop === 'isButtonPressed') {
+            const btnVal = arg?.fields?.TEXT || 'A'
+            return { type: 'robot_button', fields: { BUTTON: btnVal } }
           }
         }
         return varGet(name + '.' + prop)
@@ -437,6 +446,76 @@ class Parser {
 
   parseStatement(): BBlock | null {
     const t = this.peek()
+
+    // Robotics statements: robot.move, robot.setLed, robot.playTone, robot.sleep
+    if (t.value === 'robot' && this.peek(1).value === '.' && this.peek(2).type === 'IDENT' && this.peek(3).value === '(') {
+      this.consume() // robot
+      this.consume() // .
+      const method = this.consume().value // move, setLed, playTone, sleep
+      this.consume() // (
+      
+      const args: BBlock[] = []
+      while (this.peek().value !== ')' && !this.eof()) {
+        const a = this.parseExpr()
+        if (a) args.push(a)
+        this.eat(',')
+      }
+      this.expect(')')
+      this.eat(';')
+
+      if (method === 'move') {
+        const dir = args[0]?.fields?.TEXT || 'FORWARD'
+        const speed = args[1]?.fields?.NUM != null ? Number(args[1].fields.NUM) : 80
+        return {
+          type: 'robot_move',
+          fields: { DIRECTION: dir, SPEED: String(speed) }
+        }
+      }
+      if (method === 'setLed') {
+        const color = args[0]?.fields?.TEXT || 'RED'
+        return {
+          type: 'robot_led',
+          fields: { COLOR: color }
+        }
+      }
+      if (method === 'playTone') {
+        const freq = args[0]?.fields?.NUM != null ? Number(args[0].fields.NUM) : 440
+        const dur = args[1]?.fields?.NUM != null ? Number(args[1].fields.NUM) : 500
+        return {
+          type: 'robot_tone',
+          fields: { FREQ: String(freq), DURATION: String(dur) }
+        }
+      }
+      if (method === 'sleep') {
+        const sec = args[0]?.fields?.NUM != null ? Number(args[0].fields.NUM) : 1
+        return {
+          type: 'robot_sleep',
+          fields: { SECONDS: String(sec) }
+        }
+      }
+      if (method === 'showText') {
+        const text = args[0]?.fields?.TEXT || 'Hello'
+        const x = args[1]?.fields?.NUM != null ? Number(args[1].fields.NUM) : 0
+        const y = args[2]?.fields?.NUM != null ? Number(args[2].fields.NUM) : 0
+        return {
+          type: 'robot_show_text',
+          fields: { TEXT: text, X: String(x), Y: String(y) }
+        }
+      }
+      if (method === 'clearScreen') {
+        return {
+          type: 'robot_clear_screen'
+        }
+      }
+      if (method === 'setServo') {
+        const pin = args[0]?.fields?.TEXT || 'P0'
+        const angle = args[1]?.fields?.NUM != null ? Number(args[1].fields.NUM) : 90
+        return {
+          type: 'robot_servo',
+          fields: { PIN: pin, ANGLE: String(angle) }
+        }
+      }
+    }
 
     // Empty statement
     if (t.value === ';') { this.consume(); return null }

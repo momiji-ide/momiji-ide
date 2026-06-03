@@ -10,7 +10,7 @@ interface Quest {
   desc:             string
   hint:             string
   xp:               number
-  track:            'gamedev' | 'web' | 'python' | 'general'
+  track:            'gamedev' | 'web' | 'python' | 'general' | 'robotics'
   difficulty:       'easy' | 'medium' | 'hard'
   successPattern:   RegExp    // matched against active file content
   unlocks?:         string
@@ -128,6 +128,39 @@ const ALL_QUESTS: Quest[] = [
     successPattern: /\.sort\s*\(|bubbleSort|mergeSort|quickSort/,
     unlocks: undefined
   },
+  // ── Robotics Track ──────────────────────────────────────────────────────────
+  {
+    id: 'robot-first-move', track: 'robotics', difficulty: 'easy', xp: 50,
+    title: '🤖 First Robot Move',
+    desc: 'Drive the robot forward or backward by calling robot.move().',
+    hint: 'Try: robot.move("FORWARD", 80);',
+    successPattern: /robot\.move\s*\(\s*['"](?:FORWARD|BACKWARD|LEFT|RIGHT)['"]\s*,\s*\d+\s*\)/,
+    unlocks: 'robot-status-light'
+  },
+  {
+    id: 'robot-status-light', track: 'robotics', difficulty: 'easy', xp: 60,
+    title: '💡 Robot Status Indicator',
+    desc: 'Change the robot LED color using robot.setLed().',
+    hint: 'Try: robot.setLed("GREEN");',
+    successPattern: /robot\.setLed\s*\(\s*['"](?:RED|GREEN|BLUE|ORANGE|OFF)['"]\s*\)/,
+    unlocks: 'robot-smart-avoid'
+  },
+  {
+    id: 'robot-smart-avoid', track: 'robotics', difficulty: 'medium', xp: 90,
+    title: '👁️ Smart Obstacle Detection',
+    desc: 'Read the ultrasonic distance sensor using robot.readSensor("ultrasonic") inside an if conditional.',
+    hint: 'Try: if (robot.readSensor("ultrasonic") < 20) { ... }',
+    successPattern: /if\s*\(.*robot\.readSensor\s*\(\s*['"]ultrasonic['"]\s*\)/,
+    unlocks: 'robot-screen-status'
+  },
+  {
+    id: 'robot-screen-status', track: 'robotics', difficulty: 'medium', xp: 80,
+    title: '📺 Display Status',
+    desc: 'Check if button A is pressed and display "OK" on the screen.',
+    hint: 'Try: if (robot.isButtonPressed("A")) { robot.showText("OK", 0, 0); }',
+    successPattern: /robot\.isButtonPressed\s*\(\s*['"]A['"]\s*\).*robot\.showText/,
+    unlocks: undefined
+  },
 ]
 
 // XP to level mapping
@@ -141,7 +174,7 @@ function getLevel(xp: number) {
 }
 
 const TRACK_LABELS: Record<string, string> = {
-  all: '🌟 All', gamedev: '🎮 Game Dev', web: '🌐 Web', python: '🐍 Python', general: '⚙️ General'
+  all: '🌟 All', gamedev: '🎮 Game Dev', web: '🌐 Web', python: '🐍 Python', general: '⚙️ General', robotics: '🤖 Robotics'
 }
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
@@ -160,9 +193,8 @@ function saveProgress(p: { xp: number; completed: string[] }) {
 export function QuestPanel() {
   const { tabs, activeTabId, currentFolder } = useAppStore()
   const activeTab = tabs.find(t => t.id === activeTabId)
-
   const [progress, setProgress]   = useState(loadProgress)
-  const [track, setTrack]         = useState<'all' | 'gamedev' | 'web' | 'python' | 'general'>('all')
+  const [track, setTrack]         = useState<'all' | 'gamedev' | 'web' | 'python' | 'general' | 'robotics'>('all')
   const [expanded, setExpanded]   = useState<string | null>(null)
   const [checking, setChecking]   = useState<string | null>(null)
 

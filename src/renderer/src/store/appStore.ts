@@ -38,6 +38,7 @@ interface AppStore extends AppState {
   // UI actions
   setActivePanel: (panel: ActivityBarItem) => void
   toggleSidebar: () => void
+  toggleSecondarySidebar: () => void
   setSidebarWidth: (width: number) => void
   toggleBottomPanel: () => void
   setBottomPanelHeight: (height: number) => void
@@ -93,6 +94,7 @@ export const useAppStore = create<AppStore>()(
       ],
       sidebarWidth: 260,
       showSidebar: true,
+      showSecondarySidebar: false,
       showBottomPanel: false,
       bottomPanelHeight: 220,
       splitTabId: null,
@@ -188,6 +190,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       toggleSidebar: () => set((s) => ({ showSidebar: !s.showSidebar })),
+      toggleSecondarySidebar: () => set((s) => ({ showSecondarySidebar: !s.showSecondarySidebar })),
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       toggleBottomPanel: () => set((s) => ({ showBottomPanel: !s.showBottomPanel })),
       setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
@@ -305,6 +308,7 @@ export const useAppStore = create<AppStore>()(
         customAgents: state.customAgents,
         sidebarWidth: state.sidebarWidth,
         showSidebar: state.showSidebar,
+        showSecondarySidebar: state.showSecondarySidebar,
         bottomPanelHeight: state.bottomPanelHeight,
         currentFolder:  state.currentFolder,
         recentFolders:  state.recentFolders,

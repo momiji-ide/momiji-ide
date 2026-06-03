@@ -18,9 +18,10 @@ import { CanvasPlayground } from './components/Playground/CanvasPlayground'
 import { CreativeHub } from './components/Playground/CreativeHub'
 import { CodeScreenshot } from './components/Editor/CodeScreenshot'
 import { RegexPlayground } from './components/Playground/RegexPlayground'
+import { AIPanel } from './components/AI/AIPanel'
 
 export default function App() {
-  const { settings, showBottomPanel, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt, restoreLastFolder } = useAppStore()
+  const { settings, showBottomPanel, showSecondarySidebar, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt, restoreLastFolder } = useAppStore()
 
   // ── Auto-restore last folder on startup ──────────────────────────────────
   useEffect(() => {
@@ -177,16 +178,24 @@ export default function App() {
 
         {/* Editor area — hidden when full-screen panels are active */}
         {!isFullPanel && (
-          <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-            <TabBar />
-            <EditorToolbar />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-hidden">
-                <CodeEditor />
+          <>
+            <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+              <TabBar />
+              <EditorToolbar />
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden">
+                  <CodeEditor />
+                </div>
+                {showBottomPanel && <BottomPanel height={bottomPanelHeight} />}
               </div>
-              {showBottomPanel && <BottomPanel height={bottomPanelHeight} />}
             </div>
-          </div>
+            {/* Secondary Right Sidebar — displays AIPanel (Kitsune Chat) */}
+            {showSecondarySidebar && (
+              <div className="flex flex-col overflow-hidden flex-shrink-0" style={{ width: 300, background: 'var(--bg-mantle)', borderLeft: '1px solid var(--border)' }}>
+                <AIPanel />
+              </div>
+            )}
+          </>
         )}
       </div>
 

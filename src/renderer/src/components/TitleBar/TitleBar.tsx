@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { MomijiLogo } from '../Logo/MomijiLogo'
+import { toast } from '../../utils/toast'
 
 const CHECKOUT_URL = 'https://momiji-ide.lemonsqueezy.com/checkout/buy/495febcd-8f43-44cc-9fab-7cd2896874a5'
 
@@ -9,10 +10,18 @@ interface Props {
 }
 
 export function TitleBar({ onCommandPalette }: Props) {
-  const currentFolder = useAppStore((s) => s.currentFolder)
-  const tabs          = useAppStore((s) => s.tabs)
-  const activeTabId   = useAppStore((s) => s.activeTabId)
-  const licenseTier   = useAppStore((s) => s.licenseTier)
+  const currentFolder          = useAppStore((s) => s.currentFolder)
+  const tabs                   = useAppStore((s) => s.tabs)
+  const activeTabId            = useAppStore((s) => s.activeTabId)
+  const licenseTier            = useAppStore((s) => s.licenseTier)
+  const showSidebar            = useAppStore((s) => s.showSidebar)
+  const toggleSidebar          = useAppStore((s) => s.toggleSidebar)
+  const showSecondarySidebar   = useAppStore((s) => s.showSecondarySidebar)
+  const toggleSecondarySidebar = useAppStore((s) => s.toggleSecondarySidebar)
+  const showBottomPanel        = useAppStore((s) => s.showBottomPanel)
+  const toggleBottomPanel      = useAppStore((s) => s.toggleBottomPanel)
+  const splitTabId             = useAppStore((s) => s.splitTabId)
+  const setSplitTabId          = useAppStore((s) => s.setSplitTabId)
   const [isMaximized, setIsMaximized] = useState(false)
 
   const activeTab = tabs.find((t) => t.id === activeTabId)
@@ -93,6 +102,113 @@ export function TitleBar({ onCommandPalette }: Props) {
             style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
             Ctrl+P
           </kbd>
+        </button>
+      </div>
+
+      {/* Center-Right: VSCode-style Layout Toggles */}
+      <div className="no-drag flex items-center gap-0.5 px-3 flex-shrink-0" style={{ borderRight: '1px solid var(--border)', marginRight: '6px' }}>
+        {/* Toggle Left Sidebar */}
+        <button
+          onClick={toggleSidebar}
+          title="Toggle Primary Side Bar (Ctrl+B)"
+          className="flex items-center justify-center w-8 h-7 rounded transition-all cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: showSidebar ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+            border: 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--bg-surface0)'
+            e.currentTarget.style.color = 'var(--text)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = showSidebar ? 'var(--accent-mauve)' : 'var(--text-subtle)'
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="5.5" y1="1.5" x2="5.5" y2="14.5" />
+            {showSidebar && <rect x="1.5" y="1.5" width="4" height="13" rx="1" fill="var(--accent-mauve)" opacity="0.3" stroke="none" />}
+          </svg>
+        </button>
+
+        {/* Toggle Bottom Panel */}
+        <button
+          onClick={toggleBottomPanel}
+          title="Toggle Panel (Ctrl+`)"
+          className="flex items-center justify-center w-8 h-7 rounded transition-all cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: showBottomPanel ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+            border: 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--bg-surface0)'
+            e.currentTarget.style.color = 'var(--text)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = showBottomPanel ? 'var(--accent-mauve)' : 'var(--text-subtle)'
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="1.5" y1="10.5" x2="14.5" y2="10.5" />
+            {showBottomPanel && <rect x="1.5" y="10.5" width="13" height="4" rx="1" fill="var(--accent-mauve)" opacity="0.3" stroke="none" />}
+          </svg>
+        </button>
+
+        {/* Toggle Right Sidebar */}
+        <button
+          onClick={toggleSecondarySidebar}
+          title="Toggle Secondary Side Bar (Right)"
+          className="flex items-center justify-center w-8 h-7 rounded transition-all cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: showSecondarySidebar ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+            border: 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--bg-surface0)'
+            e.currentTarget.style.color = 'var(--text)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = showSecondarySidebar ? 'var(--accent-mauve)' : 'var(--text-subtle)'
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="10.5" y1="1.5" x2="10.5" y2="14.5" />
+            {showSecondarySidebar && <rect x="10.5" y="1.5" width="4" height="13" rx="1" fill="var(--accent-mauve)" opacity="0.3" stroke="none" />}
+          </svg>
+        </button>
+
+        {/* Split/Grid Layout */}
+        <button
+          onClick={() => setSplitTabId(splitTabId ? null : (activeTabId ?? null))}
+          title={splitTabId ? 'Close Split View' : 'Split Editor (Multi-editor Split View)'}
+          className="flex items-center justify-center w-8 h-7 rounded transition-all cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: splitTabId ? 'var(--accent-mauve)' : 'var(--text-subtle)',
+            border: 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--bg-surface0)'
+            e.currentTarget.style.color = 'var(--text)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = splitTabId ? 'var(--accent-mauve)' : 'var(--text-subtle)'
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="8" y1="1.5" x2="8" y2="14.5" />
+            {splitTabId && <rect x="8" y="1.5" width="6.5" height="13" rx="1" fill="var(--accent-mauve)" opacity="0.3" stroke="none" />}
+          </svg>
         </button>
       </div>
 

@@ -82,6 +82,7 @@ export interface AppState {
   aiProviders: AIProvider[]
   sidebarWidth: number
   showSidebar: boolean
+  showSecondarySidebar: boolean
   showBottomPanel: boolean
   bottomPanelHeight: number
   splitTabId: string | null

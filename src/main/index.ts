@@ -355,7 +355,16 @@ function setupIpcHandlers(): void {
 
   ipcMain.handle('process:kill', async (_, id: string) => {
     if (runningProcesses.has(id)) {
-      try { runningProcesses.get(id)!.kill('SIGTERM') } catch {}
+      const proc = runningProcesses.get(id)!
+      try {
+        if (process.platform === 'win32' && proc.pid) {
+          spawn('taskkill', ['/F', '/T', '/PID', proc.pid.toString()], { shell: true })
+        } else {
+          proc.kill('SIGKILL')
+        }
+      } catch (err) {
+        console.error(`Error killing process ${id}:`, err)
+      }
       runningProcesses.delete(id)
       mainWindow?.webContents.send('process:exit', id, -1)
       return true
