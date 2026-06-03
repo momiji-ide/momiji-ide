@@ -52,6 +52,181 @@ function findDefinitionInText(content: string, word: string): number {
   return -1
 }
 
+// ─── Markdown Editor — self-contained, used when activeTab.language === 'markdown'
+type MdViewMode = 'editor' | 'split' | 'preview'
+
+function MarkdownEditor({ content, monacoTheme, settings, beforeMount, onMount, onChange }: {
+  content: string; monacoTheme: string; settings: any
+  beforeMount: any; onMount: any; onChange: any
+}) {
+  const [viewMode, setViewMode]       = useState<MdViewMode>('split')
+  const [splitRatio, setSplitRatio]   = useState(50)   // % for editor pane
+  const [scrollSync, setScrollSync]   = useState<number | undefined>(undefined)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const monacoEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
+  const isDragging = useRef(false)
+
+  // Formatting helpers — insert markdown syntax at cursor
+  const insert = (before: string, after = '', defaultText = '') => {
+    const ed = monacoEditorRef.current
+    if (!ed) return
+    const sel  = ed.getSelection()
+    const text = sel ? ed.getModel()?.getValueInRange(sel) || '' : ''
+    const replacement = `${before}${text || defaultText}${after}`
+    ed.executeEdits('md-toolbar', [{
+      range: sel!,
+      text: replacement,
+      forceMoveMarkers: true,
+    }])
+    ed.focus()
+  }
+
+  // Resizable split drag
+  const onDragStart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    const onMove = (me: MouseEvent) => {
+      if (!isDragging.current || !wrapRef.current) return
+      const rect = wrapRef.current.getBoundingClientRect()
+      const ratio = Math.round(Math.max(20, Math.min(80, ((me.clientX - rect.left) / rect.width) * 100)))
+      setSplitRatio(ratio)
+    }
+    const onUp = () => { isDragging.current = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
+  // Toolbar buttons
+  const TOOLBAR = [
+    { icon: 'B',   title: 'Bold (Ctrl+B)',        fn: () => insert('**', '**', 'bold text'),     style: 'font-weight:800' },
+    { icon: 'I',   title: 'Italic (Ctrl+I)',       fn: () => insert('*',  '*',  'italic text'),   style: 'font-style:italic' },
+    { icon: 'S',   title: 'Strikethrough',         fn: () => insert('~~', '~~', 'text'),          style: 'text-decoration:line-through' },
+    { icon: '─',   title: 'Separator',             fn: null, style: '' },
+    { icon: 'H1',  title: 'Heading 1',             fn: () => insert('# ', '', 'Heading'),         style: 'font-weight:700;font-size:10px' },
+    { icon: 'H2',  title: 'Heading 2',             fn: () => insert('## ', '', 'Heading'),        style: 'font-weight:700;font-size:10px' },
+    { icon: 'H3',  title: 'Heading 3',             fn: () => insert('### ', '', 'Heading'),       style: 'font-weight:700;font-size:10px' },
+    { icon: '─',   title: 'Separator',             fn: null, style: '' },
+    { icon: '🔗',  title: 'Link',                  fn: () => insert('[', '](url)', 'link text'),  style: '' },
+    { icon: '🖼',  title: 'Image',                 fn: () => insert('![', '](url)', 'alt text'),  style: '' },
+    { icon: '`',   title: 'Inline code',           fn: () => insert('`', '`', 'code'),            style: 'font-family:monospace' },
+    { icon: '```', title: 'Code block',            fn: () => insert('```\n', '\n```', 'code'),    style: 'font-family:monospace;font-size:9px' },
+    { icon: '─',   title: 'Separator',             fn: null, style: '' },
+    { icon: '>',   title: 'Blockquote',            fn: () => insert('> ', '', 'quote'),           style: 'font-size:12px' },
+    { icon: '☑',   title: 'Task list item',        fn: () => insert('- [ ] ', '', 'task'),        style: '' },
+    { icon: '—',   title: 'Horizontal rule',       fn: () => insert('\n---\n', '', ''),           style: '' },
+  ]
+
+  const handleEditorMount = (ed: editor.IStandaloneCodeEditor, monaco: any) => {
+    monacoEditorRef.current = ed
+    onMount(ed, monaco)
+    // Scroll sync
+    ed.onDidScrollChange(e => {
+      const model = ed.getModel()
+      if (!model) return
+      const lineCount = model.getLineCount()
+      const fraction  = e.scrollTop / Math.max(1, e.scrollHeight - ed.getLayoutInfo().height)
+      setScrollSync(Math.max(0, Math.min(1, fraction)))
+    })
+  }
+
+  const showEditor  = viewMode !== 'preview'
+  const showPreview = viewMode !== 'editor'
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+
+      {/* ── Toolbar ───────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-0.5 px-2 flex-shrink-0 flex-wrap"
+        style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: 36 }}>
+
+        {/* Formatting buttons */}
+        {TOOLBAR.map((b, i) =>
+          b.fn === null
+            ? <div key={i} style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 3px', flexShrink: 0 }} />
+            : (
+              <button key={i} onClick={b.fn} title={b.title}
+                className="px-1.5 py-0.5 rounded text-xs transition-colors select-none"
+                style={{ color: 'var(--text-muted)', minWidth: 24, textAlign: 'center', ...Object.fromEntries((b.style || '').split(';').filter(Boolean).map(s => { const [k, v] = s.split(':'); return [k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v?.trim()] })) } as React.CSSProperties}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                {b.icon}
+              </button>
+            )
+        )}
+
+        <div className="flex-1" />
+
+        {/* View mode */}
+        <div className="flex p-0.5 rounded-lg gap-0.5 mr-1" style={{ background: 'var(--bg-surface0)' }}>
+          {([['editor', '✏️ Edit'], ['split', '⬜ Split'], ['preview', '👁 Preview']] as [MdViewMode, string][]).map(([m, label]) => (
+            <button key={m} onClick={() => setViewMode(m)}
+              className="px-2 py-0.5 rounded-md text-xs font-medium transition-all"
+              style={{ background: viewMode === m ? 'var(--accent-mauve)' : 'transparent', color: viewMode === m ? 'white' : 'var(--text-muted)' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Export HTML */}
+        <button
+          onClick={() => {
+            const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.75;color:#1f2937}pre{background:#f3f4f6;padding:16px;border-radius:8px;overflow-x:auto}code{background:#f3f4f6;padding:2px 6px;border-radius:4px}a{color:#f97316}h1,h2{border-bottom:1px solid #e5e7eb;padding-bottom:8px}blockquote{border-left:4px solid #f97316;padding:8px 16px;background:#fff7ed;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e5e7eb;padding:8px 12px}img{max-width:100%;border-radius:8px}</style></head><body>${content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>').replace(/#{1,6}\s+(.+)/g, s => { const m = s.match(/^(#{1,6})\s+(.+)/); return m ? `<h${m[1].length}>${m[2]}</h${m[1].length}>` : s })}</body></html>`], { type: 'text/html' })
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'export.html'; a.click()
+          }}
+          title="Export as HTML"
+          className="px-2 py-0.5 rounded text-xs"
+          style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+          ↗ HTML
+        </button>
+      </div>
+
+      {/* ── Content ───────────────────────────────────────────────────── */}
+      <div ref={wrapRef} className="flex flex-1 overflow-hidden" style={{ userSelect: isDragging.current ? 'none' : 'auto' }}>
+
+        {/* Editor pane */}
+        {showEditor && (
+          <div style={{ flex: viewMode === 'editor' ? '1' : `0 0 ${splitRatio}%`, overflow: 'hidden' }}>
+            <MonacoEditor
+              language="markdown"
+              value={content}
+              theme={monacoTheme}
+              beforeMount={beforeMount}
+              onMount={handleEditorMount}
+              onChange={onChange}
+              options={{
+                fontSize: settings.fontSize, fontFamily: settings.fontFamily,
+                wordWrap: 'on', lineNumbers: 'on', minimap: { enabled: false },
+                scrollBeyondLastLine: false, padding: { top: 12 },
+                scrollbar: { verticalScrollbarSize: 4 },
+                renderWhitespace: 'none'
+              }}
+            />
+          </div>
+        )}
+
+        {/* Drag handle */}
+        {showEditor && showPreview && (
+          <div onMouseDown={onDragStart} title="Drag to resize"
+            style={{ width: 5, flexShrink: 0, cursor: 'col-resize', background: 'var(--border)', transition: 'background 0.15s' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-mauve)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--border)')}
+          />
+        )}
+
+        {/* Preview pane */}
+        {showPreview && (
+          <div style={{ flex: viewMode === 'preview' ? '1' : `0 0 ${100 - splitRatio}%`, overflow: 'hidden' }}>
+            <MarkdownPreview
+              content={content}
+              scrollSync={viewMode === 'split' ? scrollSync : undefined}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function CodeEditor() {
   const { tabs, activeTabId, settings, updateTabContent, markTabClean, splitTabId, setSplitTabId } = useAppStore()
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -634,40 +809,17 @@ export function CodeEditor() {
     return <HexViewer filePath={activeTab.filePath} />
   }
 
-  // Markdown: split view editor + preview
+  // ── Markdown: view-mode toolbar + resizable split + formatting bar ──────
   if (activeTab.language === 'markdown') {
-    return (
-      <div className="flex h-full overflow-hidden">
-        <div style={{ flex: '0 0 50%', borderRight: '1px solid var(--border)' }}>
-          <MonacoEditor
-            key={activeTab.id + '-md'}
-            language="markdown"
-            value={activeTab.content}
-            theme={monacoTheme}
-            beforeMount={handleEditorBeforeMount}
-            onMount={handleEditorMount}
-            onChange={handleChange}
-            options={{
-              fontSize: settings.fontSize, fontFamily: settings.fontFamily,
-              wordWrap: 'on', lineNumbers: 'on', minimap: { enabled: false },
-              scrollBeyondLastLine: false, padding: { top: 12 },
-              scrollbar: { verticalScrollbarSize: 4 }
-            }}
-          />
-        </div>
-        <div style={{ flex: '0 0 50%', overflow: 'hidden' }}>
-          <div className="flex items-center gap-2 px-3 py-1 flex-shrink-0"
-            style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: '30px' }}>
-            <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>📝 Preview</span>
-            <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse"
-              style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>● live</span>
-          </div>
-          <div style={{ height: 'calc(100% - 30px)', overflow: 'hidden' }}>
-            <MarkdownPreview content={activeTab.content} />
-          </div>
-        </div>
-      </div>
-    )
+    return <MarkdownEditor
+      key={activeTab.id + '-md'}
+      content={activeTab.content}
+      monacoTheme={monacoTheme}
+      settings={settings}
+      beforeMount={handleEditorBeforeMount}
+      onMount={handleEditorMount}
+      onChange={handleChange}
+    />
   }
 
   const monacoOptions = {
