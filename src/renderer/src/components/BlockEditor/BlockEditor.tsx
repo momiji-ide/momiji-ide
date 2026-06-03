@@ -7,6 +7,7 @@ import { useAppStore } from '../../store/appStore'
 import { toast } from '../../utils/toast'
 import { codeToBlocklyXML } from '../../utils/codeToBlockly'
 import { RobotSimulator } from './RobotSimulator'
+import { HardwareExportPanel } from './HardwareExportPanel'
 
 // ─── Fix Blockly JS generators so they work in Node.js (not browser-only) ────
 // Default text_print generates window.alert() — crashes in Node.
@@ -463,7 +464,10 @@ export function BlockEditor() {
   const [runStatus, setRunStatus]       = useState<'idle'|'running'|'done'|'error'>('idle')
   const [runElapsed, setRunElapsed]     = useState<number|null>(null)
   const [showRunOutput, setShowRunOutput] = useState(false)
-  const [showArena, setShowArena]         = useState(false)
+  const [showArena, setShowArena]           = useState(false)
+  const [showExport, setShowExport]         = useState(false)
+  type RightPanel = 'code' | 'arena' | 'export'
+  const rightPanel: RightPanel = showExport ? 'export' : showArena ? 'arena' : 'code'
   const runStartTime = useRef(0)
   const runTimer     = useRef<ReturnType<typeof setInterval>|null>(null)
   const runOutputRef = useRef<HTMLDivElement>(null)
@@ -1246,17 +1250,30 @@ ${code}
           Open in Editor →
         </button>
 
-        {/* 🤖 Arena toggle — always accessible, not just when running */}
+        {/* 🤖 Arena toggle */}
         <button
-          onClick={() => setShowArena(s => !s)}
+          onClick={() => { setShowArena(s => !s); setShowExport(false) }}
           title="Toggle Kitsune Robot Arena"
           className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
           style={{
-            background: showArena ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
-            color: showArena ? 'white' : 'var(--text-muted)',
+            background: rightPanel === 'arena' ? 'var(--accent-mauve)' : 'var(--bg-surface0)',
+            color: rightPanel === 'arena' ? 'white' : 'var(--text-muted)',
             border: '1px solid var(--border)'
           }}>
           🤖 Arena
+        </button>
+
+        {/* 🔌 Hardware Export */}
+        <button
+          onClick={() => { setShowExport(s => !s); setShowArena(false) }}
+          title="Export to Micro:bit / Arduino"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+          style={{
+            background: rightPanel === 'export' ? 'var(--accent-teal)' : 'var(--bg-surface0)',
+            color: rightPanel === 'export' ? 'white' : 'var(--text-muted)',
+            border: '1px solid var(--border)'
+          }}>
+          🔌 Export
         </button>
       </div>
 
@@ -1438,8 +1455,15 @@ ${code}
                   <div ref={runOutputRef} />
                 </div>
 
+                {/* Right panel: 🔌 Hardware Export */}
+                {rightPanel === 'export' && (
+                  <div className="w-full md:w-[520px] flex-shrink-0 overflow-hidden border-t md:border-t-0 md:border-l" style={{ background: 'var(--bg-mantle)', borderColor: 'var(--border)' }}>
+                    <HardwareExportPanel code={code} />
+                  </div>
+                )}
+
                 {/* Right panel: Kitsune Arena Simulator — toggle with 🤖 Arena button */}
-                {showArena && (
+                {rightPanel === 'arena' && (
                   <div className="w-full md:w-[600px] flex-shrink-0 overflow-y-auto border-t md:border-t-0 md:border-l" style={{ background: 'var(--bg-mantle)', borderColor: 'var(--border)' }}>
                     <RobotSimulator
                       runLines={runLines}
