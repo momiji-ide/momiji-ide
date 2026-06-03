@@ -27,7 +27,7 @@ interface MissionState {
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CW = 360
 const CH = 260
-const TW = 6   // track half-width for sensor detection
+const TW = 3   // track half-width for sensor detection (narrower = sensors don't both trigger at once)
 const SUMO = { x: 180, y: 130, r: 100 }
 
 // ─── Preset track pixel sets (for sensor detection) ───────────────────────────
@@ -458,14 +458,15 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     let tid: ReturnType<typeof setTimeout>
     let outerCleanup: (() => void) | null = null
 
-    // Defer one frame so the browser has time to lay out the container
-    // (clientWidth === 0 if read synchronously right after mount)
+    // Defer so the browser finishes CSS flex layout before reading dimensions.
+    // 0ms is not enough for flex containers — 50ms is reliable across platforms.
     tid = setTimeout(() => {
       const container = container3dRef.current
       if (!container) return
       const rect  = container.getBoundingClientRect()
-      const W = Math.round(rect.width)  || container.offsetWidth  || 360
-      const H = Math.round(rect.height) || container.offsetHeight || 260
+      // Try multiple dimension sources: getBoundingClientRect → offsetWidth → fixed fallback
+      const W = (Math.round(rect.width)  > 0 ? Math.round(rect.width)  : 0) || container.offsetWidth  || container.parentElement?.offsetWidth  || 360
+      const H = (Math.round(rect.height) > 0 ? Math.round(rect.height) : 0) || container.offsetHeight || container.parentElement?.offsetHeight || 260
 
     const scene  = new THREE.Scene(); scene.background = new THREE.Color('#141210')
     let camTheta = 0.4, camPhi = 0.85, camR = 220
@@ -610,13 +611,18 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       renderer.dispose(); scene.clear()
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement)
     }
-    }, 0) // end setTimeout
+    }, 50) // end setTimeout — 50ms gives CSS flex time to resolve dimensions
 
     return () => {
       clearTimeout(tid)
       outerCleanup?.()
     }
-  }, [viewMode, arenaPreset, obstacles])
+  // NOTE: 'obstacles' intentionally omitted — obstacle positions are read via
+  // obstaclesRef.current inside the animation loop, not via effect deps.
+  // Including obstacles would tear down and rebuild the entire Three.js scene
+  // on every obstacle drag event (very expensive + causes flicker).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, arenaPreset])
 
   // ── Canvas event handlers ────────────────────────────────────────────────
   const getPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -775,6 +781,16 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
             <span style={{ color:'var(--accent-yellow)' }}>📏</span>
             <span style={{ color: distance < 20 ? 'var(--accent-red)' : 'var(--text)' }}>{distance} cm</span>
           </div>
+
+          {/* Line follower hint — shown when both sensors read 1 and robot is stopped */}
+          {runStatus === 'running' && lineLeft === 1 && lineRight === 1 && robot.dir === 'STOP' && (
+            <div className="absolute top-8 left-2 right-2 z-10 px-2 py-1.5 rounded-lg text-[9px] leading-relaxed"
+              style={{ background: 'rgba(249,115,22,0.15)', border: '1px solid var(--accent-mauve)', color: 'var(--accent-mauve)' }}>
+              💡 <strong>Hint:</strong> Both sensors ON the line → robot stops. For line following,
+              change <code style={{ background:'var(--bg-surface0)', padding:'0 3px', borderRadius:2 }}>else → STOP</code> to{' '}
+              <code style={{ background:'var(--bg-surface0)', padding:'0 3px', borderRadius:2 }}>else → FORWARD</code>
+            </div>
+          )}
 
           {/* Mission bar */}
           {mission.active && mission.status === 'running' && (
