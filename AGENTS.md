@@ -497,6 +497,7 @@ Format: `YYYY-MM-DD | <agent name> | <one-line summary> | <sections touched>`
 2026-05-25 | Claude Sonnet 4.6 | Full RobotSimulator.tsx rewrite — 5 arena presets (Oval/Figure-8/Sumo/Maze/Custom), track painter, robot drag, multiple obstacles, sonar cone visualization, mission lap counter, 3D camera orbit+zoom | RobotSimulator.tsx
 2026-05-25 | Claude Sonnet 4.6 | Fix 3D pitch black (setTimeout layout defer) + 🤖 Arena always-visible toggle | RobotSimulator.tsx, BlockEditor.tsx
 2026-05-25 | Claude Sonnet 4.6 | Markdown preview upgrade — marked parser, GFM, copy buttons, view mode toggle (Edit/Split/Preview), resizable split, formatting toolbar, scroll sync, HTML export | MarkdownPreview.tsx, CodeEditor.tsx
+2026-05-25 | Claude Sonnet 4.6 | Hardware export — Micro:bit MicroPython + Arduino C++ transpiler, HardwareExportPanel with pin guide, download button | hardwareExport.ts, HardwareExportPanel.tsx, BlockEditor.tsx
 ```
 
 **Note on stale release assets:** When you delete and re-push a git tag, the GitHub Release sometimes retains the previously-uploaded assets even though the tag is "new". The v1.3.1 release ended up with both 1.3.0-named files (from the broken first build) and 1.3.1-named files (from the fixed build). `latest.yml` correctly references only the 1.3.1 file, so auto-update works — but manual cleanup via the GitHub web UI is needed to keep the release page tidy. To avoid this in the future, delete the GitHub Release explicitly (not just the tag) before re-pushing.
