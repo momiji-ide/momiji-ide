@@ -4,6 +4,7 @@ import type { editor } from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { CodeFlowchart } from './CodeFlowchart'
+import { isFlowchartSupported } from '../../utils/codeToFlowchart'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
@@ -892,10 +893,8 @@ export function CodeEditor() {
     )
   }
 
-  // Flowchart language: only JS/TS and Python make sense
-  const fcLang: 'javascript' | 'python' =
-    activeTab.language === 'python' ? 'python' : 'javascript'
-  const fcSupported = ['javascript', 'typescript', 'python'].includes(activeTab.language)
+  // Flowchart: supported across C-family + Python (see isFlowchartSupported)
+  const fcSupported = isFlowchartSupported(activeTab.language)
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -935,9 +934,9 @@ export function CodeEditor() {
           </div>
           <div className="flex-1 overflow-hidden">
             {fcSupported
-              ? <CodeFlowchart code={activeTab.content} lang={fcLang} />
+              ? <CodeFlowchart code={activeTab.content} lang={activeTab.language} />
               : <div className="flex items-center justify-center h-full text-xs px-4 text-center" style={{ color: 'var(--text-subtle)' }}>
-                  Flowchart works with JavaScript, TypeScript &amp; Python files.
+                  Flowchart works with C-family languages (JS, TS, Java, C, C++, C#, Go, Rust, PHP, Swift, Kotlin) &amp; Python.
                 </div>
             }
           </div>

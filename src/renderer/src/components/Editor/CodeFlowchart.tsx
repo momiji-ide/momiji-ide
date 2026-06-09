@@ -107,7 +107,7 @@ function toRFNode(t: FlowchartNodeType): keyof typeof NODE_TYPES {
   return 'process'
 }
 
-interface Props { code: string; lang: 'javascript' | 'python' }
+interface Props { code: string; lang: string }
 
 function FlowchartInner({ code, lang }: Props) {
   const { nodes, edges, empty } = useMemo(() => {

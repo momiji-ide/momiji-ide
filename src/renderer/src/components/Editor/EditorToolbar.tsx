@@ -4,6 +4,7 @@ import { getRunConfig } from '../../utils/codeRunner'
 import { startVoiceRecognition, processVoiceCommand } from '../../utils/voiceToCode'
 import { toast } from '../../utils/toast'
 import { VoiceCommandInput } from './VoiceCommandInput'
+import { isFlowchartSupported } from '../../utils/codeToFlowchart'
 
 export function EditorToolbar() {
   const { tabs, activeTabId, currentFolder, showBottomPanel, toggleBottomPanel, updateTabContent, splitTabId, setSplitTabId, settings } = useAppStore()
@@ -190,7 +191,7 @@ export function EditorToolbar() {
         </button>
 
         {/* Code → Flowchart toggle */}
-        {activeTab && ['javascript', 'typescript', 'python'].includes(activeTab.language) && (
+        {activeTab && isFlowchartSupported(activeTab.language) && (
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('editor:toggleFlowchart'))}
             className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
