@@ -1,5 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { toast } from '../../utils/toast'
+import { callKitsune } from '../../utils/callKitsune'
+
+// System prompt that keeps the AI output to compilable WebGL1 GLSL
+const SHADER_SYSTEM = `You are a GLSL fragment-shader generator for WebGL1 (GLSL ES 1.0).
+Output ONLY the fragment shader source — no markdown, no code fences, no commentary.
+Hard rules:
+- First line must be exactly: precision mediump float;
+- Available uniforms (already provided, do NOT redeclare elsewhere):
+    uniform vec2 u_resolution;
+    uniform float u_time;
+- Read pixel position from gl_FragCoord.xy; write the result to gl_FragColor (a vec4).
+- WebGL1 ONLY: no "#version", no "in"/"out"/"layout", no textures/samplers.
+- Any for-loop MUST use a constant integer bound (e.g. for (int i=0;i<50;i++)).
+- Animate using u_time. Keep it under ~60 lines.
+- Favor Momiji's warm orange palette (vec3(0.98,0.45,0.09)) when a color isn't specified.`
 
 // ── Default shaders ──────────────────────────────────────────────────────────
 
@@ -142,6 +157,13 @@ export function ShaderPlayground() {
   const [paused, setPaused]   = useState(false)
   const pausedRef = useRef(false)
 
+  // ── Kitsune Creative (prompt → shader) ──────────────────────────────────
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiHistory, setAiHistory] = useState<string[]>([])   // recent prompts for chips
+  const srcRef = useRef(src)
+  useEffect(() => { srcRef.current = src }, [src])
+
   const buildProgram = useCallback((fragSrc: string) => {
     const gl = glRef.current
     if (!gl) return
@@ -211,6 +233,39 @@ export function ShaderPlayground() {
     startRef.current = performance.now()
   }
 
+  // ── Generate / iterate shader from a natural-language prompt ─────────────
+  const generateFromPrompt = useCallback(async (prompt: string) => {
+    const p = prompt.trim()
+    if (!p) return
+    setAiLoading(true)
+    try {
+      // Include the current shader so follow-ups like "make it faster" compound
+      const hasShader = !!srcRef.current && srcRef.current.includes('gl_FragColor')
+      const userMsg = hasShader
+        ? `Current shader:\n${srcRef.current}\n\nModify it so: ${p}\nReturn the COMPLETE updated fragment shader.`
+        : `Create a fragment shader: ${p}`
+
+      let out = await callKitsune(userMsg, SHADER_SYSTEM)
+      // strip markdown fences if the model added them anyway
+      out = out.replace(/```(?:glsl|c|cpp)?\n?/gi, '').replace(/```/g, '').trim()
+      if (!out.includes('gl_FragColor')) {
+        toast.error('AI did not return a valid shader. Try rephrasing.')
+        return
+      }
+      setSrc(out)
+      buildProgram(out)
+      startRef.current = performance.now()
+      setAiHistory(h => [p, ...h.filter(x => x !== p)].slice(0, 6))
+      setAiPrompt('')
+      toast.success('🦊 Shader generated!')
+    } catch (e: any) {
+      if (e.message === 'NO_PROVIDER') toast.error('Enable an AI provider in Settings first')
+      else toast.error('Generation failed: ' + (e.message ?? 'unknown'))
+    } finally {
+      setAiLoading(false)
+    }
+  }, [buildProgram])
+
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>
       {/* Header */}
@@ -233,6 +288,55 @@ export function ShaderPlayground() {
           style={{ background: 'var(--accent-mauve)', color: 'white' }}>
           ▶ Run
         </button>
+      </div>
+
+      {/* ── Kitsune Creative prompt bar ── */}
+      <div className="flex flex-col gap-1.5 px-3 py-2 flex-shrink-0"
+        style={{ background: 'linear-gradient(to right, rgba(249,115,22,0.08), transparent)', borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold flex items-center gap-1" style={{ color: 'var(--accent-mauve)' }}>🦊 Kitsune Creative</span>
+          <input
+            value={aiPrompt}
+            onChange={e => setAiPrompt(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !aiLoading) generateFromPrompt(aiPrompt) }}
+            disabled={aiLoading}
+            placeholder={aiLoading ? 'Kitsune is painting…' : 'Describe a visual — e.g. "swirling neon galaxy with purple stars"'}
+            className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
+            style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          />
+          <button
+            onClick={() => generateFromPrompt(aiPrompt)}
+            disabled={aiLoading || !aiPrompt.trim()}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"
+            style={{
+              background: aiLoading ? 'var(--bg-surface1)' : 'var(--accent-mauve)',
+              color: aiLoading ? 'var(--text-subtle)' : 'white',
+              opacity: (!aiPrompt.trim() && !aiLoading) ? 0.5 : 1, border: 'none',
+              cursor: aiLoading ? 'wait' : 'pointer'
+            }}>
+            {aiLoading ? '⟳ Generating' : '✨ Generate'}
+          </button>
+        </div>
+        {/* Iterate chips + recent prompts */}
+        <div className="flex items-center gap-1 flex-wrap">
+          {srcRef.current.includes('gl_FragColor') && !aiLoading && (
+            <>
+              {['make it faster', 'more colorful', 'add glow', 'slower & calmer'].map(q => (
+                <button key={q} onClick={() => generateFromPrompt(q)}
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', border: '1px solid var(--accent-mauve)44' }}>
+                  {q}
+                </button>
+              ))}
+            </>
+          )}
+          {aiHistory.slice(0, 3).map((h, i) => (
+            <button key={i} onClick={() => generateFromPrompt(h)} title="Re-run this prompt"
+              className="text-xs px-2 py-0.5 rounded-full truncate" style={{ maxWidth: 140, color: 'var(--text-subtle)', border: '1px solid var(--border)' }}>
+              ↻ {h}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Presets */}
