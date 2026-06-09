@@ -839,17 +839,26 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
 
         {/* Buttons */}
         <div className="rounded-xl border p-2 flex-shrink-0" style={{ background:'var(--bg-mantle)', borderColor:'var(--border)' }}>
-          <div className="text-[9px] font-bold uppercase mb-1.5" style={{ color:'var(--text-subtle)' }}>🔘 Onboard Inputs</div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[9px] font-bold uppercase" style={{ color:'var(--text-subtle)' }}>🔘 Onboard Inputs</span>
+            {runStatus !== 'running' && (
+              <span className="text-[8px] px-1 rounded" style={{ background:'var(--accent-yellow)22', color:'var(--accent-yellow)' }}>▶ Run first</span>
+            )}
+          </div>
           <div className="flex gap-1.5">
-            {[{ lbl:'BTN A', s: buttonA, fn: setButtonA }, { lbl:'BTN B', s: buttonB, fn: setButtonB }].map(b => (
+            {[{ lbl:'BTN A', k:'A', s: buttonA, fn: setButtonA }, { lbl:'BTN B', k:'B', s: buttonB, fn: setButtonB }].map(b => (
               <button key={b.lbl}
+                title={`Hold to press button ${b.k}. Use with the "Button ${b.k} pressed?" block.`}
                 onMouseDown={() => b.fn(true)} onMouseUp={() => b.fn(false)} onMouseLeave={() => b.fn(false)}
                 className="flex-1 py-1.5 rounded-lg text-[10px] font-black select-none transition-all"
                 style={{ background: b.s ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: b.s ? 'white' : 'var(--text-muted)', border:`1px solid ${b.s ? 'var(--accent-mauve)' : 'var(--border)'}`, boxShadow: b.s ? '0 0 8px var(--accent-mauve)' : 'none', transform: b.s ? 'scale(0.94)' : 'scale(1)', cursor:'pointer' }}>
-                {b.lbl}
+                {b.lbl}{b.s ? ' ●' : ''}
               </button>
             ))}
           </div>
+          <p className="text-[8px] mt-1.5 leading-tight" style={{ color:'var(--text-subtle)' }}>
+            Hold to press. Pairs with the <span style={{ color:'var(--accent-mauve)' }}>Button A/B pressed?</span> block.
+          </p>
         </div>
 
         {/* Status HUD */}
