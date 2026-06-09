@@ -3,6 +3,7 @@ import MonacoEditor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
+import { CodeFlowchart } from './CodeFlowchart'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
@@ -245,11 +246,21 @@ export function CodeEditor() {
   const [blameData, setBlameData] = useState<{ line: number; hash: string; author: string; date: string; summary: string }[]>([])
   const blameDecsRef = useRef<string[]>([])
 
+  // Code → Flowchart split view
+  const [showFlowchart, setShowFlowchart] = useState(false)
+
   useEffect(() => {
     const handler = () => setInlineEnabled(inlineCompletion.toggle())
     window.addEventListener('kitsune:toggleInline', handler)
     return () => window.removeEventListener('kitsune:toggleInline', handler)
   }, [inlineCompletion])
+
+  // ── Flowchart toggle (from EditorToolbar) ─────────────────────────────────
+  useEffect(() => {
+    const handler = () => setShowFlowchart(v => !v)
+    window.addEventListener('editor:toggleFlowchart', handler)
+    return () => window.removeEventListener('editor:toggleFlowchart', handler)
+  }, [])
 
   // ── Git Blame toggle ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -881,28 +892,58 @@ export function CodeEditor() {
     )
   }
 
+  // Flowchart language: only JS/TS and Python make sense
+  const fcLang: 'javascript' | 'python' =
+    activeTab.language === 'python' ? 'python' : 'javascript'
+  const fcSupported = ['javascript', 'typescript', 'python'].includes(activeTab.language)
+
   return (
-    <>
-      <MonacoEditor
-        key={activeTab.id}
-        language={activeTab.language}
-        value={activeTab.content}
-        theme={monacoTheme}
-        beforeMount={handleEditorBeforeMount}
-        onMount={handleEditorMount}
-        onChange={handleChange}
-        options={monacoOptions}
-      />
-      {colorPicker && (
-        <ColorPickerPopup
-          color={colorPicker.color}
-          x={colorPicker.x}
-          y={colorPicker.y}
-          onApply={handleColorApply}
-          onClose={() => setColorPicker(null)}
+    <div className="flex h-full overflow-hidden">
+      <div style={{ flex: showFlowchart ? '0 0 55%' : '1', overflow: 'hidden', position: 'relative' }}>
+        <MonacoEditor
+          key={activeTab.id}
+          language={activeTab.language}
+          value={activeTab.content}
+          theme={monacoTheme}
+          beforeMount={handleEditorBeforeMount}
+          onMount={handleEditorMount}
+          onChange={handleChange}
+          options={monacoOptions}
         />
+        {colorPicker && (
+          <ColorPickerPopup
+            color={colorPicker.color}
+            x={colorPicker.x}
+            y={colorPicker.y}
+            onApply={handleColorApply}
+            onClose={() => setColorPicker(null)}
+          />
+        )}
+      </div>
+
+      {/* Code → Flowchart panel */}
+      {showFlowchart && (
+        <div className="flex flex-col flex-shrink-0" style={{ flex: '0 0 45%', borderLeft: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-2 px-3 flex-shrink-0"
+            style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', height: 30 }}>
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>📊 Flowchart</span>
+            <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse"
+              style={{ background: 'var(--accent-green)', color: 'var(--bg-base)', fontSize: 9 }}>● live</span>
+            <div className="flex-1" />
+            <button onClick={() => setShowFlowchart(false)}
+              className="text-xs px-1.5 py-0.5 rounded" style={{ color: 'var(--text-subtle)' }} title="Close flowchart">✕</button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {fcSupported
+              ? <CodeFlowchart code={activeTab.content} lang={fcLang} />
+              : <div className="flex items-center justify-center h-full text-xs px-4 text-center" style={{ color: 'var(--text-subtle)' }}>
+                  Flowchart works with JavaScript, TypeScript &amp; Python files.
+                </div>
+            }
+          </div>
+        </div>
       )}
-    </>
+    </div>
   )
 }
 

@@ -189,6 +189,19 @@ export function EditorToolbar() {
           ⫴
         </button>
 
+        {/* Code → Flowchart toggle */}
+        {activeTab && ['javascript', 'typescript', 'python'].includes(activeTab.language) && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('editor:toggleFlowchart'))}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
+            title="Visualize this code as a flowchart"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-mauve)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent-mauve)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)' }}>
+            📊 Flowchart
+          </button>
+        )}
+
         {/* Git Blame toggle */}
         {activeTab && !activeTab.filePath.startsWith('__') && (
           <button
