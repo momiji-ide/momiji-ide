@@ -1101,22 +1101,22 @@ function WelcomeScreen() {
                 </div>
 
                 {/* Overview — stats + heatmap (Claude Desktop style) */}
-                <div className="rounded-xl p-3" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
-                  <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>{t.ws_overview}</p>
-                  <div className="grid gap-1.5 mb-2.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))' }}>
+                <div className="rounded-xl p-4" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
+                  <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>{t.ws_overview}</p>
+                  <div className="grid gap-2 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }}>
                     {cards.map(c => (
-                      <div key={c.label} className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-base)' }}>
-                        <p className="truncate" style={{ fontSize: 9, color: 'var(--text-subtle)' }}>{c.label}</p>
-                        <p className="text-xs font-bold truncate" style={{ color: 'var(--text)' }}>{c.val}</p>
+                      <div key={c.label} className="rounded-lg px-3 py-2.5" style={{ background: 'var(--bg-base)' }}>
+                        <p className="truncate" style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 3 }}>{c.label}</p>
+                        <p className="font-bold truncate" style={{ fontSize: 20, lineHeight: 1, color: 'var(--text)' }}>{c.val}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="flex gap-0.5">
+                  <div className="flex gap-1">
                     {stats.heatmap.map((col, wi) => (
-                      <div key={wi} className="flex flex-col gap-0.5">
+                      <div key={wi} className="flex flex-col gap-1">
                         {col.map((n, di) => (
                           <div key={di} style={{
-                            width: 8, height: 8, borderRadius: 2,
+                            width: 11, height: 11, borderRadius: 2,
                             background: n === 0 ? 'var(--bg-surface1)' : `rgba(249,115,22,${0.25 + 0.75 * (n / maxH)})`
                           }} />
                         ))}
@@ -1155,9 +1155,25 @@ function WelcomeScreen() {
           }} />
         </div>
 
-        {/* Kitsune character — small animated pixel sprite */}
-        <div className="flex items-end justify-center" style={{ height: 200, position: 'relative', zIndex: 1, marginBottom: 24 }}>
-          <PixelKitsune anim="idle" size={150} />
+        {/* Kitsune character — lively animated pixel sprite on a pixel stage */}
+        <div className="flex items-end justify-center relative" style={{ height: 210, zIndex: 1, marginBottom: 20 }}>
+          {/* pixel-art ground stage (CSS only — matches the sprite's blocky style) */}
+          <div style={{
+            position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)',
+            width: 190, height: 30,
+            background: 'repeating-linear-gradient(90deg, rgba(249,115,22,0.18) 0 8px, rgba(249,115,22,0.10) 8px 16px)',
+            borderTop: '3px solid rgba(249,115,22,0.5)',
+            imageRendering: 'pixelated',
+            maskImage: 'radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent 100%)',
+          }} />
+          {/* shadow */}
+          <div style={{
+            position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)',
+            width: 90, height: 14, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.25)', filter: 'blur(2px)'
+          }} />
+          <PixelKitsune lively size={150} />
         </div>
       </div>
 

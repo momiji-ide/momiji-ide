@@ -137,6 +137,7 @@ const en = {
   cc_done: 'done! ✓ result ready below',
   cc_returned: 'returned to den',
   cc_no_file: '(no file open)',
+  cc_no_file_hint: 'Open a file in the editor first — agents analyze the active file.',
 }
 
 const id: Translations = {
@@ -251,6 +252,7 @@ const id: Translations = {
   cc_done: 'selesai! ✓ hasil siap di bawah',
   cc_returned: 'balik ke den',
   cc_no_file: '(belum ada file kebuka)',
+  cc_no_file_hint: 'Buka file dulu di editor — agen menganalisis file yang aktif.',
 }
 
 const ja: Translations = {
@@ -365,6 +367,7 @@ const ja: Translations = {
   cc_done: '完了！✓ 結果は下に',
   cc_returned: '巣に戻りました',
   cc_no_file: '(ファイル未選択)',
+  cc_no_file_hint: 'まずエディタでファイルを開いてください — エージェントはアクティブなファイルを解析します。',
 }
 
 // Minimal stubs for other languages (English fallback)

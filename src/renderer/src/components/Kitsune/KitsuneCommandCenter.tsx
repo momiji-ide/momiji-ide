@@ -67,6 +67,7 @@ function waypoints(desk: { x: number; y: number }, reverse: boolean) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export function KitsuneCommandCenter() {
   const t = getT(getLang())
+  const activeFile = useAppStore(s => s.tabs.find(tab => tab.id === s.activeTabId)?.fileName ?? null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const agentsRef = useRef<Agent[]>([])
   const seqRef    = useRef<Record<AgentType, number>>({ review: 0, test: 0, docs: 0, bug: 0 })
@@ -121,7 +122,9 @@ export function KitsuneCommandCenter() {
     runTask(agent).then(({ title, body, demo }) => {
       const rid = ++resultSeq.current
       agent.resultId = rid
-      setResults(prev => [{ id: rid, agent: agent.id, type, title, body, open: false }, ...prev].slice(0, 12))
+      // Auto-expand the newest result, collapse the rest, so output is visible.
+      setResults(prev => [{ id: rid, agent: agent.id, type, title, body, open: true },
+                          ...prev.map(r => ({ ...r, open: false }))].slice(0, 12))
       agent.progress = 1
       if (demo && !demoWarnedRef.current) {
         demoWarnedRef.current = true
@@ -365,7 +368,7 @@ export function KitsuneCommandCenter() {
           }
         } else {
           a.pos.x += dx / d * SPEED * dt; a.pos.y += dy / d * SPEED * dt
-          a.flip = dx >= 0
+          a.flip = dx < 0   // sprite faces right by default; flip when moving left
         }
       } else if (a.phase === 'work') {
         if (a.progress >= 1) {
@@ -466,6 +469,16 @@ export function KitsuneCommandCenter() {
             {AGENTS[k].name.split(' ')[0]}
           </button>
         ))}
+      </div>
+
+      {/* Context banner — which file the agents will work on */}
+      <div className="flex items-center gap-2 px-4 py-1 flex-shrink-0 text-xs"
+        style={{ background: activeFile ? 'var(--accent-green)18' : 'var(--accent-yellow)18',
+                 borderBottom: '1px solid var(--border)',
+                 color: activeFile ? 'var(--accent-green)' : 'var(--accent-yellow)' }}>
+        {activeFile
+          ? <>📄 Agents will analyze: <strong>{activeFile}</strong></>
+          : <>⚠ {t.cc_no_file_hint}</>}
       </div>
 
       {/* Office canvas */}
