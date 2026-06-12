@@ -21,6 +21,7 @@ const SQLitePanel     = lazy(() => import('../Database/SQLitePanel').then(m => (
 const ExtensionsPanel = lazy(() => import('../Extensions/ExtensionsPanel').then(m => ({ default: m.ExtensionsPanel })))
 const SnippetManager  = lazy(() => import('../Snippets/SnippetManager').then(m => ({ default: m.SnippetManager })))
 const TemplateGallery = lazy(() => import('../Templates/TemplateGallery').then(m => ({ default: m.TemplateGallery })))
+const KitsuneCommandCenter = lazy(() => import('../Kitsune/KitsuneCommandCenter').then(m => ({ default: m.KitsuneCommandCenter })))
 
 function TodoQuestPanel() {
   const [tab, setTab] = useState<'todo' | 'quests'>('todo')
@@ -87,7 +88,7 @@ function PanelLoader() {
   )
 }
 
-const FULL_WIDTH_PANELS = new Set(['blocks', 'flow', 'debug', 'http'])
+const FULL_WIDTH_PANELS = new Set(['blocks', 'flow', 'debug', 'http', 'den'])
 
 export function Sidebar() {
   const { activePanel, showSidebar, sidebarWidth, setSidebarWidth } = useAppStore()
@@ -117,6 +118,7 @@ export function Sidebar() {
       flow:   <Suspense fallback={<PanelLoader />}><FlowEditor /></Suspense>,
       debug:  <DebugPanel />,
       http:   <Suspense fallback={<PanelLoader />}><HttpClient /></Suspense>,
+      den:    <Suspense fallback={<PanelLoader />}><KitsuneCommandCenter /></Suspense>,
     }
     return (
       <div className="flex flex-col flex-1 overflow-hidden"

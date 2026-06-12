@@ -155,7 +155,7 @@ export default function App() {
     return () => unsub?.()
   }, [])
 
-  const isFullPanel = ['blocks', 'flow', 'debug', 'http'].includes(activePanel)
+  const isFullPanel = ['blocks', 'flow', 'debug', 'http', 'den'].includes(activePanel)
 
   return (
     <div

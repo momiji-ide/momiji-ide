@@ -57,6 +57,7 @@ export type ActivityBarItem =
   | 'explorer'
   | 'search'
   | 'ai'
+  | 'den'
   | 'settings'
   | 'blocks'
   | 'flow'

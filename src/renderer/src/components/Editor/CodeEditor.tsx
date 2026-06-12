@@ -1040,6 +1040,53 @@ function WelcomeScreen() {
           background: 'radial-gradient(ellipse 70% 80% at 50% 100%, rgba(251,146,60,0.08) 0%, rgba(203,166,247,0.05) 40%, transparent 70%)'
         }} />
 
+        {/* ── Activity tiles (Claude Desktop style) ── */}
+        <div className="absolute top-0 left-0 right-0 px-5 pt-5" style={{ zIndex: 3 }}>
+          <p className="text-sm font-bold mb-0.5" style={{ color: 'var(--text)' }}>
+            {(() => { const h = new Date().getHours(); return h < 11 ? '☀️ Ohayō!' : h < 15 ? '🌤️ Konnichiwa!' : h < 19 ? '🌆 Konbanwa!' : '🌙 Masih ngoding?' })()}
+          </p>
+          <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)' }}>Lanjutkan dari terakhir kali, atau mulai yang baru.</p>
+          <div className="flex gap-2 flex-wrap">
+            {recentFolders[0] && (
+              <button onClick={() => openFolder(recentFolders[0])}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+                style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', maxWidth: 200 }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+                <span style={{ fontSize: 16 }}>📂</span>
+                <span className="min-w-0">
+                  <span className="block text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>
+                    {recentFolders[0].split(/[\\/]/).pop()}
+                  </span>
+                  <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Project terakhir</span>
+                </span>
+              </button>
+            )}
+            <button onClick={() => setActivePanel('den' as any)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+              style={{ background: 'var(--bg-surface0)', border: '1px solid var(--accent-mauve)55', maxWidth: 210 }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)55' as any)}>
+              <span style={{ fontSize: 16 }}>⛩️</span>
+              <span className="min-w-0">
+                <span className="block text-xs font-semibold" style={{ color: 'var(--accent-mauve)' }}>Command Center</span>
+                <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Dispatch agen Kitsune</span>
+              </span>
+            </button>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('app:showAbout'))}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
+              style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', maxWidth: 200 }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+              <span style={{ fontSize: 16 }}>✨</span>
+              <span className="min-w-0">
+                <span className="block text-xs font-semibold" style={{ color: 'var(--text)' }}>Baru di v1.3.1</span>
+                <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Flowchart · Creative · Robot</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Speech bubble */}
         <div className="relative mb-2 mx-6" style={{ zIndex: 2 }}>
           <div className="px-4 py-2.5 rounded-2xl text-center text-xs"

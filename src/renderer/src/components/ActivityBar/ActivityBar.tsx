@@ -24,6 +24,7 @@ const TOP_ITEMS: NavItem[] = [
 
 const MID_ITEMS: NavItem[] = [
   { id: 'ai',        icon: <img src={kitsuneImg} width={20} height={20} draggable={false} style={{ objectFit: 'contain', opacity: 'inherit' }} />, label: 'Kitsune AI' },
+  { id: 'den',       icon: <span style={{ fontSize: 17, lineHeight: 1 }}>⛩️</span>, label: 'Kitsune Command Center' },
   { id: 'outline',   icon: <IcoOutline />,   label: 'Symbol Outline' },
   { id: 'todo',      icon: <IcoTodo />,      label: 'TODO / Tasks' },
   { id: 'http',      icon: <IcoHttp />,      label: 'HTTP Client' },
