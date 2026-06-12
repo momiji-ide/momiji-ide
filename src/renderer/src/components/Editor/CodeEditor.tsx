@@ -1155,25 +1155,21 @@ function WelcomeScreen() {
           }} />
         </div>
 
-        {/* Kitsune character — lively animated pixel sprite on a pixel stage */}
-        <div className="flex items-end justify-center relative" style={{ height: 210, zIndex: 1, marginBottom: 20 }}>
-          {/* pixel-art ground stage (CSS only — matches the sprite's blocky style) */}
+        {/* Kitsune character — lively animated pixel sprite with soft glow + shadow */}
+        <div className="flex items-end justify-center relative" style={{ height: 220, zIndex: 1, marginBottom: 20 }}>
+          {/* soft warm glow behind */}
           <div style={{
-            position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)',
-            width: 190, height: 30,
-            background: 'repeating-linear-gradient(90deg, rgba(249,115,22,0.18) 0 8px, rgba(249,115,22,0.10) 8px 16px)',
-            borderTop: '3px solid rgba(249,115,22,0.5)',
-            imageRendering: 'pixelated',
-            maskImage: 'radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 60% 100% at 50% 0%, black 40%, transparent 100%)',
+            position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: 240, height: 180, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse 50% 60% at 50% 100%, rgba(249,115,22,0.18) 0%, transparent 70%)',
           }} />
-          {/* shadow */}
+          {/* foot shadow */}
           <div style={{
-            position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)',
-            width: 90, height: 14, borderRadius: '50%',
-            background: 'rgba(0,0,0,0.25)', filter: 'blur(2px)'
+            position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+            width: 80, height: 12, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.35)', filter: 'blur(3px)', pointerEvents: 'none'
           }} />
-          <PixelKitsune lively size={150} />
+          <PixelKitsune lively size={180} />
         </div>
       </div>
 

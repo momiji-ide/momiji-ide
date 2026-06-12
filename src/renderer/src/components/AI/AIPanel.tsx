@@ -135,6 +135,42 @@ function tryRenderReview(content: string): React.ReactNode | null {
   } catch { return null }
 }
 
+// Claude-Code style: code blocks are collapsed by default, click header to expand.
+// User can peek the chunk and copy without scrolling through a wall of code.
+function CollapsibleCodeBlock({ lang, code }: { lang: string; code: string }) {
+  const lines = code.split('\n').length
+  // Auto-expand short snippets (≤8 lines feel inline); long blocks stay collapsed.
+  const [open, setOpen] = useState(lines <= 8)
+  const [copied, setCopied] = useState(false)
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500) })
+  }
+  return (
+    <div className="rounded overflow-hidden my-1.5" style={{ background: 'var(--bg-crust)', border: '1px solid var(--border)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-1.5 px-2 py-1 text-xs"
+        style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>
+        <span style={{ color: 'var(--accent-mauve)', fontSize: 10, transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+        <span style={{ color: lang ? 'var(--accent-green)' : 'var(--text-subtle)' }}>{lang || 'code'}</span>
+        <span style={{ color: 'var(--text-subtle)', fontSize: 10 }}>· {lines} {lines === 1 ? 'line' : 'lines'}</span>
+        <span className="flex-1" />
+        <span
+          role="button"
+          onClick={handleCopy}
+          className="px-1.5 py-0.5 rounded"
+          style={{ color: copied ? 'var(--accent-green)' : 'var(--text-subtle)', fontSize: 10, border: '1px solid var(--border)' }}>
+          {copied ? '✓' : '📋'}
+        </span>
+      </button>
+      {open && (
+        <pre className="p-2 text-xs overflow-x-auto" style={{ color: 'var(--accent-green)', fontFamily: 'monospace', whiteSpace: 'pre', margin: 0, maxHeight: 360, overflowY: 'auto' }}>{code}</pre>
+      )}
+    </div>
+  )
+}
+
 function renderMessage(content: string): React.ReactNode {
   const blocks: React.ReactNode[] = []
   const parts = content.split(/(```[\w]*\n[\s\S]*?```|```[\w]*[\s\S]*?```)/g)
@@ -142,12 +178,7 @@ function renderMessage(content: string): React.ReactNode {
   parts.forEach(part => {
     const codeMatch = part.match(/```([\w]*)\n?([\s\S]*?)```/)
     if (codeMatch) {
-      blocks.push(
-        <div key={key++} className="rounded overflow-hidden my-1.5" style={{ background: 'var(--bg-crust)', border: '1px solid var(--border)' }}>
-          {codeMatch[1] && <div className="px-2 py-0.5 text-xs" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)' }}>{codeMatch[1]}</div>}
-          <pre className="p-2 text-xs overflow-x-auto" style={{ color: 'var(--accent-green)', fontFamily: 'monospace', whiteSpace: 'pre-wrap', margin: 0 }}>{codeMatch[2]}</pre>
-        </div>
-      ); return
+      blocks.push(<CollapsibleCodeBlock key={key++} lang={codeMatch[1]} code={codeMatch[2].replace(/\n$/, '')} />); return
     }
     part.split('\n').forEach(line => {
       if (!line.trim()) { blocks.push(<br key={key++} />); return }

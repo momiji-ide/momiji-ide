@@ -230,17 +230,8 @@ export function KitsuneCommandCenter() {
     ctx.fillStyle = '#F97316'; ctx.font = 'bold 30px serif'; ctx.textAlign = 'center'
     ctx.fillText('🍁', 465, 136)
 
-    // Den corner — cushion + mini torii
-    ctx.fillStyle = 'rgba(249,115,22,0.10)'
-    ctx.strokeStyle = '#F97316'; ctx.lineWidth = 1.5
-    ctx.beginPath(); ctx.ellipse(DEN.x, DEN.y + 8, 64, 22, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
-    ctx.strokeStyle = '#E24B4A'; ctx.lineWidth = 5
-    ctx.beginPath(); ctx.moveTo(DEN.x - 42, 290); ctx.lineTo(DEN.x - 42, 240); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(DEN.x + 42, 290); ctx.lineTo(DEN.x + 42, 240); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(DEN.x - 56, 242); ctx.lineTo(DEN.x + 56, 242); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(DEN.x - 48, 254); ctx.lineTo(DEN.x + 48, 254); ctx.stroke()
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
-    ctx.fillText('Kitsune Den', DEN.x, 230)
+    // ── Kitsune Den — a tiny Japanese fox-shrine (Inari style) ─────────────
+    drawDenHouse(ctx, DEN.x, DEN.y, t)
 
     // Desks
     for (const k of Object.keys(AGENTS) as AgentType[]) {
@@ -265,9 +256,10 @@ export function KitsuneCommandCenter() {
       ctx.fillText(doneRef.current[k] + ' done', d.desk.x, d.desk.y + 60)
     }
 
-    // Boss kitsune idle at the den
-    drawShadow(ctx, DEN.x, DEN.y + 10, 34)
-    drawPixelKitsune(ctx, 'idle', pixelFrameIndex('idle', t), DEN.x, DEN.y + 10 + Math.sin(t * 1.6) * 2, 88)
+    // Boss kitsune idle in front of the den
+    const bossX = DEN.x - 30
+    drawShadow(ctx, bossX, DEN.y + 24, 22)
+    drawPixelKitsune(ctx, 'idle', pixelFrameIndex('idle', t), bossX, DEN.y + 24 + Math.sin(t * 1.6) * 2, 64, true)
   }
 
   function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number) {
@@ -326,6 +318,93 @@ export function KitsuneCommandCenter() {
     ctx.beginPath(); ctx.moveTo(x, y + h / 2); ctx.lineTo(x + w, y + h / 2); ctx.stroke()
     // sill
     ctx.fillStyle = '#4a3c32'; ctx.fillRect(x - 8, y + h, w + 16, 8)
+  }
+
+  // Tiny pixel-style Inari fox shrine (the boss kitsune's "home").
+  function drawDenHouse(ctx: CanvasRenderingContext2D, cx: number, baseY: number, t: number) {
+    // Stone base / platform
+    ctx.fillStyle = '#52453a'; ctx.fillRect(cx - 56, baseY + 18, 112, 8)
+    ctx.fillStyle = '#3a3128'; ctx.fillRect(cx - 56, baseY + 26, 112, 4)
+    // Foundation glow
+    ctx.fillStyle = 'rgba(249,115,22,0.10)'
+    ctx.beginPath(); ctx.ellipse(cx, baseY + 26, 64, 6, 0, 0, Math.PI * 2); ctx.fill()
+
+    // Shrine body (wooden walls)
+    const wallTop = baseY - 38, wallH = 56
+    ctx.fillStyle = '#6b4f3a'
+    ctx.fillRect(cx - 42, wallTop, 84, wallH)
+    // Wood panel lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1
+    for (const dy of [12, 28, 44]) {
+      ctx.beginPath(); ctx.moveTo(cx - 42, wallTop + dy); ctx.lineTo(cx + 42, wallTop + dy); ctx.stroke()
+    }
+    // Vertical posts
+    ctx.fillStyle = '#3d2c20'
+    ctx.fillRect(cx - 42, wallTop, 4, wallH)
+    ctx.fillRect(cx + 38, wallTop, 4, wallH)
+
+    // Doorway (dark)
+    ctx.fillStyle = '#1a0f0a'
+    ctx.fillRect(cx - 14, wallTop + 16, 28, wallH - 16)
+    // Door lantern glow (soft pulse)
+    const pulse = 0.5 + 0.2 * Math.sin(t * 2.4)
+    ctx.fillStyle = `rgba(249,180,80,${pulse * 0.35})`
+    ctx.beginPath(); ctx.ellipse(cx, wallTop + wallH - 8, 18, 8, 0, 0, Math.PI * 2); ctx.fill()
+
+    // Red torii-shaped door frame
+    ctx.fillStyle = '#C2410C'
+    ctx.fillRect(cx - 16, wallTop + 14, 4, wallH - 14)   // left post
+    ctx.fillRect(cx + 12, wallTop + 14, 4, wallH - 14)   // right post
+    ctx.fillRect(cx - 20, wallTop + 10, 40, 5)            // top beam
+    ctx.fillRect(cx - 22, wallTop + 16, 44, 3)            // sub beam
+
+    // Roof — peaked Japanese style
+    ctx.fillStyle = '#2c1810'   // dark tile roof
+    ctx.beginPath()
+    ctx.moveTo(cx - 56, wallTop)
+    ctx.lineTo(cx,       wallTop - 26)
+    ctx.lineTo(cx + 56, wallTop)
+    ctx.lineTo(cx + 48, wallTop + 4)
+    ctx.lineTo(cx - 48, wallTop + 4)
+    ctx.closePath(); ctx.fill()
+    // Roof ridge highlight
+    ctx.fillStyle = '#4a2818'
+    ctx.beginPath()
+    ctx.moveTo(cx - 50, wallTop - 1)
+    ctx.lineTo(cx,       wallTop - 22)
+    ctx.lineTo(cx + 50, wallTop - 1)
+    ctx.closePath(); ctx.fill()
+    // Gold roof finial
+    ctx.fillStyle = '#FACC15'
+    ctx.fillRect(cx - 2, wallTop - 30, 4, 8)
+    ctx.beginPath(); ctx.arc(cx, wallTop - 32, 3, 0, Math.PI * 2); ctx.fill()
+
+    // Tiny side windows (warm light from inside)
+    ctx.fillStyle = `rgba(255, 200, 100, ${0.55 + 0.15 * Math.sin(t * 2)})`
+    ctx.fillRect(cx - 36, wallTop + 22, 8, 8)
+    ctx.fillRect(cx + 28, wallTop + 22, 8, 8)
+    ctx.strokeStyle = '#3d2c20'; ctx.lineWidth = 1
+    ctx.strokeRect(cx - 36, wallTop + 22, 8, 8)
+    ctx.strokeRect(cx + 28, wallTop + 22, 8, 8)
+
+    // Hanging paper lantern in front of door
+    const lanternY = wallTop + 28 + Math.sin(t * 1.2) * 1.2
+    ctx.strokeStyle = '#1a0f0a'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(cx + 24, wallTop + 12); ctx.lineTo(cx + 24, lanternY - 6); ctx.stroke()
+    ctx.fillStyle = '#FACC15'
+    ctx.beginPath(); ctx.ellipse(cx + 24, lanternY, 5, 7, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(cx + 19, lanternY); ctx.lineTo(cx + 29, lanternY); ctx.stroke()
+    // Glow
+    const g = ctx.createRadialGradient(cx + 24, lanternY, 0, cx + 24, lanternY, 28)
+    g.addColorStop(0, 'rgba(255,200,100,0.35)'); g.addColorStop(1, 'rgba(255,200,100,0)')
+    ctx.fillStyle = g
+    ctx.beginPath(); ctx.arc(cx + 24, lanternY, 28, 0, Math.PI * 2); ctx.fill()
+
+    // Sign plaque
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(cx - 28, baseY + 32, 56, 13)
+    ctx.fillStyle = '#F97316'; ctx.font = '600 9px sans-serif'; ctx.textAlign = 'center'
+    ctx.fillText('Kitsune Den 🦊', cx, baseY + 41)
   }
 
   function drawCloud(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
@@ -467,6 +546,24 @@ export function KitsuneCommandCenter() {
             style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
             <span style={{ width: 8, height: 8, borderRadius: 99, background: AGENTS[k].color, display: 'inline-block' }} />
             {AGENTS[k].name.split(' ')[0]}
+          </button>
+        ))}
+      </div>
+
+      {/* Quick presets — multi-agent recipes for common workflows */}
+      <div className="flex items-center gap-1.5 px-4 py-1.5 flex-shrink-0 text-xs flex-wrap"
+        style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)' }}>
+        <span style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Quick presets:</span>
+        {[
+          { label: '🌅 Daily standup',    agents: ['review','test','docs','bug'] as AgentType[] },
+          { label: '✅ Pre-commit check', agents: ['review','bug']                as AgentType[] },
+          { label: '📚 Doc + test it',    agents: ['docs','test']                 as AgentType[] },
+          { label: '🐛 Hunt the bug',     agents: ['bug','review']                as AgentType[] },
+        ].map(p => (
+          <button key={p.label} onClick={() => p.agents.forEach((a, i) => setTimeout(() => dispatch(a), i * 450))}
+            className="px-2 py-0.5 rounded-full text-xs"
+            style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+            {p.label}
           </button>
         ))}
       </div>
