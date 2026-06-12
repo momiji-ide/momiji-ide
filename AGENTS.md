@@ -505,7 +505,11 @@ Format: `YYYY-MM-DD | <agent name> | <one-line summary> | <sections touched>`
 2026-06-12 | Claude Opus 4.8 | Kitsune Command Center — full-panel agentic UI ('den' ActivityBarItem). Office scene w/ weather windows (clear/rain/snow/night, auto-cycle), chibi sprite agents (kitsune_chibi_mega_sheet.png via kitsuneSheet.ts normalized frame rects) walk den→desk, work/celebrate/angry anims; dispatch wired to callKitsune() w/ per-agent personas on active tab, demo fallback when no provider; NL command routing; results panel w/ expand+copy. Welcome screen: Claude-Desktop-style activity tiles (greeting, last project, Command Center, what's new) | kitsuneSheet.ts, KitsuneCommandCenter.tsx, Sidebar.tsx, App.tsx, ActivityBar.tsx, types, CodeEditor.tsx
 ```
 
-> **Sprite sheet note:** frame rects in `kitsuneSheet.ts` are normalized fractions estimated from the 5-row sheet layout. If animations look cropped/offset, tune `ROW_Y`, `COLS_*`, `W4/W3` constants there — nothing else needs changing.
+> **Sprite sheet note:** frame rects in `kitsuneSheet.ts` are normalized fractions estimated from the 5-row sheet layout. If animations look cropped/offset, tune `ROW_Y`, `COLS_*`, `W4/W3` constants there — nothing else needs changing. The PNG has a WHITE background — `removeWhiteBackground()` flood-fills transparency from the borders at load (preserves whites inside the character). Don't replace it with naive chroma-key: the character has white hair.
+
+```
+2026-06-12 | Claude Opus 4.8 | Sprite transparency (border flood-fill), welcome tiles overlap fix (in-flow + marginBottom:auto), usage stats overview (usageStats.ts local-only, hooked in callKitsune + App mount, stat cards + 12-week heatmap), i18n for welcome + Command Center (ws_*/cc_* keys, EN/ID/JA) | kitsuneSheet.ts, usageStats.ts, callKitsune.ts, i18n.ts, CodeEditor.tsx, KitsuneCommandCenter.tsx
+```
 
 > **AI strategy note (decided 2026-05-25):** Momiji is **AI-native by design, BYOK-first**. AI is woven into creative tools (shader gen, future canvas/color gen) but always runs on the *user's* API key via `callKitsune()` — the app never bears inference cost. A hosted "Momiji AI" managed-key tier is a *future* Pro/Studio convenience (like Cursor / JetBrains AI Assistant), to be built only once there's revenue to justify the backend. Do NOT bundle a local model or add a hosted proxy speculatively.
 
