@@ -12,7 +12,7 @@ import { HexViewer, isBinaryFile } from './HexViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
 import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
-import kitsuneCharImg from '../../assets/kitsune-char.png'
+import { PixelKitsune } from '../Kitsune/PixelKitsune'
 import { FileIcon } from '../Sidebar/FileIcon'
 import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
 import { useInlineCompletion } from './useInlineCompletion'
@@ -1045,7 +1045,7 @@ function WelcomeScreen() {
         {/* ── Activity tiles + overview (Claude Desktop style) ── */}
         {/* In-flow with marginBottom:auto so it pins to the top and can never
             overlap the character below, even at small window sizes. */}
-        <div className="w-full px-5 pt-4 overflow-y-auto" style={{ zIndex: 2, marginBottom: 'auto', maxHeight: '55%' }}>
+        <div className="w-full px-5 pt-4 overflow-y-auto" style={{ zIndex: 2, marginBottom: 'auto', maxHeight: '70%' }}>
           {(() => {
             const t = getT(getLang())
             const h = new Date().getHours()
@@ -1155,33 +1155,10 @@ function WelcomeScreen() {
           }} />
         </div>
 
-        {/* Kitsune character — cropped to main figure */}
-        <div style={{
-          width: '100%', maxWidth: 340,
-          height: '75%', minHeight: 300,
-          position: 'relative', zIndex: 1,
-          animation: 'kitsuneFloat 4s ease-in-out infinite',
-        }}>
-          <img
-            src={kitsuneCharImg}
-            alt="Kitsune AI"
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'contain',
-              objectPosition: 'center bottom',
-              maskImage: 'linear-gradient(to top, transparent 0%, black 15%, black 100%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 15%, black 100%)',
-              filter: 'drop-shadow(0 8px 40px rgba(251,146,60,0.3))',
-            }}
-          />
+        {/* Kitsune character — small animated pixel sprite */}
+        <div className="flex items-end justify-center" style={{ height: 200, position: 'relative', zIndex: 1, marginBottom: 24 }}>
+          <PixelKitsune anim="idle" size={150} />
         </div>
-
-        <style>{`
-          @keyframes kitsuneFloat {
-            0%, 100% { transform: translateY(0px); }
-            50%       { transform: translateY(-10px); }
-          }
-        `}</style>
       </div>
 
       {/* RIGHT — recent projects */}

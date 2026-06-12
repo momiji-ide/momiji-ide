@@ -131,6 +131,12 @@ const en = {
   cc_results_empty: 'Agent results appear here.',
   cc_full: 'Den is full — wait for an agent to return 🦊',
   cc_demo_note: 'demo mode — enable an AI provider in Settings for real results',
+  cc_dispatched: 'dispatched →',
+  cc_desk: 'desk',
+  cc_working: 'working at the desk…',
+  cc_done: 'done! ✓ result ready below',
+  cc_returned: 'returned to den',
+  cc_no_file: '(no file open)',
 }
 
 const id: Translations = {
@@ -239,6 +245,12 @@ const id: Translations = {
   cc_results_empty: 'Hasil agen muncul di sini.',
   cc_full: 'Den penuh — tunggu agen pulang dulu 🦊',
   cc_demo_note: 'demo mode — aktifkan AI provider di Settings untuk hasil beneran',
+  cc_dispatched: 'dikirim →',
+  cc_desk: 'meja',
+  cc_working: 'lagi kerja di meja…',
+  cc_done: 'selesai! ✓ hasil siap di bawah',
+  cc_returned: 'balik ke den',
+  cc_no_file: '(belum ada file kebuka)',
 }
 
 const ja: Translations = {
@@ -347,6 +359,12 @@ const ja: Translations = {
   cc_results_empty: 'エージェントの結果がここに表示されます。',
   cc_full: 'デンが満員です — エージェントの帰りを待ってください 🦊',
   cc_demo_note: 'デモモード — 実際の結果には設定でAIプロバイダを有効にしてください',
+  cc_dispatched: '派遣 →',
+  cc_desk: 'デスク',
+  cc_working: 'デスクで作業中…',
+  cc_done: '完了！✓ 結果は下に',
+  cc_returned: '巣に戻りました',
+  cc_no_file: '(ファイル未選択)',
 }
 
 // Minimal stubs for other languages (English fallback)

@@ -3,9 +3,7 @@ import { useAppStore } from '../../store/appStore'
 import { callKitsune } from '../../utils/callKitsune'
 import { toast } from '../../utils/toast'
 import { getT, getLang } from '../../utils/i18n'
-import {
-  loadKitsuneSheet, getKitsuneSheet, drawKitsune, frameIndex, type KitsuneAnim
-} from './kitsuneSheet'
+import { drawPixelKitsune, pixelFrameIndex, type PixelAnim } from './pixelKitsune'
 
 // ─── Virtual scene space (scaled to canvas) ──────────────────────────────────
 const VW = 900
@@ -85,7 +83,6 @@ export function KitsuneCommandCenter() {
   const [cmd, setCmd]           = useState('')
   const [logs, setLogs]         = useState<LogEntry[]>([])
   const [results, setResults]   = useState<TaskResult[]>([])
-  const [sheetReady, setSheetReady] = useState(false)
 
   useEffect(() => { weatherRef.current = weather; particlesRef.current = [] }, [weather])
 
@@ -99,7 +96,6 @@ export function KitsuneCommandCenter() {
     return () => clearInterval(id)
   }, [autoWeather])
 
-  useEffect(() => { loadKitsuneSheet().then(() => setSheetReady(true)).catch(() => {}) }, [])
 
   const addLog = useCallback((who: string, text: string, color: string) => {
     const time = new Date().toLocaleTimeString().slice(0, 8)
@@ -118,7 +114,7 @@ export function KitsuneCommandCenter() {
       t: Math.random() * 9, phaseT: 0, flip: true, progress: 0, resultId: null
     }
     agentsRef.current.push(agent)
-    addLog(id, `dispatched → ${def.name} desk`, def.color)
+    addLog(id, `${t.cc_dispatched} ${def.name} ${t.cc_desk}`, def.color)
     rerender()
 
     // Run the real task in parallel with the walk
@@ -146,7 +142,7 @@ export function KitsuneCommandCenter() {
     if (!hasAI || !tab) {
       await new Promise(r => setTimeout(r, 4500 + Math.random() * 3000))
       return {
-        title: tab ? `${def.name}: ${tab.fileName}` : `${def.name}: (no file open)`,
+        title: tab ? `${def.name}: ${tab.fileName}` : `${def.name}: ${t.cc_no_file}`,
         body: def.demo, demo: true
       }
     }
@@ -208,7 +204,7 @@ export function KitsuneCommandCenter() {
     }
     raf = requestAnimationFrame(loop)
     return () => { cancelAnimationFrame(raf); ro.disconnect() }
-  }, [sheetReady]) // eslint-disable-line
+  }, []) // eslint-disable-line
 
   // ─── Scene drawing ─────────────────────────────────────────────────────────
   function drawOffice(ctx: CanvasRenderingContext2D, t: number) {
@@ -267,11 +263,8 @@ export function KitsuneCommandCenter() {
     }
 
     // Boss kitsune idle at the den
-    const img = getKitsuneSheet()
-    if (img) {
-      drawShadow(ctx, DEN.x, DEN.y + 10, 40)
-      drawKitsune(ctx, img, 'idle', frameIndex('idle', t), DEN.x, DEN.y + 10 + Math.sin(t * 1.6) * 2, 92)
-    }
+    drawShadow(ctx, DEN.x, DEN.y + 10, 34)
+    drawPixelKitsune(ctx, 'idle', pixelFrameIndex('idle', t), DEN.x, DEN.y + 10 + Math.sin(t * 1.6) * 2, 88)
   }
 
   function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number) {
@@ -347,7 +340,7 @@ export function KitsuneCommandCenter() {
 
   // ─── Agent simulation ──────────────────────────────────────────────────────
   function updateAndDrawAgents(ctx: CanvasRenderingContext2D, t: number, dt: number) {
-    const img = getKitsuneSheet()
+    const tr = getT(getLang())   // t (param) is time; tr = translations
     const SPEED = 95
     let changed = false
 
@@ -364,7 +357,7 @@ export function KitsuneCommandCenter() {
           if (a.wi >= a.wp.length) {
             if (a.phase === 'out') {
               a.phase = 'work'; a.phaseT = 0
-              addLog(a.id, 'working at the desk…', def.color); changed = true
+              addLog(a.id, tr.cc_working, def.color); changed = true
             } else {
               agentsRef.current = agentsRef.current.filter(x => x !== a)
               changed = true
@@ -378,7 +371,7 @@ export function KitsuneCommandCenter() {
         if (a.progress >= 1) {
           doneRef.current[a.type]++
           a.phase = 'celebrate'; a.phaseT = 0
-          addLog(a.id, 'done! ✓ result ready below', '#1D9E75'); changed = true
+          addLog(a.id, tr.cc_done, '#1D9E75'); changed = true
         } else if (a.progress < 0) {
           a.phase = 'angry'; a.phaseT = 0; changed = true
         }
@@ -389,14 +382,14 @@ export function KitsuneCommandCenter() {
       }
 
       // Draw
-      if (img) {
-        const anim: KitsuneAnim =
+      {
+        const anim: PixelAnim =
           a.phase === 'work' ? 'work' :
           a.phase === 'celebrate' ? 'celebrate' :
-          a.phase === 'angry' ? 'angry' : 'walk'
+          a.phase === 'angry' ? 'work' : 'walk'
         const bob = (a.phase === 'out' || a.phase === 'back') ? Math.sin(a.t * 13) * 1.5 : 0
-        drawShadow(ctx, a.pos.x, a.pos.y + 4, 24)
-        drawKitsune(ctx, img, anim, frameIndex(anim, a.t), a.pos.x, a.pos.y + 4 + bob, 66, a.flip)
+        drawShadow(ctx, a.pos.x, a.pos.y + 4, 20)
+        drawPixelKitsune(ctx, anim, pixelFrameIndex(anim, a.t), a.pos.x, a.pos.y + 4 + bob, 60, a.flip)
         // name tag
         ctx.fillStyle = 'rgba(0,0,0,0.45)'
         const tag = a.id
