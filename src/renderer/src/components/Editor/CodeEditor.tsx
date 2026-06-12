@@ -5,6 +5,8 @@ import { useAppStore } from '../../store/appStore'
 import { MarkdownPreview } from './MarkdownPreview'
 import { CodeFlowchart } from './CodeFlowchart'
 import { isFlowchartSupported } from '../../utils/codeToFlowchart'
+import { getT, getLang } from '../../utils/i18n'
+import { getStats } from '../../utils/usageStats'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
@@ -1040,51 +1042,91 @@ function WelcomeScreen() {
           background: 'radial-gradient(ellipse 70% 80% at 50% 100%, rgba(251,146,60,0.08) 0%, rgba(203,166,247,0.05) 40%, transparent 70%)'
         }} />
 
-        {/* ── Activity tiles (Claude Desktop style) ── */}
-        <div className="absolute top-0 left-0 right-0 px-5 pt-5" style={{ zIndex: 3 }}>
-          <p className="text-sm font-bold mb-0.5" style={{ color: 'var(--text)' }}>
-            {(() => { const h = new Date().getHours(); return h < 11 ? '☀️ Ohayō!' : h < 15 ? '🌤️ Konnichiwa!' : h < 19 ? '🌆 Konbanwa!' : '🌙 Masih ngoding?' })()}
-          </p>
-          <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)' }}>Lanjutkan dari terakhir kali, atau mulai yang baru.</p>
-          <div className="flex gap-2 flex-wrap">
-            {recentFolders[0] && (
-              <button onClick={() => openFolder(recentFolders[0])}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-                style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', maxWidth: 200 }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
-                <span style={{ fontSize: 16 }}>📂</span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>
-                    {recentFolders[0].split(/[\\/]/).pop()}
-                  </span>
-                  <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Project terakhir</span>
-                </span>
-              </button>
-            )}
-            <button onClick={() => setActivePanel('den' as any)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-              style={{ background: 'var(--bg-surface0)', border: '1px solid var(--accent-mauve)55', maxWidth: 210 }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)55' as any)}>
-              <span style={{ fontSize: 16 }}>⛩️</span>
-              <span className="min-w-0">
-                <span className="block text-xs font-semibold" style={{ color: 'var(--accent-mauve)' }}>Command Center</span>
-                <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Dispatch agen Kitsune</span>
-              </span>
-            </button>
-            <button onClick={() => window.dispatchEvent(new CustomEvent('app:showAbout'))}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all"
-              style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)', maxWidth: 200 }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
-              <span style={{ fontSize: 16 }}>✨</span>
-              <span className="min-w-0">
-                <span className="block text-xs font-semibold" style={{ color: 'var(--text)' }}>Baru di v1.3.1</span>
-                <span className="block text-xs" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>Flowchart · Creative · Robot</span>
-              </span>
-            </button>
-          </div>
+        {/* ── Activity tiles + overview (Claude Desktop style) ── */}
+        {/* In-flow with marginBottom:auto so it pins to the top and can never
+            overlap the character below, even at small window sizes. */}
+        <div className="w-full px-5 pt-4 overflow-y-auto" style={{ zIndex: 2, marginBottom: 'auto', maxHeight: '55%' }}>
+          {(() => {
+            const t = getT(getLang())
+            const h = new Date().getHours()
+            const greet = h < 11 ? `☀️ ${t.ws_greet_morning}` : h < 15 ? `🌤️ ${t.ws_greet_day}` : h < 19 ? `🌆 ${t.ws_greet_evening}` : `🌙 ${t.ws_greet_night}`
+            const stats = getStats(12)
+            const tiles = [
+              recentFolders[0] && {
+                icon: '📂', accent: false,
+                title: recentFolders[0].split(/[\\/]/).pop() ?? '', sub: t.ws_last_project,
+                onClick: () => openFolder(recentFolders[0])
+              },
+              {
+                icon: '⛩️', accent: true,
+                title: t.ws_command_center, sub: t.ws_cc_sub,
+                onClick: () => setActivePanel('den' as any)
+              },
+              {
+                icon: '✨', accent: false,
+                title: `${t.ws_whats_new} v1.3.1`, sub: 'Flowchart · Creative · Robot',
+                onClick: () => window.dispatchEvent(new CustomEvent('app:showAbout'))
+              },
+            ].filter(Boolean) as { icon: string; accent: boolean; title: string; sub: string; onClick: () => void }[]
+
+            const cards = [
+              { label: t.ws_sessions,    val: String(stats.sessions) },
+              { label: t.ws_ai_msgs,     val: String(stats.aiMsgs) },
+              { label: t.ws_tokens,      val: stats.tokens > 999 ? (stats.tokens / 1000).toFixed(1) + 'K' : String(stats.tokens) },
+              { label: t.ws_active_days, val: String(stats.activeDays) },
+              { label: t.ws_streak,      val: stats.streak + 'd' },
+              { label: t.ws_fav_model,   val: stats.favModel ? stats.favModel.split('-').slice(0, 2).join(' ') : '—' },
+            ]
+            const maxH = Math.max(1, ...stats.heatmap.flat())
+
+            return (
+              <>
+                <p className="text-sm font-bold mb-0.5" style={{ color: 'var(--text)' }}>{greet}</p>
+                <p className="text-xs mb-3" style={{ color: 'var(--text-subtle)' }}>{t.ws_continue_sub}</p>
+
+                <div className="flex gap-2 flex-wrap mb-3">
+                  {tiles.map((tile, i) => (
+                    <button key={i} onClick={tile.onClick}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all min-w-0"
+                      style={{ background: 'var(--bg-surface0)', border: `1px solid ${tile.accent ? 'var(--accent-mauve)55' : 'var(--border)'}`, maxWidth: 190, flex: '1 1 140px' }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-mauve)')}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = tile.accent ? 'var(--accent-mauve)55' : 'var(--border)')}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{tile.icon}</span>
+                      <span className="min-w-0">
+                        <span className="block text-xs font-semibold truncate" style={{ color: tile.accent ? 'var(--accent-mauve)' : 'var(--text)' }}>{tile.title}</span>
+                        <span className="block truncate" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{tile.sub}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Overview — stats + heatmap (Claude Desktop style) */}
+                <div className="rounded-xl p-3" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>{t.ws_overview}</p>
+                  <div className="grid gap-1.5 mb-2.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))' }}>
+                    {cards.map(c => (
+                      <div key={c.label} className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-base)' }}>
+                        <p className="truncate" style={{ fontSize: 9, color: 'var(--text-subtle)' }}>{c.label}</p>
+                        <p className="text-xs font-bold truncate" style={{ color: 'var(--text)' }}>{c.val}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-0.5">
+                    {stats.heatmap.map((col, wi) => (
+                      <div key={wi} className="flex flex-col gap-0.5">
+                        {col.map((n, di) => (
+                          <div key={di} style={{
+                            width: 8, height: 8, borderRadius: 2,
+                            background: n === 0 ? 'var(--bg-surface1)' : `rgba(249,115,22,${0.25 + 0.75 * (n / maxH)})`
+                          }} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
+          })()}
         </div>
 
         {/* Speech bubble */}

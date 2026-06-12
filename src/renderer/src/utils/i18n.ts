@@ -102,6 +102,35 @@ const en = {
   settings_font_family: 'Font Family',
   settings_reset: '↺ Reset to defaults',
   settings_saved: '✓ Saved',
+
+  // Welcome screen — activity tiles + overview
+  ws_greet_morning: 'Good morning!',
+  ws_greet_day: 'Good afternoon!',
+  ws_greet_evening: 'Good evening!',
+  ws_greet_night: 'Still coding?',
+  ws_continue_sub: 'Pick up where you left off, or start fresh.',
+  ws_last_project: 'Last project',
+  ws_command_center: 'Command Center',
+  ws_cc_sub: 'Dispatch Kitsune agents',
+  ws_whats_new: 'New in',
+  ws_overview: 'Your activity',
+  ws_sessions: 'Sessions',
+  ws_ai_msgs: 'AI messages',
+  ws_tokens: 'Est. tokens',
+  ws_active_days: 'Active days',
+  ws_streak: 'Streak',
+  ws_fav_model: 'Favorite model',
+
+  // Kitsune Command Center
+  cc_cmd_placeholder: 'Natural command — e.g. "review this file then write tests"',
+  cc_send: '▶ Send',
+  cc_live: '⚡ Live activity',
+  cc_active: 'active',
+  cc_feed_empty: 'Dispatch an agent or type a command to start…',
+  cc_results: '📋 Task results — click to open',
+  cc_results_empty: 'Agent results appear here.',
+  cc_full: 'Den is full — wait for an agent to return 🦊',
+  cc_demo_note: 'demo mode — enable an AI provider in Settings for real results',
 }
 
 const id: Translations = {
@@ -183,6 +212,33 @@ const id: Translations = {
   settings_font_family: 'Jenis Font',
   settings_reset: '↺ Reset ke default',
   settings_saved: '✓ Tersimpan',
+
+  ws_greet_morning: 'Ohayō! Selamat pagi',
+  ws_greet_day: 'Selamat siang!',
+  ws_greet_evening: 'Selamat sore!',
+  ws_greet_night: 'Masih ngoding? 🌙',
+  ws_continue_sub: 'Lanjutkan dari terakhir kali, atau mulai yang baru.',
+  ws_last_project: 'Project terakhir',
+  ws_command_center: 'Command Center',
+  ws_cc_sub: 'Dispatch agen Kitsune',
+  ws_whats_new: 'Baru di',
+  ws_overview: 'Aktivitas lo',
+  ws_sessions: 'Sesi',
+  ws_ai_msgs: 'Pesan AI',
+  ws_tokens: 'Est. token',
+  ws_active_days: 'Hari aktif',
+  ws_streak: 'Streak',
+  ws_fav_model: 'Model favorit',
+
+  cc_cmd_placeholder: 'Perintah natural — contoh: "review file ini terus tulis test-nya"',
+  cc_send: '▶ Kirim',
+  cc_live: '⚡ Live activity',
+  cc_active: 'aktif',
+  cc_feed_empty: 'Dispatch agen atau ketik perintah untuk mulai…',
+  cc_results: '📋 Hasil task — klik untuk buka',
+  cc_results_empty: 'Hasil agen muncul di sini.',
+  cc_full: 'Den penuh — tunggu agen pulang dulu 🦊',
+  cc_demo_note: 'demo mode — aktifkan AI provider di Settings untuk hasil beneran',
 }
 
 const ja: Translations = {
@@ -264,6 +320,33 @@ const ja: Translations = {
   settings_font_family: 'フォントファミリー',
   settings_reset: '↺ デフォルトにリセット',
   settings_saved: '✓ 保存済み',
+
+  ws_greet_morning: 'おはよう！',
+  ws_greet_day: 'こんにちは！',
+  ws_greet_evening: 'こんばんは！',
+  ws_greet_night: 'まだコーディング中？🌙',
+  ws_continue_sub: '前回の続きから、または新しく始めましょう。',
+  ws_last_project: '前回のプロジェクト',
+  ws_command_center: 'コマンドセンター',
+  ws_cc_sub: 'キツネエージェントを派遣',
+  ws_whats_new: '新機能',
+  ws_overview: 'アクティビティ',
+  ws_sessions: 'セッション',
+  ws_ai_msgs: 'AIメッセージ',
+  ws_tokens: '推定トークン',
+  ws_active_days: 'アクティブ日数',
+  ws_streak: '連続日数',
+  ws_fav_model: 'お気に入りモデル',
+
+  cc_cmd_placeholder: '自然な指示 — 例：「このファイルをレビューしてテストを書いて」',
+  cc_send: '▶ 送信',
+  cc_live: '⚡ ライブ活動',
+  cc_active: '稼働中',
+  cc_feed_empty: 'エージェントを派遣するか、コマンドを入力してください…',
+  cc_results: '📋 タスク結果 — クリックで開く',
+  cc_results_empty: 'エージェントの結果がここに表示されます。',
+  cc_full: 'デンが満員です — エージェントの帰りを待ってください 🦊',
+  cc_demo_note: 'デモモード — 実際の結果には設定でAIプロバイダを有効にしてください',
 }
 
 // Minimal stubs for other languages (English fallback)

@@ -1,4 +1,5 @@
 import { useAppStore } from '../store/appStore'
+import { recordAiCall } from './usageStats'
 
 /**
  * Call whichever AI provider is currently enabled.
@@ -8,6 +9,12 @@ export async function callKitsune(prompt: string, systemPrompt?: string): Promis
   const { aiProviders } = useAppStore.getState()
   const provider = aiProviders.find((p) => p.enabled && p.apiKey)
   if (!provider) throw new Error('NO_PROVIDER')
+
+  // Local usage stats for the welcome-screen overview (never leaves device)
+  const track = (reply: string): string => {
+    try { recordAiCall(provider.model, (prompt.length + reply.length) / 4) } catch {}
+    return reply
+  }
 
   const sys = systemPrompt ?? `You are Kitsune, the friendly AI assistant inside Momiji IDE.
 You help people of all skill levels understand and fix their code.
@@ -21,7 +28,7 @@ Be concise, warm, and encouraging. Avoid jargon. Use plain language.`
     })
     const d = await res.json()
     if (!res.ok) throw new Error(d.error?.message ?? 'Claude error')
-    return d.content[0].text as string
+    return track(d.content[0].text as string)
   }
 
   if (provider.id === 'gemini') {
@@ -38,7 +45,7 @@ Be concise, warm, and encouraging. Avoid jargon. Use plain language.`
     )
     const d = await res.json()
     if (!res.ok) throw new Error(d.error?.message ?? 'Gemini error')
-    return d.candidates[0].content.parts[0].text as string
+    return track(d.candidates[0].content.parts[0].text as string)
   }
 
   // OpenAI
@@ -49,7 +56,7 @@ Be concise, warm, and encouraging. Avoid jargon. Use plain language.`
   })
   const d = await res.json()
   if (!res.ok) throw new Error(d.error?.message ?? 'OpenAI error')
-  return d.choices[0].message.content as string
+  return track(d.choices[0].message.content as string)
 }
 
 /** Parse error line number from common runtime error formats */

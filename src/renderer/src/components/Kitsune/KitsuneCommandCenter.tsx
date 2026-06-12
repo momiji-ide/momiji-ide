@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { callKitsune } from '../../utils/callKitsune'
 import { toast } from '../../utils/toast'
+import { getT, getLang } from '../../utils/i18n'
 import {
   loadKitsuneSheet, getKitsuneSheet, drawKitsune, frameIndex, type KitsuneAnim
 } from './kitsuneSheet'
@@ -67,6 +68,7 @@ function waypoints(desk: { x: number; y: number }, reverse: boolean) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export function KitsuneCommandCenter() {
+  const t = getT(getLang())
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const agentsRef = useRef<Agent[]>([])
   const seqRef    = useRef<Record<AgentType, number>>({ review: 0, test: 0, docs: 0, bug: 0 })
@@ -106,7 +108,7 @@ export function KitsuneCommandCenter() {
 
   // ─── Dispatch ──────────────────────────────────────────────────────────────
   const dispatch = useCallback((type: AgentType) => {
-    if (agentsRef.current.length >= 6) { toast.warning('Den penuh — tunggu agen pulang dulu 🦊'); return }
+    if (agentsRef.current.length >= 6) { toast.warning(t.cc_full); return }
     const def = AGENTS[type]
     seqRef.current[type]++
     const id = def.name.split(' ')[0] + '-' + seqRef.current[type]
@@ -127,7 +129,7 @@ export function KitsuneCommandCenter() {
       agent.progress = 1
       if (demo && !demoWarnedRef.current) {
         demoWarnedRef.current = true
-        addLog('SYS', 'demo mode — enable an AI provider in Settings for real results', '#888780')
+        addLog('SYS', t.cc_demo_note, '#888780')
       }
     }).catch((e: any) => {
       agent.progress = -1
@@ -454,14 +456,14 @@ export function KitsuneCommandCenter() {
         <input
           value={cmd} onChange={e => setCmd(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleCommand() }}
-          placeholder='Perintah natural — contoh: "review file ini terus tulis test-nya"'
+          placeholder={t.cc_cmd_placeholder}
           className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
           style={{ background: 'var(--bg-base)', color: 'var(--text)', border: '1px solid var(--border)' }}
         />
         <button onClick={handleCommand}
           className="px-3 py-1.5 rounded-lg text-xs font-semibold"
           style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none' }}>
-          ▶ Kirim
+          {t.cc_send}
         </button>
         {(Object.keys(AGENTS) as AgentType[]).map(k => (
           <button key={k} onClick={() => dispatch(k)} title={'Dispatch ' + AGENTS[k].name}
@@ -484,13 +486,13 @@ export function KitsuneCommandCenter() {
         <div className="flex flex-col overflow-hidden" style={{ width: '42%', borderRight: '1px solid var(--border)' }}>
           <div className="px-3 py-1.5 text-xs font-semibold flex-shrink-0 flex items-center gap-2"
             style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-            ⚡ Live activity
+            {t.cc_live}
             <span className="text-xs px-1.5 rounded-full" style={{ background: 'var(--bg-surface0)', color: 'var(--accent-mauve)' }}>
-              {activeAgents.length} aktif
+              {activeAgents.length} {t.cc_active}
             </span>
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-2" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, lineHeight: 1.8 }}>
-            {logs.length === 0 && <span style={{ color: 'var(--text-subtle)' }}>Dispatch agen atau ketik perintah untuk mulai…</span>}
+            {logs.length === 0 && <span style={{ color: 'var(--text-subtle)' }}>{t.cc_feed_empty}</span>}
             {logs.map((l, i) => (
               <div key={i}>
                 <span style={{ color: 'var(--text-subtle)', opacity: 0.6 }}>{l.time}</span>{' '}
@@ -504,10 +506,10 @@ export function KitsuneCommandCenter() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="px-3 py-1.5 text-xs font-semibold flex-shrink-0"
             style={{ background: 'var(--bg-mantle)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-            📋 Hasil task — klik untuk buka
+            {t.cc_results}
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-1.5">
-            {results.length === 0 && <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>Hasil agen muncul di sini.</span>}
+            {results.length === 0 && <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>{t.cc_results_empty}</span>}
             {results.map(r => (
               <div key={r.id} className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
                 <button

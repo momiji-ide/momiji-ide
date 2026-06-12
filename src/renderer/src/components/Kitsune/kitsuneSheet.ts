@@ -44,22 +44,61 @@ export const ANIMS: Record<KitsuneAnim, AnimDef> = {
   celebrate: { row: 4, cols: COLS_R3, w: W3, fps: 5,  loop: true  },
 }
 
-let _img: HTMLImageElement | null = null
-let _loading: Promise<HTMLImageElement> | null = null
+export type KitsuneSheet = HTMLCanvasElement
 
-export function loadKitsuneSheet(): Promise<HTMLImageElement> {
-  if (_img) return Promise.resolve(_img)
+let _sheet: KitsuneSheet | null = null
+let _loading: Promise<KitsuneSheet> | null = null
+
+/**
+ * The source PNG has a WHITE background, not transparency. We remove it with
+ * a flood fill from the sheet borders: only near-white pixels CONNECTED to
+ * the edge become transparent — whites inside the character (hair, coat)
+ * are preserved because they're enclosed by darker outlines.
+ */
+function removeWhiteBackground(img: HTMLImageElement): KitsuneSheet {
+  const c = document.createElement('canvas')
+  c.width = img.width; c.height = img.height
+  const ctx = c.getContext('2d')!
+  ctx.drawImage(img, 0, 0)
+  const W = c.width, H = c.height
+  const data = ctx.getImageData(0, 0, W, H)
+  const px = data.data
+  const isWhite = (i: number) => px[i] > 232 && px[i + 1] > 232 && px[i + 2] > 232
+  const visited = new Uint8Array(W * H)
+  const stack: number[] = []
+  // Seed from every border pixel
+  for (let x = 0; x < W; x++) { stack.push(x); stack.push((H - 1) * W + x) }
+  for (let y = 0; y < H; y++) { stack.push(y * W); stack.push(y * W + W - 1) }
+  while (stack.length) {
+    const p = stack.pop()!
+    if (visited[p]) continue
+    visited[p] = 1
+    const i = p * 4
+    if (!isWhite(i)) continue
+    px[i + 3] = 0
+    const x = p % W, y = (p / W) | 0
+    if (x > 0)     stack.push(p - 1)
+    if (x < W - 1) stack.push(p + 1)
+    if (y > 0)     stack.push(p - W)
+    if (y < H - 1) stack.push(p + W)
+  }
+  ctx.putImageData(data, 0, 0)
+  return c
+}
+
+export function loadKitsuneSheet(): Promise<KitsuneSheet> {
+  if (_sheet) return Promise.resolve(_sheet)
   if (_loading) return _loading
   _loading = new Promise((resolve, reject) => {
     const img = new Image()
-    img.onload = () => { _img = img; resolve(img) }
+    img.onload = () => { _sheet = removeWhiteBackground(img); resolve(_sheet) }
     img.onerror = reject
     img.src = sheetUrl
   })
   return _loading
 }
 
-export function getKitsuneSheet(): HTMLImageElement | null { return _img }
+export function getKitsuneSheet(): KitsuneSheet | null { return _sheet }
 
 /** Which frame index to show for a given animation at time t (seconds). */
 export function frameIndex(anim: KitsuneAnim, t: number): number {
@@ -75,7 +114,7 @@ export function frameIndex(anim: KitsuneAnim, t: number): number {
  */
 export function drawKitsune(
   ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
+  img: KitsuneSheet,
   anim: KitsuneAnim,
   frame: number,
   cx: number,

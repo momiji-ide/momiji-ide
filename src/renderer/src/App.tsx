@@ -26,6 +26,7 @@ export default function App() {
   // ── Auto-restore last folder on startup ──────────────────────────────────
   useEffect(() => {
     restoreLastFolder()
+    import('./utils/usageStats').then(m => m.recordAppOpen()).catch(() => {})
   }, []) // eslint-disable-line
 
   // ── Global handler for right-click "Ask Kitsune" — always mounted ──────────
