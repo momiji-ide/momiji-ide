@@ -392,6 +392,21 @@ nav {
 .trait-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem; }
 .trait-desc { color: var(--mist); font-size: 0.82rem; line-height: 1.6; font-weight: 300; }
 
+/* ── COMMAND CENTER ─────────────────────── */
+.cc-section { padding: 7rem 2rem; max-width: 1200px; margin: 0 auto; }
+.cc-grid {
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 3rem;
+  align-items: center; margin-top: 3rem;
+}
+.cc-visual {
+  border-radius: 14px; overflow: hidden; border: 1px solid var(--border);
+  box-shadow: 0 24px 60px rgba(212,82,30,0.18);
+}
+.cc-visual svg { display: block; width: 100%; height: auto; background: #11131A; }
+@media (max-width: 900px) {
+  .cc-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
 /* ── CANVA MOMENT ───────────────────────── */
 .vision-section {
   padding: 8rem 2rem;
@@ -582,6 +597,7 @@ footer {
   <ul class="nav-links">
     <li><a href="#for-whom">For You</a></li>
     <li><a href="#kitsune">Kitsune AI</a></li>
+    <li><a href="#command-center">Command Center</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="https://github.com/momiji-ide/momiji-ide">GitHub</a></li>
@@ -751,6 +767,183 @@ footer {
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- COMMAND CENTER -->
+<div id="command-center"></div>
+<section class="cc-section">
+  <div class="section-label" style="color:var(--ember)">NEW &mdash; LIVE INSIDE THE IDE</div>
+  <h2 class="section-h2">Your AI team,<br>working in <em style="color:var(--maple2);font-style:italic">real time</em>.</h2>
+  <p class="section-sub">Dispatch as many Kitsune agents as you need &mdash; no limit. Watch them walk into a hand-drawn pixel-art office, sit at their desks, and get to work, while a Jarvis-style Mission Control dashboard tracks every step live.</p>
+
+  <div class="cc-grid">
+    <div class="cc-visual">
+      <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <defs>
+          <g id="kit-head">
+            <path d="M-10,-2 L-4,-13 L0,-4 Z" fill="#dc7f42"/>
+            <path d="M10,-2 L4,-13 L0,-4 Z" fill="#dc7f42"/>
+            <circle cx="0" cy="2" r="10" fill="#f9dcc9"/>
+            <circle cx="-3" cy="2" r="1.4" fill="#271e23"/>
+            <circle cx="3" cy="2" r="1.4" fill="#271e23"/>
+          </g>
+        </defs>
+
+        <rect width="640" height="400" fill="#11131A"/>
+
+        <!-- office scene -->
+        <g>
+          <rect x="0" y="0" width="396" height="160" fill="#f3e6dd"/>
+          <rect x="0" y="160" width="396" height="240" fill="#b89071"/>
+          <g stroke="#8a6a52" stroke-width="1" opacity="0.35">
+            <line x1="0" y1="190" x2="396" y2="190"/>
+            <line x1="0" y1="220" x2="396" y2="220"/>
+            <line x1="0" y1="250" x2="396" y2="250"/>
+            <line x1="0" y1="280" x2="396" y2="280"/>
+            <line x1="0" y1="310" x2="396" y2="310"/>
+            <line x1="0" y1="340" x2="396" y2="340"/>
+            <line x1="0" y1="370" x2="396" y2="370"/>
+          </g>
+          <rect x="0" y="154" width="396" height="8" fill="#7a5c4a"/>
+
+          <!-- windows -->
+          <rect x="18" y="14" width="110" height="120" fill="#59423e"/>
+          <rect x="24" y="20" width="98" height="108" fill="#bfe3f0"/>
+          <circle cx="100" cy="40" r="9" fill="#ffffff" opacity="0.85"/>
+          <line x1="73" y1="20" x2="73" y2="128" stroke="#59423e" stroke-width="3"/>
+          <line x1="24" y1="74" x2="122" y2="74" stroke="#59423e" stroke-width="3"/>
+
+          <rect x="300" y="14" width="80" height="100" fill="#59423e"/>
+          <rect x="306" y="20" width="68" height="88" fill="#f7e0c4"/>
+          <line x1="340" y1="20" x2="340" y2="108" stroke="#59423e" stroke-width="3"/>
+          <line x1="306" y1="64" x2="374" y2="64" stroke="#59423e" stroke-width="3"/>
+
+          <!-- door (ajar) -->
+          <rect x="220" y="40" width="56" height="118" fill="#241a18"/>
+          <rect x="220" y="40" width="22" height="118" fill="#8e6c61" stroke="#59423e" stroke-width="2"/>
+
+          <!-- clock -->
+          <circle cx="260" cy="26" r="11" fill="#59423e"/>
+          <circle cx="260" cy="26" r="8.5" fill="#f6f6f8"/>
+          <line x1="260" y1="26" x2="260" y2="20" stroke="#271e23" stroke-width="1.5"/>
+          <line x1="260" y1="26" x2="265" y2="28" stroke="#271e23" stroke-width="1.2"/>
+
+          <!-- desk 1: review (purple) — seated, working -->
+          <g>
+            <rect x="118" y="200" width="44" height="40" rx="8" fill="#462a24"/>
+            <rect x="78" y="222" width="80" height="12" rx="3" fill="#8e6c61"/>
+            <rect x="78" y="232" width="80" height="26" fill="#59423e"/>
+            <use href="#kit-head" x="140" y="222"/>
+            <rect x="128" y="220" width="24" height="14" rx="2" fill="#271e23"/>
+            <rect x="131" y="223" width="18" height="9" fill="#7F77DD"/>
+            <!-- speech bubble -->
+            <rect x="118" y="180" width="74" height="16" rx="6" fill="#ffffff" fill-opacity="0.95"/>
+            <text x="155" y="191" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#3a3338">🔍 reading code…</text>
+          </g>
+
+          <!-- desk 2: test (green) — idle -->
+          <g>
+            <rect x="258" y="200" width="44" height="40" rx="8" fill="#462a24" opacity="0.5"/>
+            <rect x="218" y="222" width="80" height="12" rx="3" fill="#8e6c61"/>
+            <rect x="218" y="232" width="80" height="26" fill="#59423e"/>
+            <rect x="268" y="220" width="24" height="14" rx="2" fill="#271e23"/>
+            <rect x="271" y="223" width="18" height="9" fill="#3a3338"/>
+          </g>
+
+          <!-- desk 3: docs (blue) — seated, working -->
+          <g>
+            <rect x="118" y="300" width="44" height="40" rx="8" fill="#462a24"/>
+            <rect x="78" y="322" width="80" height="12" rx="3" fill="#8e6c61"/>
+            <rect x="78" y="332" width="80" height="26" fill="#59423e"/>
+            <use href="#kit-head" x="140" y="322"/>
+            <rect x="128" y="320" width="24" height="14" rx="2" fill="#271e23"/>
+            <rect x="131" y="323" width="18" height="9" fill="#378ADD"/>
+          </g>
+
+          <!-- desk 4: bug (orange) — idle -->
+          <g>
+            <rect x="258" y="300" width="44" height="40" rx="8" fill="#462a24" opacity="0.5"/>
+            <rect x="218" y="322" width="80" height="12" rx="3" fill="#8e6c61"/>
+            <rect x="218" y="332" width="80" height="26" fill="#59423e"/>
+            <rect x="268" y="320" width="24" height="14" rx="2" fill="#271e23"/>
+            <rect x="271" y="323" width="18" height="9" fill="#3a3338"/>
+          </g>
+
+          <!-- walking agent in the aisle -->
+          <g>
+            <ellipse cx="200" cy="270" rx="14" ry="4" fill="#000000" opacity="0.25"/>
+            <use href="#kit-head" x="200" y="252"/>
+            <rect x="190" y="254" width="20" height="16" rx="3" fill="#f6e5db"/>
+          </g>
+        </g>
+
+        <!-- mission control dashboard -->
+        <g>
+          <rect x="396" y="0" width="244" height="400" fill="#181B26"/>
+          <text x="416" y="34" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#D4521E" letter-spacing="2">📊 MISSION CONTROL</text>
+
+          <!-- pipeline -->
+          <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="#F2F0EB">
+            <rect x="416" y="52" width="50" height="22" rx="4" fill="#11131A" stroke="#2e3245"/>
+            <text x="441" y="66" text-anchor="middle">🚶 1</text>
+            <text x="470" y="66" fill="#5A6272">→</text>
+            <rect x="482" y="52" width="50" height="22" rx="4" fill="#11131A" stroke="#D4521E"/>
+            <text x="507" y="66" text-anchor="middle" fill="#D4521E">💻 2</text>
+            <text x="536" y="66" fill="#5A6272">→</text>
+            <rect x="548" y="52" width="42" height="22" rx="4" fill="#11131A" stroke="#2e3245"/>
+            <text x="569" y="66" text-anchor="middle">🎉 0</text>
+            <text x="595" y="66" fill="#5A6272">→</text>
+            <rect x="416" y="82" width="50" height="22" rx="4" fill="#11131A" stroke="#2BBFAD"/>
+            <text x="441" y="96" text-anchor="middle" fill="#2BBFAD">✅ 7</text>
+          </g>
+
+          <!-- agent status rows -->
+          <g font-family="JetBrains Mono, monospace" font-size="10.5" fill="#F2F0EB">
+            <circle cx="422" cy="134" r="4" fill="#7F77DD"/>
+            <text x="434" y="138">Code Reviewer</text>
+            <text x="640" y="138" text-anchor="end" fill="#7F77DD" transform="translate(-16,0)">working</text>
+
+            <circle cx="422" cy="160" r="4" fill="#1D9E75" opacity="0.4"/>
+            <text x="434" y="164" fill="#9BA5B8">Test Writer</text>
+            <text x="640" y="164" text-anchor="end" fill="#5A6272" transform="translate(-16,0)">idle</text>
+
+            <circle cx="422" cy="186" r="4" fill="#378ADD"/>
+            <text x="434" y="190">Doc Writer</text>
+            <text x="640" y="190" text-anchor="end" fill="#378ADD" transform="translate(-16,0)">working</text>
+
+            <circle cx="422" cy="212" r="4" fill="#D85A30" opacity="0.4"/>
+            <text x="434" y="216" fill="#9BA5B8">Bug Hunter</text>
+            <text x="640" y="216" text-anchor="end" fill="#5A6272" transform="translate(-16,0)">idle</text>
+          </g>
+
+          <!-- results preview -->
+          <rect x="416" y="248" width="208" height="34" rx="8" fill="#11131A" stroke="#2e3245"/>
+          <text x="430" y="269" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#9BA5B8">🔗 Bug → Review chain ready</text>
+          <rect x="416" y="290" width="208" height="34" rx="8" fill="#11131A" stroke="#2e3245"/>
+          <text x="430" y="311" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#9BA5B8">📋 Code Reviewer: 3 issues found</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="kitsune-copy">
+      <div class="kitsune-trait">
+        <div class="trait-icon">🦊</div>
+        <div><div class="trait-title">Unlimited agents, dispatched on demand</div><div class="trait-desc">No more 6-agent cap. Spin up Code Reviewer, Test Writer, Doc Writer, Bug Hunter &mdash; as many as your workflow needs, all at once.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">🏢</div>
+        <div><div class="trait-title">A living, pixel-art office</div><div class="trait-desc">Agents walk in through the door, sit at their desks, and react with speech bubbles &mdash; complete with weather, a printer, and a water cooler.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">🔗</div>
+        <div><div class="trait-title">Agent chaining</div><div class="trait-desc">Run multi-step recipes &mdash; e.g. Bug Hunter's findings automatically feed into Code Reviewer's task, no copy-pasting required.</div></div>
+      </div>
+      <div class="kitsune-trait">
+        <div class="trait-icon">📊</div>
+        <div><div class="trait-title">Jarvis-style Mission Control</div><div class="trait-desc">A live pipeline view (Walk → Work → Wrap → Done) and per-agent status board, so you always know what your AI team is doing.</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
