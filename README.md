@@ -13,6 +13,22 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/MomijiKitsune2.png" alt="Momiji IDE — AI-native IDE platform powered by Kitsune AI" width="800" />
+</p>
+
+<p align="center">
+  <img src="docs/kitsune-normal.png" alt="Kitsune AI — normal" height="160" />
+  <img src="docs/kitsune-happy.png" alt="Kitsune AI — happy" height="160" />
+  <img src="docs/kitsune-confuse.png" alt="Kitsune AI — confused" height="160" />
+</p>
+
+<p align="center"><i>The Kitsune avatar reacts to your code in real time — happy on a clean run, confused on errors.</i></p>
+
+---
+
 ## What makes Momiji different
 
 Most IDEs are built for developers who already know what they're doing. Momiji meets people wherever they are.
