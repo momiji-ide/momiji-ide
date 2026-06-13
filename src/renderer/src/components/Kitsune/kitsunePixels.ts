@@ -1,6 +1,6 @@
-// AUTO-GENERATED from kitsune_chibi_pixel_*.png — true pixel-art frames
-// Per-frame extracted, NEAREST downsampled to 72px tall, median-cut to 24 colors.
-// Halo removal: pre-pass kills bright+low-alpha edges before extraction.
+// AUTO-GENERATED from kitsune_chibi_pixel_*.png
+// 72px native, NEAREST resample, alpha>=250 only (no halo).
+// Palette quantized from fully opaque pixels only — no edge mush.
 
 export const KITSUNE_PALETTE: string[] = ["#f6f6f8", "#f3f3f5", "#f3f0f3", "#f4eaeb", "#f6e5db", "#ece8e9", "#f9dcc9", "#facdab", "#e2d5d3", "#deb6a1", "#b9b1b9", "#f49854", "#d49978", "#dc7f42", "#a69ea5", "#a38f90", "#8e6c61", "#59423e", "#462a24", "#271e23", "#1d090a", "#0b080b", "#060304", "#040001"];
 

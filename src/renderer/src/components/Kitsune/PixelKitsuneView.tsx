@@ -58,6 +58,7 @@ export function PixelKitsune({ anim = 'idle', size = 96, className, float = true
 
   return (
     <canvas ref={ref} className={className}
-      style={{ width: size, height: size, imageRendering: 'pixelated' }} />
+      style={{ width: size, height: size, imageRendering: 'pixelated',
+               filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.45))' }} />
   )
 }
