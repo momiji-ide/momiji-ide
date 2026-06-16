@@ -49,7 +49,7 @@ export function ProblemsPanel() {
     const severity = m.severity === 8 ? 'Error' : 'Warning'
     const prompt = `I have a ${severity} in my code:\n\n**${m.message}**\n*${fileName} :${m.startLineNumber}:${m.startColumn}*${m.code != null ? ` [${m.code}]` : ''}\n\n${codeContext ? `\`\`\`\n${codeContext}\n\`\`\`\n\n` : ''}Explain what went wrong in plain language and exactly how to fix it.`
 
-    setActivePanel('ai')
+    setActivePanel('kitsune')
     setPendingAIPrompt(prompt)
   }
 

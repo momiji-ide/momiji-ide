@@ -134,7 +134,7 @@ export function MenuBar() {
         { separator: true, label: '' },
         { label: 'Explorer', action: () => useAppStore.getState().setActivePanel('explorer') },
         { label: 'Search in Files', action: () => useAppStore.getState().setActivePanel('search') },
-        { label: 'AI Assistant', action: () => useAppStore.getState().setActivePanel('ai') },
+        { label: 'AI Assistant', action: () => useAppStore.getState().setActivePanel('kitsune') },
         { label: 'Block Editor', action: () => useAppStore.getState().setActivePanel('blocks') },
         { label: 'Flow Editor', action: () => useAppStore.getState().setActivePanel('flow') },
         { label: 'Time-Travel Debugger', action: () => useAppStore.getState().setActivePanel('debug') },

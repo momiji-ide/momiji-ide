@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
+import type { AIProvider } from '../../types'
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -60,6 +61,73 @@ const OLLAMA_DEFAULTS: ModelEntry[] = [
   { id: 'ollama-deepseek',   label: 'DeepSeek Coder V2',     sublabel: 'code specialist',         providerId: 'ollama', model: 'deepseek-coder-v2',  tier: 'local', badge: 'Local', emoji: '🏠' },
 ]
 
+// ── Live model discovery — ask each provider's API which models this key can use ──
+
+const PROVIDER_EMOJI: Record<string, string> = {
+  gemini: '🟠', claude: '🟣', openai: '🟢', deepseek: '🔵',
+  mistral: '⚪', groq: '⚡', openrouter: '🌐', custom: '🔧',
+}
+
+async function fetchProviderModels(provider: AIProvider): Promise<string[]> {
+  try {
+    const bearer = { Authorization: `Bearer ${provider.apiKey}` }
+    switch (provider.id) {
+      case 'gemini': {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${provider.apiKey}`)
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.models ?? [])
+          .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+          .map((m: any) => m.name.replace(/^models\//, ''))
+      }
+      case 'claude': {
+        const r = await fetch('https://api.anthropic.com/v1/models', { headers: { 'x-api-key': provider.apiKey, 'anthropic-version': '2023-06-01' } })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'openai': {
+        const r = await fetch('https://api.openai.com/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id as string).filter((id: string) => /^(gpt|o[134]|chatgpt)/.test(id))
+      }
+      case 'groq': {
+        const r = await fetch('https://api.groq.com/openai/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'mistral': {
+        const r = await fetch('https://api.mistral.ai/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'deepseek': {
+        const r = await fetch('https://api.deepseek.com/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'openrouter': {
+        const r = await fetch('https://openrouter.ai/api/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'custom': {
+        if (!provider.baseUrl) return []
+        const r = await fetch(`${provider.baseUrl.replace(/\/$/, '')}/v1/models`, { headers: provider.apiKey ? bearer : undefined })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      default: return []
+    }
+  } catch { return [] }
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function shortLabel(entry: ModelEntry): string {
@@ -68,7 +136,7 @@ function shortLabel(entry: ModelEntry): string {
 
 const CHECKOUT_URL = 'https://momiji-ide.lemonsqueezy.com/checkout/buy/495febcd-8f43-44cc-9fab-7cd2896874a5'
 
-const TIER_ORDER: Tier[] = ['free', 'pro', 'studio', 'local']
+const TIER_ORDER: Tier[] = ['free', 'pro', 'studio', 'byok', 'local']
 
 const TIER_LABELS: Record<Tier, string> = {
   free:   '🆓 Free',
@@ -101,6 +169,8 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
   const [search, setSearch]           = useState('')
   const [localModels, setLocalModels] = useState<string[]>([])
   const [customModel, setCustomModel] = useState('')
+  const [detectedModels, setDetectedModels] = useState<Record<string, string[]>>({})
+  const detectedKeysRef = useRef<Set<string>>(new Set())
   const ref = useRef<HTMLDivElement>(null)
 
   const userTier = licenseTier
@@ -129,6 +199,22 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
       .catch(() => {})
   }, [open])
 
+  // Ask each provider's API which models this key actually has access to —
+  // cached per (provider, key, baseUrl) so re-opening the dropdown doesn't refetch.
+  useEffect(() => {
+    if (!open) return
+    aiProviders.forEach(p => {
+      if (!p.enabled || p.id === 'ollama') return
+      if (!p.apiKey && p.id !== 'custom') return
+      const cacheKey = `${p.id}:${p.apiKey}:${p.baseUrl ?? ''}`
+      if (detectedKeysRef.current.has(cacheKey)) return
+      detectedKeysRef.current.add(cacheKey)
+      fetchProviderModels(p).then(models => {
+        if (models.length) setDetectedModels(prev => ({ ...prev, [p.id]: models }))
+      })
+    })
+  }, [open]) // eslint-disable-line
+
   if (!activeProvider) return null
 
   // Current active model entry
@@ -146,7 +232,21 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
         }))
     : []
 
-  const allEntries = [...ALL_MODELS, ...ollamaModels]
+  // Models the user's own API keys actually support but aren't in our curated
+  // catalogue — only surfaced while searching, since lists like OpenRouter's
+  // can have hundreds of entries.
+  const detectedEntries: ModelEntry[] = search
+    ? Object.entries(detectedModels).flatMap(([providerId, models]) =>
+        models
+          .filter(m => !ALL_MODELS.some(e => e.providerId === providerId && e.model === m))
+          .map(m => ({
+            id: `detected-${providerId}-${m}`, label: m, providerId, model: m,
+            tier: 'byok' as Tier, badge: 'On your key', emoji: PROVIDER_EMOJI[providerId] ?? '🔑'
+          }))
+      )
+    : []
+
+  const allEntries = [...ALL_MODELS, ...ollamaModels, ...detectedEntries]
 
   // Filter by search
   const filtered = search

@@ -23,8 +23,7 @@ const TOP_ITEMS: NavItem[] = [
 ]
 
 const MID_ITEMS: NavItem[] = [
-  { id: 'ai',        icon: <img src={kitsuneImg} width={20} height={20} draggable={false} style={{ objectFit: 'contain', opacity: 'inherit' }} />, label: 'Kitsune AI' },
-  { id: 'den',       icon: <span style={{ fontSize: 17, lineHeight: 1 }}>⛩️</span>, label: 'Kitsune Command Center' },
+  { id: 'kitsune',   icon: <img src={kitsuneImg} width={20} height={20} draggable={false} style={{ objectFit: 'contain', opacity: 'inherit' }} />, label: 'Kitsune AI' },
   { id: 'outline',   icon: <IcoOutline />,   label: 'Symbol Outline' },
   { id: 'todo',      icon: <IcoTodo />,      label: 'TODO / Tasks' },
   { id: 'http',      icon: <IcoHttp />,      label: 'HTTP Client' },
@@ -88,7 +87,7 @@ function Btn({ item, isActive, onClick }: {
   isActive: boolean
   onClick: () => void
 }) {
-  const isAI = item.id === 'ai'
+  const isAI = item.id === 'kitsune'
 
   return (
     <button

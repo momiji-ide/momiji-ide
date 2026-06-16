@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/appStore'
 import { FileExplorer }   from './FileExplorer'
 import { SettingsPanel }  from '../Settings/SettingsPanel'
 import { SearchPanel }    from '../Search/SearchPanel'
-import { AIPanel }        from '../AI/AIPanel'
+import { KitsunePanel }   from '../Kitsune/KitsunePanel'
 import { GitPanel }       from '../Git/GitPanel'
 import { TodoPanel }      from '../Todo/TodoPanel'
 import { QuestPanel }     from '../Todo/QuestPanel'
@@ -21,7 +21,6 @@ const SQLitePanel     = lazy(() => import('../Database/SQLitePanel').then(m => (
 const ExtensionsPanel = lazy(() => import('../Extensions/ExtensionsPanel').then(m => ({ default: m.ExtensionsPanel })))
 const SnippetManager  = lazy(() => import('../Snippets/SnippetManager').then(m => ({ default: m.SnippetManager })))
 const TemplateGallery = lazy(() => import('../Templates/TemplateGallery').then(m => ({ default: m.TemplateGallery })))
-const KitsuneCommandCenter = lazy(() => import('../Kitsune/KitsuneCommandCenter').then(m => ({ default: m.KitsuneCommandCenter })))
 
 function TodoQuestPanel() {
   const [tab, setTab] = useState<'todo' | 'quests'>('todo')
@@ -88,7 +87,7 @@ function PanelLoader() {
   )
 }
 
-const FULL_WIDTH_PANELS = new Set(['blocks', 'flow', 'debug', 'http', 'den'])
+const FULL_WIDTH_PANELS = new Set(['blocks', 'flow', 'debug', 'http', 'kitsune'])
 
 export function Sidebar() {
   const { activePanel, showSidebar, sidebarWidth, setSidebarWidth } = useAppStore()
@@ -118,7 +117,7 @@ export function Sidebar() {
       flow:   <Suspense fallback={<PanelLoader />}><FlowEditor /></Suspense>,
       debug:  <DebugPanel />,
       http:   <Suspense fallback={<PanelLoader />}><HttpClient /></Suspense>,
-      den:    <Suspense fallback={<PanelLoader />}><KitsuneCommandCenter /></Suspense>,
+      kitsune: <KitsunePanel />,
     }
     return (
       <div className="flex flex-col flex-1 overflow-hidden"
@@ -130,7 +129,6 @@ export function Sidebar() {
 
   const panels: Record<string, React.ReactNode> = {
     explorer:   <FileExplorer />,
-    ai:         <AIPanel />,
     settings:   <SettingsPanel />,
     search:     <SearchPanel />,
     git:        <GitPanel />,

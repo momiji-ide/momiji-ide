@@ -18,7 +18,7 @@ import { CanvasPlayground } from './components/Playground/CanvasPlayground'
 import { CreativeHub } from './components/Playground/CreativeHub'
 import { CodeScreenshot } from './components/Editor/CodeScreenshot'
 import { RegexPlayground } from './components/Playground/RegexPlayground'
-import { AIPanel } from './components/AI/AIPanel'
+import { KitsuneSidebarChat } from './components/Kitsune/KitsuneSidebarChat'
 
 export default function App() {
   const { settings, showBottomPanel, showSecondarySidebar, bottomPanelHeight, activePanel, setActivePanel, setPendingAIPrompt, restoreLastFolder } = useAppStore()
@@ -34,8 +34,8 @@ export default function App() {
     const handler = (e: Event) => {
       const { prompt } = (e as CustomEvent).detail as { prompt: string }
       if (!prompt) return
-      setActivePanel('ai')         // open sidebar to AI panel (sets showSidebar:true)
-      setPendingAIPrompt(prompt)   // AIPanel picks this up when it mounts
+      setActivePanel('kitsune')    // open sidebar to Kitsune panel (sets showSidebar:true)
+      setPendingAIPrompt(prompt)   // KitsunePanel picks this up when it mounts
     }
     window.addEventListener('kitsune:askWithPrompt', handler)
     return () => window.removeEventListener('kitsune:askWithPrompt', handler)
@@ -156,7 +156,7 @@ export default function App() {
     return () => unsub?.()
   }, [])
 
-  const isFullPanel = ['blocks', 'flow', 'debug', 'http', 'den'].includes(activePanel)
+  const isFullPanel = ['blocks', 'flow', 'debug', 'http', 'kitsune'].includes(activePanel)
 
   return (
     <div
@@ -190,10 +190,10 @@ export default function App() {
                 {showBottomPanel && <BottomPanel height={bottomPanelHeight} />}
               </div>
             </div>
-            {/* Secondary Right Sidebar — displays AIPanel (Kitsune Chat) */}
+            {/* Secondary Right Sidebar — compact docked Kitsune chat */}
             {showSecondarySidebar && (
               <div className="flex flex-col overflow-hidden flex-shrink-0" style={{ width: 300, background: 'var(--bg-mantle)', borderLeft: '1px solid var(--border)' }}>
-                <AIPanel />
+                <KitsuneSidebarChat />
               </div>
             )}
           </>

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem, AgentConfig } from '../types'
+import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem, AgentConfig, KitsuneSession } from '../types'
 import { detectLanguage } from '../utils/languageDetect'
 
 const defaultSettings: EditorSettings = {
@@ -62,6 +62,14 @@ interface AppStore extends AppState {
   // Kitsune quick-ask (right-click from editor)
   pendingAIPrompt: string | null
   setPendingAIPrompt: (prompt: string | null) => void
+
+  // Kitsune session history
+  kitsuneSessions: KitsuneSession[]
+  activeKitsuneSessionId: string | null
+  createKitsuneSession: () => string
+  deleteKitsuneSession: (id: string) => void
+  setActiveKitsuneSession: (id: string) => void
+  updateKitsuneSession: (id: string, patch: Partial<KitsuneSession>) => void
 
   // License / Pro tier
   licenseKey:    string | null
@@ -240,6 +248,35 @@ export const useAppStore = create<AppStore>()(
 
       setPendingAIPrompt: (prompt) => set({ pendingAIPrompt: prompt }),
 
+      kitsuneSessions: [],
+      activeKitsuneSessionId: null,
+
+      createKitsuneSession: () => {
+        const id = `kitsune-${Date.now()}`
+        const session: KitsuneSession = {
+          id, title: 'New chat', createdAt: Date.now(), updatedAt: Date.now(),
+          messages: [], persona: 'developer', providerId: 'claude', contextUsed: 0,
+        }
+        set((s) => ({ kitsuneSessions: [session, ...s.kitsuneSessions], activeKitsuneSessionId: id }))
+        return id
+      },
+
+      deleteKitsuneSession: (id) => {
+        set((s) => {
+          const remaining = s.kitsuneSessions.filter((sess) => sess.id !== id)
+          const activeId = s.activeKitsuneSessionId === id ? (remaining[0]?.id ?? null) : s.activeKitsuneSessionId
+          return { kitsuneSessions: remaining, activeKitsuneSessionId: activeId }
+        })
+      },
+
+      setActiveKitsuneSession: (id) => set({ activeKitsuneSessionId: id }),
+
+      updateKitsuneSession: (id, patch) => set((s) => ({
+        kitsuneSessions: s.kitsuneSessions.map((sess) =>
+          sess.id === id ? { ...sess, ...patch, updatedAt: Date.now() } : sess
+        )
+      })),
+
       licenseKey:    null,
       licenseTier:   'free',
       licenseExpiry: null,
@@ -315,6 +352,8 @@ export const useAppStore = create<AppStore>()(
         licenseKey:     state.licenseKey,
         licenseTier:    state.licenseTier,
         licenseExpiry:  state.licenseExpiry,
+        kitsuneSessions: state.kitsuneSessions,
+        activeKitsuneSessionId: state.activeKitsuneSessionId,
       })
     }
   )

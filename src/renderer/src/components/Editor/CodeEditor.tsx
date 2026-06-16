@@ -986,7 +986,7 @@ function WelcomeScreen() {
     { icon: '🧩', label: 'Block Editor', desc: 'Visual coding for beginners', panel: 'blocks' as const },
     { icon: '⚡', label: 'Flow Editor',  desc: 'Node-graph programming',       panel: 'flow' as const },
     { icon: '⏱', label: 'Time-Travel',  desc: 'Debug with time rewind',       panel: 'debug' as const },
-    { icon: '✨', label: 'AI Assistant', desc: 'Claude, Gemini, GPT',          panel: 'ai' as const },
+    { icon: '✨', label: 'AI Assistant', desc: 'Claude, Gemini, GPT',          panel: 'kitsune' as const },
   ]
 
   return (
@@ -1060,7 +1060,7 @@ function WelcomeScreen() {
               {
                 icon: '⛩️', accent: true,
                 title: t.ws_command_center, sub: t.ws_cc_sub,
-                onClick: () => setActivePanel('den' as any)
+                onClick: () => setActivePanel('kitsune' as any)
               },
               {
                 icon: '✨', accent: false,

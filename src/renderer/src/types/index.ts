@@ -53,11 +53,42 @@ export interface AgentConfig {
   isBuiltIn?: boolean    // built-in agents can't be deleted
 }
 
+export type KitsunePersona = 'beginner' | 'developer' | 'creative'
+
+export interface KitsuneMessage {
+  role: 'user' | 'assistant' | 'tool'
+  content: string
+  id: number
+  streaming?: boolean
+  image?: string
+  tokensIn?: number
+  tokensOut?: number
+  elapsed?: number   // ms
+  attachedFileNames?: string[]
+  attachedFolderNames?: string[]
+  // tool-call activity (role: 'tool')
+  tool?: string
+  toolArgs?: Record<string, any>
+  toolStatus?: 'running' | 'done' | 'error'
+  toolResult?: string
+}
+
+export interface KitsuneSession {
+  id: string
+  title: string
+  createdAt: number
+  updatedAt: number
+  messages: KitsuneMessage[]
+  persona: KitsunePersona
+  providerId: string
+  contextUsed: number
+  agentId?: string
+}
+
 export type ActivityBarItem =
   | 'explorer'
   | 'search'
-  | 'ai'
-  | 'den'
+  | 'kitsune'
   | 'settings'
   | 'blocks'
   | 'flow'

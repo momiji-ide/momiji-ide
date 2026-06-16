@@ -48,6 +48,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    mainWindow!.maximize()
     mainWindow!.show()
     if (is.dev) {
       mainWindow!.webContents.openDevTools({ mode: 'detach' })
