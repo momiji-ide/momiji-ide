@@ -278,7 +278,7 @@ export function ShaderPlayground() {
           style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
           {paused ? '▶ Resume' : '⏸ Pause'}
         </button>
-        <button onClick={() => { navigator.clipboard.writeText(src); toast.success('Shader copied!') }}
+        <button onClick={() => { window.api.clipboard.writeText(src); toast.success('Shader copied!') }}
           className="px-2 py-1 rounded text-xs"
           style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
           📋 Copy

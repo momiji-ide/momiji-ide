@@ -100,7 +100,7 @@ export function SnippetManager() {
   }
 
   const handleCopy = async (snippet: Snippet) => {
-    await navigator.clipboard.writeText(snippet.code)
+    await window.api.clipboard.writeText(snippet.code)
     setCopied(snippet.id)
     setTimeout(() => setCopied(null), 1500)
   }

@@ -38,7 +38,7 @@ export function TabBar() {
 
   const copyPath = useCallback((tabId: string) => {
     const tab = tabs.find(t => t.id === tabId)
-    if (tab) navigator.clipboard.writeText(tab.filePath)
+    if (tab) window.api.clipboard.writeText(tab.filePath)
   }, [tabs])
 
   const revealInExplorer = useCallback((tabId: string) => {
@@ -138,7 +138,7 @@ export function TabBar() {
           <CtxItem onClick={() => { copyPath(ctx.tabId); setCtx(null) }}
             label="Copy File Path" />
           <CtxItem onClick={() => {
-            navigator.clipboard.writeText(ctxTab.fileName); setCtx(null)
+            window.api.clipboard.writeText(ctxTab.fileName); setCtx(null)
           }} label="Copy File Name" />
           {!ctxTab.filePath.startsWith('__') && (
             <CtxItem onClick={() => { revealInExplorer(ctx.tabId); setCtx(null) }}

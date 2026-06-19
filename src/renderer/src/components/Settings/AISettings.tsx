@@ -13,6 +13,8 @@ const PROVIDERS = [
   { id: 'openrouter', name: 'OpenRouter', org: 'OpenRouter', emoji: '🌐', free: true,  defaultModel: 'meta-llama/llama-3.3-70b-instruct:free', keyHint: 'sk-or-...', keyLink: 'https://openrouter.ai/keys' },
   { id: 'deepseek',   name: 'DeepSeek',   org: 'DeepSeek',   emoji: '🔵', free: false, defaultModel: 'deepseek-chat',                   keyHint: 'sk-...',        keyLink: 'https://platform.deepseek.com/api_keys' },
   { id: 'mistral',    name: 'Mistral',    org: 'Mistral AI', emoji: '⚪', free: false, defaultModel: 'mistral-small-latest',            keyHint: '...',           keyLink: 'https://console.mistral.ai/api-keys' },
+  { id: 'sambanova',  name: 'SambaNova',  org: 'SambaNova',  emoji: '🔶', free: true,  defaultModel: 'Meta-Llama-3.3-70B-Instruct',     keyHint: '...',           keyLink: 'https://cloud.sambanova.ai/apis' },
+  { id: 'cerebras',   name: 'Cerebras',   org: 'Cerebras',   emoji: '🧠', free: true,  defaultModel: 'llama-3.3-70b',                   keyHint: 'csk-...',       keyLink: 'https://cloud.cerebras.ai/' },
   { id: 'ollama',     name: 'Ollama',     org: 'Local',      emoji: '🏠', free: true,  defaultModel: 'qwen2.5-coder:7b',                keyHint: '',              keyLink: 'https://ollama.ai' },
   { id: 'custom',     name: 'Custom',     org: 'OpenAI-API', emoji: '⚙️', free: false, defaultModel: 'gpt-4o',                          keyHint: 'sk-...',        keyLink: '' },
 ] as const
@@ -61,6 +63,15 @@ const MODEL_PRESETS: Record<string, { label: string; model: string; badge?: stri
     { label: 'Large 2',     model: 'mistral-large-latest',  badge: 'best' },
     { label: 'Codestral',   model: 'codestral-latest',      badge: 'code' },
   ],
+  sambanova: [
+    { label: 'Llama 3.3 70B',  model: 'Meta-Llama-3.3-70B-Instruct',   badge: 'free ⭐' },
+    { label: 'DeepSeek R1 70B', model: 'DeepSeek-R1-Distill-Llama-70B', badge: 'free·reason' },
+    { label: 'QwQ 32B',         model: 'QwQ-32B',                       badge: 'free·reason' },
+  ],
+  cerebras: [
+    { label: 'Llama 3.3 70B',  model: 'llama-3.3-70b',                  badge: 'free·~2000t/s' },
+    { label: 'Llama 4 Scout',   model: 'llama-4-scout-17b-16e-instruct', badge: 'free·new' },
+  ],
   ollama:  [],
   custom:  [],
 }
@@ -97,6 +108,8 @@ async function fetchModels(provider: AIProvider): Promise<string[]> {
       openrouter: 'https://openrouter.ai/api',
       deepseek: 'https://api.deepseek.com',
       mistral: 'https://api.mistral.ai',
+      sambanova: 'https://api.sambanova.ai',
+      cerebras: 'https://api.cerebras.ai',
     }
     const base = provider.baseUrl ?? baseUrl[provider.id] ?? 'https://api.openai.com'
     const r = await fetch(`${base}/v1/models`, {

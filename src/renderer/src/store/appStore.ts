@@ -97,6 +97,8 @@ export const useAppStore = create<AppStore>()(
         { id: 'openrouter', name: 'OpenRouter',         apiKey: '', model: 'meta-llama/llama-3.3-70b-instruct:free', enabled: false },
         { id: 'deepseek',   name: 'DeepSeek',           apiKey: '', model: 'deepseek-chat',             enabled: false },
         { id: 'mistral',    name: 'Mistral AI',         apiKey: '', model: 'mistral-small-latest',      enabled: false },
+        { id: 'sambanova',  name: 'SambaNova (Free)',   apiKey: '', model: 'Meta-Llama-3.3-70B-Instruct', enabled: false },
+        { id: 'cerebras',   name: 'Cerebras (Free)',   apiKey: '', model: 'llama-3.3-70b',              enabled: false },
         { id: 'ollama',     name: 'Ollama (Local)',     apiKey: '', model: 'qwen2.5-coder:7b',          enabled: false, baseUrl: 'http://localhost:11434' },
         { id: 'custom',     name: 'Custom (OpenAI Compatible)', apiKey: '', model: 'gpt-5',             enabled: false, baseUrl: 'https://api.openai.com' },
       ],

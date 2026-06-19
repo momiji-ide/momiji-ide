@@ -436,10 +436,9 @@ function generate(){
   }).join('');
 }
 function copyColor(hex){
-  navigator.clipboard.writeText(hex).then(function(){
+  window.api.clipboard.writeText(hex);
     var t=document.getElementById('toast');t.style.display='block';
     setTimeout(function(){t.style.display='none';},1500);
-  });
 }
 generate();
 </script></body></html>`

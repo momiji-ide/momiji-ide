@@ -301,7 +301,7 @@ export function ExtensionsPanel() {
       saveInstalled(ids)
       toast.success(`${ext.name} enabled!`)
     } else if (ext.action === 'external') {
-      navigator.clipboard.writeText(ext.installUrl ?? '')
+      window.api.clipboard.writeText(ext.installUrl ?? '')
       toast.info(`Install command copied: ${ext.installUrl}`)
     }
   }

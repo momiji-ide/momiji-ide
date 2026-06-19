@@ -107,14 +107,14 @@ export function LicensePanel() {
             style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', cursor: 'pointer' }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-            🦊 Upgrade to Pro — $12/mo
+            🦊 Upgrade to Pro — $15/mo
           </button>
 
           <button
             onClick={() => window.open(`${CHECKOUT_URL}?checkout[custom][variant]=annual`, '_blank')}
             className="w-full py-2 rounded-xl text-xs font-semibold"
             style={{ background: 'var(--bg-surface0)', color: 'var(--accent-yellow)', border: '1px solid var(--accent-yellow)44', cursor: 'pointer' }}>
-            🏅 Annual — $96/yr · save 33% ($8/mo)
+            🏅 Annual — $120/yr · save 33% ($10/mo)
           </button>
 
           {/* Already have a key */}

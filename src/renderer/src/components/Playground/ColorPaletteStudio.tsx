@@ -158,7 +158,7 @@ export function ColorPaletteStudio() {
     } else {
       out = JSON.stringify(colors.reduce((acc, c, i) => ({ ...acc, [`color${i + 1}`]: c }), {}), null, 2)
     }
-    navigator.clipboard.writeText(out)
+    window.api.clipboard.writeText(out)
     toast.success(`Copied as ${exportFmt.toUpperCase()}!`)
   }
 
@@ -233,7 +233,7 @@ export function ColorPaletteStudio() {
         <div className="flex rounded-2xl overflow-hidden" style={{ height: 80 }}>
           {palette.map((hex, i) => (
             <div key={i} style={{ flex: 1, background: hex, cursor: 'pointer', position: 'relative' }}
-              onClick={() => { navigator.clipboard.writeText(hex); toast.success(`Copied ${hex}`) }}
+              onClick={() => { window.api.clipboard.writeText(hex); toast.success(`Copied ${hex}`) }}
               title={hex}>
               <span style={{
                 position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center',
@@ -290,7 +290,7 @@ export function ColorPaletteStudio() {
 function ColorChip({ hex, onPick }: { hex: string; onPick: () => void }) {
   return (
     <div className="flex flex-col items-center gap-1 cursor-pointer group"
-      onClick={() => { navigator.clipboard.writeText(hex); onPick() }}
+      onClick={() => { window.api.clipboard.writeText(hex); onPick() }}
       title={`Click to copy & set as base: ${hex}`}>
       <div style={{ width: 44, height: 44, borderRadius: 10, background: hex, border: '2px solid rgba(255,255,255,0.1)', transition: 'transform 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}

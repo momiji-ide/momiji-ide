@@ -99,13 +99,12 @@ export function MarkdownPreview({ content, scrollSync }: Props) {
     btns.forEach(btn => {
       const fn: EventListener = () => {
         const code = decodeURIComponent((btn as HTMLElement).dataset.code ?? '')
-        navigator.clipboard.writeText(code).then(() => {
+        window.api.clipboard.writeText(code)
           const b = btn as HTMLElement
           const prev = b.textContent
           b.textContent = 'Copied!'
           b.style.color = 'var(--accent-green)'
           setTimeout(() => { b.textContent = prev; b.style.color = '' }, 1500)
-        })
       }
       btn.addEventListener('click', fn)
       handlers.push({ btn, fn })

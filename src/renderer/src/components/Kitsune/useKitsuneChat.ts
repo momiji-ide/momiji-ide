@@ -563,6 +563,8 @@ export function useKitsuneChat() {
       deepseek:   'https://api.deepseek.com/v1/chat/completions',
       mistral:    'https://api.mistral.ai/v1/chat/completions',
       openai:     'https://api.openai.com/v1/chat/completions',
+      sambanova:  'https://api.sambanova.ai/v1/chat/completions',
+      cerebras:   'https://api.cerebras.ai/v1/chat/completions',
     }
     let url: string | undefined
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -722,6 +724,8 @@ export function useKitsuneChat() {
       openrouter: 'https://openrouter.ai/api/v1/chat/completions',
       deepseek:   'https://api.deepseek.com/v1/chat/completions',
       mistral:    'https://api.mistral.ai/v1/chat/completions',
+      sambanova:  'https://api.sambanova.ai/v1/chat/completions',
+      cerebras:   'https://api.cerebras.ai/v1/chat/completions',
     }
     // custom provider: use baseUrl directly, strip trailing slash
     const baseUrl = provider.baseUrl?.replace(/\/$/, '')
@@ -846,7 +850,7 @@ export function useKitsuneChat() {
           const elapsed = stopTimer()
           setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
           if (tokensIn) setContextUsedState(tokensIn + (tokensOut ?? 0))
-        } else if (['groq','openrouter','deepseek','mistral','custom'].includes(activeProvider.id)) {
+        } else if (['groq','openrouter','deepseek','mistral','sambanova','cerebras','custom'].includes(activeProvider.id)) {
           const { text, tokensIn, tokensOut } = await callOpenAICompat(activeProvider, messageForProvider, imageSnapshot)
           const elapsed = stopTimer()
           setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: text, streaming: false, tokensIn, tokensOut, elapsed } : m))
@@ -905,13 +909,13 @@ export function useKitsuneChat() {
   }
   const handleCopyCode = async (content: string, id: number) => {
     const blocks = extractCodeBlocks(content)
-    await navigator.clipboard.writeText(blocks[0] ?? content)
+    await window.api.clipboard.writeText(blocks[0] ?? content)
     setCopiedId(id); setTimeout(() => setCopiedId(null), 1500)
   }
 
   // ── Copy a whole message bubble (raw markdown) to the clipboard ────────────
   const handleCopyMessage = async (content: string, id: number) => {
-    await navigator.clipboard.writeText(content)
+    await window.api.clipboard.writeText(content)
     setCopiedMsgId(id); setTimeout(() => setCopiedMsgId(null), 1500)
   }
 

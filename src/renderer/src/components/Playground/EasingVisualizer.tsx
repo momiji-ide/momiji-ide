@@ -163,7 +163,7 @@ export function EasingVisualizer() {
   const cssValue = `cubic-bezier(${[p1x, p1y, p2x, p2y].map(v => +v.toFixed(3)).join(', ')})`
   const gsapValue = `{ease: "power2.out"}  // closest: ${preset}`
 
-  const copy = (text: string) => { navigator.clipboard.writeText(text); toast.success('Copied!') }
+  const copy = (text: string) => { window.api.clipboard.writeText(text); toast.success('Copied!') }
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>

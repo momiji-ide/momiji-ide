@@ -362,6 +362,8 @@ const PROVIDER_LINKS: Record<string, { label: string; url: string; free?: boolea
   openrouter: { label: 'Get OpenRouter key (free models)', url: 'https://openrouter.ai/keys',               free: true },
   deepseek:   { label: 'Get DeepSeek API key (cheap)', url: 'https://platform.deepseek.com/api_keys' },
   mistral:    { label: 'Get Mistral API key',         url: 'https://console.mistral.ai/api-keys' },
+  sambanova:  { label: 'Get SambaNova key (free)',   url: 'https://cloud.sambanova.ai/apis',                free: true },
+  cerebras:   { label: 'Get Cerebras key (free)',   url: 'https://cloud.cerebras.ai/',                    free: true },
   ollama:     { label: 'Download Ollama (free, local)', url: 'https://ollama.com/download',                 free: true },
 }
 

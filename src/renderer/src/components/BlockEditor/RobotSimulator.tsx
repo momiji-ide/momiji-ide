@@ -140,7 +140,7 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     if (arenaPreset === 'custom') {
       const c = paintCanvas.current
       if (!c) return false
-      const ctx = c.getContext('2d')
+      const ctx = c.getContext('2d', { willReadFrequently: true })
       if (!ctx) return false
       const d = ctx.getImageData(Math.max(0, Math.round(px)), Math.max(0, Math.round(py)), 1, 1).data
       return d[3] > 50
@@ -474,7 +474,6 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     let outerCleanup: (() => void) | null = null
     const W = CW   // 360
     const H = CH   // 260
-    {
 
     const scene  = new THREE.Scene(); scene.background = new THREE.Color('#141210')
     let camTheta = 0.4, camPhi = 0.85, camR = 220
@@ -547,7 +546,8 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
 
     // Robot group
     const rg = new THREE.Group(); scene.add(rg)
-    rg.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(16,16,5,24), new THREE.MeshStandardMaterial({ color:'#1e293b', roughness:0.8 })), { castShadow:true, position: new THREE.Vector3(0,2.5,0) }))
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(16,16,5,24), new THREE.MeshStandardMaterial({ color:'#1e293b', roughness:0.8 }))
+    body.castShadow = true; body.position.set(0, 2.5, 0); rg.add(body)
     const wg  = new THREE.CylinderGeometry(6,6,2,16); wg.rotateZ(Math.PI/2)
     const wm  = new THREE.MeshStandardMaterial({ color:'#111827', roughness:0.9 })
     for (const [x,y,z] of [[-17,3,0],[17,3,0],[0,3,14],[0,3,-14]] as [number,number,number][]) {
@@ -611,8 +611,6 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
       requestAnimationFrame(animate)
     }
     animate()
-
-    } // end plain block
 
     outerCleanup = () => {
       running = false

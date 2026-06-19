@@ -30,7 +30,7 @@ export function HardwareExportPanel({ code }: Props) {
   }
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(exportedCode).then(() => toast.success('Copied to clipboard!'))
+    window.api.clipboard.writeText(exportedCode); toast.success('Copied to clipboard!')
   }
 
   return (

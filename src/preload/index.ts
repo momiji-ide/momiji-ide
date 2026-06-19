@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, webFrame } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, clipboard } from 'electron'
 
 const api = {
   zoom: {
@@ -104,6 +104,10 @@ const api = {
     checkout:   (cwd: string, branch: string)       => ipcRenderer.invoke('git:checkout',   cwd, branch),
     log:        (cwd: string)                       => ipcRenderer.invoke('git:log',        cwd),
     discard:    (cwd: string, file: string)         => ipcRenderer.invoke('git:discard',    cwd, file),
+  },
+  clipboard: {
+    writeText: (text: string) => clipboard.writeText(text),
+    readText: () => clipboard.readText(),
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),

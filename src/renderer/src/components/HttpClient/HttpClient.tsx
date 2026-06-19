@@ -320,7 +320,7 @@ export function HttpClient() {
                 <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
                   {response.size > 1024 ? `${(response.size/1024).toFixed(1)}KB` : `${response.size}B`}
                 </span>
-                <button onClick={() => navigator.clipboard.writeText(response.body).then(() => toast.success('Copied!'))}
+                <button onClick={() => { window.api.clipboard.writeText(response.body); toast.success('Copied!') }}
                   className="text-xs px-1.5 py-0.5 rounded"
                   style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                   📋

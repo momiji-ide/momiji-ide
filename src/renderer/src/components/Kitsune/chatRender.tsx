@@ -93,7 +93,7 @@ export function CollapsibleCodeBlock({ lang, code }: { lang: string; code: strin
   const [copied, setCopied] = useState(false)
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigator.clipboard.writeText(code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500) })
+    window.api.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
   return (
     <div className="rounded overflow-hidden my-1.5" style={{ background: 'var(--bg-crust)', border: '1px solid var(--border)' }}>

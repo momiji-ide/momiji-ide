@@ -365,7 +365,7 @@ function FlowCanvas() {
                 <>
                   <span className="text-xs px-1.5 py-0.5 rounded-full animate-pulse mr-2"
                     style={{ background: 'var(--accent-green)', color: 'var(--bg-base)', fontSize: 10 }}>● live</span>
-                  <button onClick={() => navigator.clipboard.writeText(code).then(() => toast.success('Copied!'))}
+                  <button onClick={() => { window.api.clipboard.writeText(code); toast.success('Copied!') }}
                     className="text-xs px-2 py-0.5 rounded mr-2"
                     style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                     📋

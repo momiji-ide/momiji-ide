@@ -767,7 +767,9 @@ export function BlockEditor() {
 
     const ext      = lang === 'python' ? 'py' : 'js'
     const fname    = `blocks_output.${ext}`
-    const tmpPath  = `${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/${fname}`
+    const isWin    = navigator.userAgent.includes('Win')
+    const base     = currentFolder ?? (isWin ? 'C:\\Temp' : '/tmp')
+    const tmpPath  = isWin ? `${base}\\${fname}` : `${base}/${fname}`
     const command  = lang === 'python' ? (settings.pythonPath || 'python') : 'node'
 
     const JS_SIMULATOR_STUB = `
@@ -1364,7 +1366,7 @@ ${code}
               </button>
             )}
             <button
-              onClick={() => navigator.clipboard.writeText(code).then(() => toast.success('Copied!'))}
+              onClick={() => { window.api.clipboard.writeText(code); toast.success('Copied!') }}
               className="text-xs px-2 py-0.5 rounded"
               style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
               📋 Copy
@@ -1468,7 +1470,7 @@ ${code}
                     <RobotSimulator
                       runLines={runLines}
                       runStatus={runStatus}
-                      tmpPath={`${currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp')}/blocks_output.${lang === 'python' ? 'py' : 'js'}`}
+                      tmpPath={(() => { const b = currentFolder ?? (navigator.userAgent.includes('Win') ? 'C:\\Temp' : '/tmp'); const f = `blocks_output.${lang === 'python' ? 'py' : 'js'}`; return navigator.userAgent.includes('Win') ? `${b}\\${f}` : `${b}/${f}` })()}
                     />
                   </div>
                 )}

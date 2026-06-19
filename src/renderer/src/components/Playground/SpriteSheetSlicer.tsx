@@ -113,7 +113,7 @@ export function SpriteSheetSlicer() {
         sourceSize: { w: f.w, h: f.h }
       }]))
     }
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+    window.api.clipboard.writeText(JSON.stringify(data, null, 2))
     toast.success('Phaser/Pixi JSON copied!')
   }
 
@@ -122,7 +122,7 @@ export function SpriteSheetSlicer() {
     const css = sel.map(f =>
       `.${f.name} { background-position: -${f.x}px -${f.y}px; width: ${f.w}px; height: ${f.h}px; }`
     ).join('\n')
-    navigator.clipboard.writeText(css)
+    window.api.clipboard.writeText(css)
     toast.success('CSS sprite positions copied!')
   }
 

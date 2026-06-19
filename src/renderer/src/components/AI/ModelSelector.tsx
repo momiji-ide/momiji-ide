@@ -21,25 +21,32 @@ interface ModelEntry {
 // ── All models catalogue ─────────────────────────────────────────────────────
 
 const ALL_MODELS: ModelEntry[] = [
-  // ── FREE tier ─────────────────────────────────────────────────────────────
-  { id: 'groq-llama-70b',    label: 'Llama 3.3 70B',         sublabel: 'fast · versatile',      providerId: 'groq',       model: 'llama-3.3-70b-versatile',                tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-llama-8b',     label: 'Llama 3.1 8B',          sublabel: 'fastest · light',        providerId: 'groq',       model: 'llama-3.1-8b-instant',                   tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-deepseek-r1',  label: 'DeepSeek R1',           sublabel: 'reasoning · free',       providerId: 'groq',       model: 'deepseek-r1-distill-llama-70b',          tier: 'free',   badge: 'FREE',  emoji: '⚡' },
-  { id: 'groq-qwen',         label: 'Qwen QwQ 32B',          sublabel: 'reasoning · free',       providerId: 'groq',       model: 'qwen-qwq-32b',                           tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  // ── FREE tier (limited — just enough to try Kitsune) ───────────────────
+  { id: 'gemini-35-flash-f', label: 'Gemini 3.5 Flash',      sublabel: '20 req/day free',        providerId: 'gemini',     model: 'gemini-3.5-flash',                       tier: 'free',   badge: 'FREE',  emoji: '🟠' },
   { id: 'gemini-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: '500 req/day free',       providerId: 'gemini',     model: 'gemini-3.1-flash-lite',                  tier: 'free',   badge: 'FREE',  emoji: '🟠' },
-  { id: 'gemini-3-flash-f',  label: 'Gemini 3 Flash',        sublabel: '20 req/day free',        providerId: 'gemini',     model: 'gemini-3-flash',                         tier: 'free',   badge: 'FREE',  emoji: '🟠' },
-  { id: 'or-llama-free',     label: 'Llama 3.3 70B',         sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', tier: 'free',   badge: 'FREE',  emoji: '🌐' },
-  { id: 'or-deepseek-free',  label: 'DeepSeek R1',           sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'deepseek/deepseek-r1:free',              tier: 'free',   badge: 'FREE',  emoji: '🌐' },
-  { id: 'or-gemma-free',     label: 'Gemma 3 27B',           sublabel: 'via OpenRouter',         providerId: 'openrouter', model: 'google/gemma-3-27b-it:free',             tier: 'free',   badge: 'FREE',  emoji: '🌐' },
+  { id: 'groq-llama-8b',     label: 'Llama 3.1 8B',          sublabel: 'fastest · light',        providerId: 'groq',       model: 'llama-3.1-8b-instant',                   tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'gemma-4-27b',       label: 'Gemma 4 27B',           sublabel: 'Google open · 1.5K/day', providerId: 'gemini',     model: 'gemma-4-27b-it',                         tier: 'free',   badge: 'FREE',  emoji: '🟠' },
+  { id: 'gemma-4-31b',       label: 'Gemma 4 31B',           sublabel: 'largest Gemma · free',   providerId: 'gemini',     model: 'gemma-4-31b-it',                         tier: 'free',   badge: 'FREE',  emoji: '🟠' },
+  { id: 'sn-llama-70b',      label: 'Llama 3.3 70B',         sublabel: 'SambaNova · ultra fast', providerId: 'sambanova',  model: 'Meta-Llama-3.3-70B-Instruct',            tier: 'free',   badge: 'FREE',  emoji: '🔶' },
+  { id: 'sn-deepseek-r1',    label: 'DeepSeek R1 70B',       sublabel: 'SambaNova · reasoning',  providerId: 'sambanova',  model: 'DeepSeek-R1-Distill-Llama-70B',          tier: 'free',   badge: 'FREE',  emoji: '🔶' },
+  { id: 'sn-qwq',            label: 'QwQ 32B',               sublabel: 'SambaNova · reasoning',  providerId: 'sambanova',  model: 'QwQ-32B',                                tier: 'free',   badge: 'FREE',  emoji: '🔶' },
+  { id: 'cb-llama-70b',      label: 'Llama 3.3 70B',         sublabel: 'Cerebras · ~2000 t/s',   providerId: 'cerebras',   model: 'llama-3.3-70b',                          tier: 'free',   badge: 'FREE',  emoji: '🧠' },
+  { id: 'cb-llama4-scout',   label: 'Llama 4 Scout',         sublabel: 'Cerebras · latest',      providerId: 'cerebras',   model: 'llama-4-scout-17b-16e-instruct',         tier: 'free',   badge: 'FREE',  emoji: '🧠' },
 
-  // ── PRO tier ──────────────────────────────────────────────────────────────
-  { id: 'gemini-35-flash-p', label: 'Gemini 3.5 Flash',      sublabel: 'newest Google · fast',   providerId: 'gemini',     model: 'gemini-3.5-flash',                       tier: 'pro',    badge: 'New',   emoji: '🟠' },
-  { id: 'gemini-25-flash',   label: 'Gemini 2.5 Flash',      sublabel: 'balanced · 1M ctx',      providerId: 'gemini',     model: 'gemini-2.5-flash',                       tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
-  { id: 'gemini-25-lite',    label: 'Gemini 2.5 Flash-Lite', sublabel: 'ultra cheap',             providerId: 'gemini',     model: 'gemini-2.5-flash-lite',                  tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
-  { id: 'claude-haiku',      label: 'Claude Haiku 4.5',      sublabel: 'fastest Anthropic',       providerId: 'claude',     model: 'claude-haiku-4-5',                       tier: 'pro',    badge: 'Pro',   emoji: '🟣' },
-  { id: 'gpt-5-mini',        label: 'GPT-5 Mini',            sublabel: 'fast · affordable',       providerId: 'openai',     model: 'gpt-5-mini',                             tier: 'pro',    badge: 'New',   emoji: '🟢' },
-  { id: 'deepseek-chat',     label: 'DeepSeek V3',           sublabel: 'very cheap · capable',    providerId: 'deepseek',   model: 'deepseek-chat',                          tier: 'pro',    badge: 'Pro',   emoji: '🔵' },
-  { id: 'mistral-small',     label: 'Mistral Small 3.1',     sublabel: 'fast & cheap',            providerId: 'mistral',    model: 'mistral-small-latest',                   tier: 'pro',    badge: 'Pro',   emoji: '⚪' },
+  // ── PRO tier ($15/mo — all cloud models) ──────────────────────────────
+  { id: 'groq-llama-70b',    label: 'Llama 3.3 70B',         sublabel: 'fast · versatile',      providerId: 'groq',       model: 'llama-3.3-70b-versatile',                tier: 'pro',    badge: 'Pro',   emoji: '⚡' },
+  { id: 'groq-deepseek-r1',  label: 'DeepSeek R1',           sublabel: 'reasoning via Groq',    providerId: 'groq',       model: 'deepseek-r1-distill-llama-70b',          tier: 'pro',    badge: 'Pro',   emoji: '⚡' },
+  { id: 'groq-qwen',         label: 'Qwen QwQ 32B',          sublabel: 'reasoning via Groq',    providerId: 'groq',       model: 'qwen-qwq-32b',                           tier: 'pro',    badge: 'Pro',   emoji: '⚡' },
+  { id: 'gemini-3-flash-f',  label: 'Gemini 3 Flash',        sublabel: 'fast · capable',        providerId: 'gemini',     model: 'gemini-3-flash',                         tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
+  { id: 'gemini-25-flash',   label: 'Gemini 2.5 Flash',      sublabel: 'balanced · 1M ctx',     providerId: 'gemini',     model: 'gemini-2.5-flash',                       tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
+  { id: 'gemini-25-lite',    label: 'Gemini 2.5 Flash-Lite', sublabel: 'ultra cheap',            providerId: 'gemini',     model: 'gemini-2.5-flash-lite',                  tier: 'pro',    badge: 'Pro',   emoji: '🟠' },
+  { id: 'claude-haiku',      label: 'Claude Haiku 4.5',      sublabel: 'fastest Anthropic',      providerId: 'claude',     model: 'claude-haiku-4-5',                       tier: 'pro',    badge: 'Pro',   emoji: '🟣' },
+  { id: 'gpt-5-mini',        label: 'GPT-5 Mini',            sublabel: 'fast · affordable',      providerId: 'openai',     model: 'gpt-5-mini',                             tier: 'pro',    badge: 'New',   emoji: '🟢' },
+  { id: 'deepseek-chat',     label: 'DeepSeek V3',           sublabel: 'very cheap · capable',   providerId: 'deepseek',   model: 'deepseek-chat',                          tier: 'pro',    badge: 'Pro',   emoji: '🔵' },
+  { id: 'mistral-small',     label: 'Mistral Small 3.1',     sublabel: 'fast & cheap',           providerId: 'mistral',    model: 'mistral-small-latest',                   tier: 'pro',    badge: 'Pro',   emoji: '⚪' },
+  { id: 'or-llama-free',     label: 'Llama 3.3 70B',         sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', tier: 'pro',    badge: 'Pro',   emoji: '🌐' },
+  { id: 'or-deepseek-free',  label: 'DeepSeek R1',           sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'deepseek/deepseek-r1:free',              tier: 'pro',    badge: 'Pro',   emoji: '🌐' },
+  { id: 'or-gemma-free',     label: 'Gemma 3 27B',           sublabel: 'via OpenRouter',        providerId: 'openrouter', model: 'google/gemma-3-27b-it:free',             tier: 'pro',    badge: 'Pro',   emoji: '🌐' },
 
   // ── STUDIO tier ───────────────────────────────────────────────────────────
   { id: 'claude-sonnet',     label: 'Claude Sonnet 4.6',     sublabel: 'best speed+intel ⭐',    providerId: 'claude',     model: 'claude-sonnet-4-6',                      tier: 'studio', badge: 'New',    emoji: '🟣' },
@@ -65,7 +72,7 @@ const OLLAMA_DEFAULTS: ModelEntry[] = [
 
 const PROVIDER_EMOJI: Record<string, string> = {
   gemini: '🟠', claude: '🟣', openai: '🟢', deepseek: '🔵',
-  mistral: '⚪', groq: '⚡', openrouter: '🌐', custom: '🔧',
+  mistral: '⚪', groq: '⚡', openrouter: '🌐', sambanova: '🔶', cerebras: '🧠', custom: '🔧',
 }
 
 async function fetchProviderModels(provider: AIProvider): Promise<string[]> {
@@ -116,6 +123,18 @@ async function fetchProviderModels(provider: AIProvider): Promise<string[]> {
         const d = await r.json()
         return (d.data ?? []).map((m: any) => m.id)
       }
+      case 'sambanova': {
+        const r = await fetch('https://api.sambanova.ai/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
+      case 'cerebras': {
+        const r = await fetch('https://api.cerebras.ai/v1/models', { headers: bearer })
+        if (!r.ok) return []
+        const d = await r.json()
+        return (d.data ?? []).map((m: any) => m.id)
+      }
       case 'custom': {
         if (!provider.baseUrl) return []
         const r = await fetch(`${provider.baseUrl.replace(/\/$/, '')}/v1/models`, { headers: provider.apiKey ? bearer : undefined })
@@ -140,7 +159,7 @@ const TIER_ORDER: Tier[] = ['free', 'pro', 'studio', 'byok', 'local']
 
 const TIER_LABELS: Record<Tier, string> = {
   free:   '🆓 Free',
-  pro:    '🦊 Pro · $12/mo',
+  pro:    '🦊 Pro · $15/mo',
   studio: '🏆 Studio · $29/seat',
   byok:   '🔑 BYOK',
   local:  '🏠 Local (Ollama)',
