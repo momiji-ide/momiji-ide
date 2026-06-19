@@ -95,7 +95,7 @@ export function UsagePanel() {
           </div>
 
           {/* Heatmap */}
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${stats.heatmap.length}, minmax(0, 14px))`, gap: 2, justifyContent: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${stats.heatmap.length}, minmax(10px, 18px))`, gap: 2 }}>
             {stats.heatmap.map((col, wi) => (
               <div key={wi} className="flex flex-col" style={{ gap: 2 }}>
                 {col.map((n, di) => (
