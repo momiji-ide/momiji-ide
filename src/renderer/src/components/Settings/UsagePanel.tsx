@@ -95,12 +95,12 @@ export function UsagePanel() {
           </div>
 
           {/* Heatmap */}
-          <div className="flex gap-1 pt-1">
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${stats.heatmap.length}, 1fr)`, gap: 3 }}>
             {stats.heatmap.map((col, wi) => (
-              <div key={wi} className="flex flex-col gap-1">
+              <div key={wi} className="flex flex-col" style={{ gap: 3 }}>
                 {col.map((n, di) => (
                   <div key={di} style={{
-                    width: 11, height: 11, borderRadius: 2,
+                    aspectRatio: '1', borderRadius: 2, width: '100%',
                     background: n === 0 ? 'var(--bg-surface1)' : `rgba(203,166,247,${0.2 + 0.8 * (n / maxH)})`,
                   }} />
                 ))}
