@@ -13,6 +13,7 @@ import { PdfViewer, isPdfFile } from './PdfViewer'
 import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { PixelKitsune } from '../Kitsune/PixelKitsuneView'
+import { UsagePanel }  from '../Settings/UsagePanel'
 import { FileIcon } from '../Sidebar/FileIcon'
 import { ColorPickerPopup, findColorsInLine } from './ColorPicker'
 import { useInlineCompletion } from './useInlineCompletion'
@@ -1123,6 +1124,11 @@ function WelcomeScreen() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* AI Usage chart */}
+                <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
+                  <UsagePanel />
                 </div>
               </>
             )
