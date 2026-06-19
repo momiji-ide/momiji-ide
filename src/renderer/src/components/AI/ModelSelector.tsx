@@ -25,6 +25,7 @@ const ALL_MODELS: ModelEntry[] = [
   { id: 'gemini-35-flash-f', label: 'Gemini 3.5 Flash',      sublabel: '20 req/day free',        providerId: 'gemini',     model: 'gemini-3.5-flash',                       tier: 'free',   badge: 'FREE',  emoji: '🟠' },
   { id: 'gemini-flash-lite', label: 'Gemini 3.1 Flash Lite', sublabel: '500 req/day free',       providerId: 'gemini',     model: 'gemini-3.1-flash-lite',                  tier: 'free',   badge: 'FREE',  emoji: '🟠' },
   { id: 'groq-llama-8b',     label: 'Llama 3.1 8B',          sublabel: 'fastest · light',        providerId: 'groq',       model: 'llama-3.1-8b-instant',                   tier: 'free',   badge: 'FREE',  emoji: '⚡' },
+  { id: 'gemma-4-26b',       label: 'Gemma 4 26B',           sublabel: 'Google open · 1.5K/day', providerId: 'gemini',     model: 'gemma-4-26b-a4b-it',                     tier: 'free',   badge: 'FREE',  emoji: '🟠' },
   { id: 'gemma-4-31b',       label: 'Gemma 4 31B',           sublabel: 'largest Gemma · free',   providerId: 'gemini',     model: 'gemma-4-31b-it',                         tier: 'free',   badge: 'FREE',  emoji: '🟠' },
   { id: 'sn-llama-70b',      label: 'Llama 3.3 70B',         sublabel: 'SambaNova · ultra fast', providerId: 'sambanova',  model: 'Meta-Llama-3.3-70B-Instruct',            tier: 'free',   badge: 'FREE',  emoji: '🔶' },
   { id: 'sn-deepseek-r1',    label: 'DeepSeek R1 70B',       sublabel: 'SambaNova · reasoning',  providerId: 'sambanova',  model: 'DeepSeek-R1-Distill-Llama-70B',          tier: 'free',   badge: 'FREE',  emoji: '🔶' },
