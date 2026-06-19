@@ -180,16 +180,27 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
             return <ToolActivityRow key={msg.id} tool={msg.tool ?? ''} args={msg.toolArgs ?? {}} status={msg.toolStatus ?? 'running'} result={msg.toolResult} />
           }
           const isEditing = editingId === msg.id
+          const isError = msg.role === 'assistant' && !msg.streaming && msg.content.startsWith('❌')
           return (
-          <div key={msg.id} className={`group flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-            {msg.image && <img src={msg.image} alt="" className="rounded-lg" style={{ maxHeight: 120, objectFit: 'contain', border: '1px solid var(--border)' }} />}
+          <div key={msg.id} className="group flex flex-col gap-1" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
+            {/* Role label */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold" style={{ color: msg.role === 'user' ? 'var(--accent-mauve)' : 'var(--accent-green)', fontSize: 10, letterSpacing: '0.05em' }}>
+                {msg.role === 'user' ? '▸ You' : '▸ Kitsune'}
+              </span>
+              {msg.role === 'assistant' && !msg.streaming && msg.elapsed && (
+                <span style={{ color: 'var(--text-subtle)', fontSize: 9 }}>{(msg.elapsed / 1000).toFixed(1)}s</span>
+              )}
+            </div>
+
+            {msg.image && <img src={msg.image} alt="" className="rounded" style={{ maxHeight: 100, objectFit: 'contain', border: '1px solid var(--border)' }} />}
             {((msg.attachedFileNames?.length ?? 0) > 0 || (msg.attachedFolderNames?.length ?? 0) > 0) && (
-              <div className="flex gap-1 flex-wrap justify-end">
+              <div className="flex gap-1 flex-wrap">
                 {msg.attachedFileNames?.map(name => (
-                  <span key={name} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', fontSize: 10 }}>📎 {name}</span>
+                  <span key={name} className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', fontSize: 9 }}>📎 {name}</span>
                 ))}
                 {msg.attachedFolderNames?.map(name => (
-                  <span key={name} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', fontSize: 10 }}>📁 {name}</span>
+                  <span key={name} className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', fontSize: 9 }}>📁 {name}</span>
                 ))}
               </div>
             )}
@@ -205,41 +216,49 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
                   }}
                   rows={Math.min(10, editText.split('\n').length + 1)}
                   autoFocus
-                  className="w-full px-2 py-1.5 rounded text-xs resize-none outline-none"
+                  className="w-full px-2 py-1.5 rounded text-xs resize-none outline-none font-mono"
                   style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--accent-mauve)' }}
                 />
-                <div className="flex gap-1.5 justify-end">
+                <div className="flex gap-1.5">
                   <button onClick={() => setEditingId(null)} className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>Cancel</button>
-                  <button onClick={() => { chat.handleEditMessage(msg.id, editText); setEditingId(null) }} className="text-xs px-2 py-0.5 rounded font-semibold" style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>▶ Save &amp; resend</button>
+                  <button onClick={() => { chat.handleEditMessage(msg.id, editText); setEditingId(null) }} className="text-xs px-2 py-0.5 rounded font-semibold" style={{ background: 'var(--accent-mauve)', color: 'var(--bg-base)' }}>▶ Resend</button>
                 </div>
               </div>
             ) : msg.role === 'assistant' && msg.streaming && !msg.content ? (
               <ThinkingIndicator elapsed={chat.streamElapsed} tokens={chat.streamTokens} />
             ) : (
-              <div className="rounded-lg px-3 py-2 text-xs max-w-full"
-                style={{ background: msg.role === 'user' ? 'var(--accent-mauve)' : 'var(--bg-surface0)', color: msg.role === 'user' ? 'var(--bg-base)' : 'var(--text)', wordBreak: 'break-word' }}>
+              <div className="text-xs max-w-full" style={{
+                color: 'var(--text)', wordBreak: 'break-word',
+                ...(isError ? { background: 'var(--accent-red)12', border: '1px solid var(--accent-red)33', borderRadius: 8, padding: '8px 10px' } : {}),
+              }}>
                 {msg.role === 'assistant'
                   ? <>
                       {tryRenderReview(msg.content) ?? renderMessage(msg.content.replace('__FIX_BUTTON__', ''))}
-                      {msg.content.includes('__FIX_BUTTON__') && (
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {['gemini-1.5-flash', 'gemini-3-flash-preview'].map(m => (
-                            <button key={m} onClick={() => { const p = aiProviders.find(p => p.id === 'gemini'); if (p) { updateAIProvider({ ...p, model: m }) } }}
-                              className="px-3 py-1.5 rounded text-xs font-semibold" style={{ background: 'var(--accent-green)', color: 'var(--bg-base)' }}>
-                              🔧 Switch to {m}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                       {msg.streaming && msg.content && <span className="animate-pulse ml-0.5" style={{ color: 'var(--accent-mauve)' }}>▌</span>}
                     </>
-                  : msg.content
+                  : <span style={{ color: 'var(--text-muted)' }}>{msg.content}</span>
                 }
               </div>
             )}
 
-            {/* Hover actions: copy everyone, edit&resend (user), regenerate (assistant) */}
-            {!isEditing && !(msg.role === 'assistant' && msg.streaming) && (
+            {/* Error: always-visible retry + rewind */}
+            {isError && !chat.isLoading && (
+              <div className="flex gap-1.5">
+                <button onClick={() => chat.handleRegenerate(msg.id)}
+                  className="text-xs px-2.5 py-1 rounded font-semibold"
+                  style={{ background: 'var(--accent-mauve)', color: 'white' }}>
+                  ↻ Retry
+                </button>
+                <button onClick={() => { setEditingId(msg.id - 1 >= 0 ? msg.id - 1 : msg.id); const prev = chat.messages.find(m => m.id === msg.id - 1); if (prev) setEditText(prev.content) }}
+                  className="text-xs px-2.5 py-1 rounded"
+                  style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                  ✏️ Edit & retry
+                </button>
+              </div>
+            )}
+
+            {/* Hover actions */}
+            {!isEditing && !isError && !(msg.role === 'assistant' && msg.streaming) && (
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontSize: 10 }}>
                 <button onClick={() => chat.handleCopyMessage(msg.content.replace('__FIX_BUTTON__', ''), msg.id)} title="Copy"
                   className="px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: chat.copiedMsgId === msg.id ? 'var(--accent-green)' : 'var(--text-subtle)', border: '1px solid var(--border)' }}>
@@ -252,15 +271,15 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
                   </button>
                 )}
                 {msg.role === 'assistant' && !chat.isLoading && (
-                  <button onClick={() => chat.handleRegenerate(msg.id)} title="Regenerate response"
+                  <button onClick={() => chat.handleRegenerate(msg.id)} title="Regenerate"
                     className="px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-surface0)', color: 'var(--text-subtle)', border: '1px solid var(--border)' }}>
-                    🔄 Retry
+                    ↻ Retry
                   </button>
                 )}
               </div>
             )}
 
-            {msg.role === 'assistant' && !msg.streaming && (
+            {msg.role === 'assistant' && !msg.streaming && !isError && (
               <MessageFooter tokensIn={msg.tokensIn} tokensOut={msg.tokensOut} elapsed={msg.elapsed} />
             )}
 
@@ -270,20 +289,18 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
                   <button onClick={() => chat.handleSmartApply(msg.content)}
                     className="text-xs px-2 py-0.5 rounded font-semibold"
                     style={{ background: 'var(--accent-mauve)', color: 'white' }}>
-                    ⚡ Apply to Editor
+                    ⚡ Apply
                   </button>
                 )}
                 <button onClick={() => chat.handleCopyCode(msg.content, msg.id)}
                   className="text-xs px-2 py-0.5 rounded transition-all"
                   style={{ background: chat.copiedId === msg.id ? 'var(--accent-green)' : 'var(--bg-surface0)', color: chat.copiedId === msg.id ? 'var(--bg-base)' : 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                  {chat.copiedId === msg.id ? '✓ Copied' : '📋 Copy'}
+                  {chat.copiedId === msg.id ? '✓' : '📋'} Copy
                 </button>
                 {chat.activeTab && (
                   <button onClick={() => chat.handleInsertCode(msg.content)}
-                    className="text-xs px-2 py-0.5 rounded transition-all"
-                    style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-mauve)'; e.currentTarget.style.color = 'var(--bg-base)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface0)'; e.currentTarget.style.color = 'var(--text-muted)' }}>
+                    className="text-xs px-2 py-0.5 rounded"
+                    style={{ background: 'var(--bg-surface0)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                     ↙ Insert
                   </button>
                 )}
