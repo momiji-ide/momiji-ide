@@ -401,24 +401,24 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
     ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0,-18,3,0,Math.PI*2); ctx.fill()
     ctx.restore()
 
-    // Chassis
+    // Chassis (top-down, matches 3D model)
     ctx.fillStyle = '#1e293b'; ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.5
-    ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.fill(); ctx.stroke()
+    ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill(); ctx.stroke()
 
-    // Fox face
+    // Wheels (4 dark rectangles)
+    ctx.fillStyle = '#111827'
+    ctx.fillRect(-20, -4, 5, 8)
+    ctx.fillRect(15, -4, 5, 8)
+    ctx.fillRect(-4, -20, 8, 5)
+    ctx.fillRect(-4, 15, 8, 5)
+
+    // Orange top plate
     ctx.fillStyle = '#f97316'
-    ctx.beginPath(); ctx.moveTo(-15,-5); ctx.quadraticCurveTo(0,-22,15,-5); ctx.lineTo(10,15); ctx.lineTo(-10,15); ctx.closePath(); ctx.fill()
-    ctx.fillStyle = '#ea580c'
-    ctx.beginPath(); ctx.moveTo(-16,-10); ctx.lineTo(-24,-22); ctx.lineTo(-8,-17); ctx.closePath(); ctx.fill()
-    ctx.beginPath(); ctx.moveTo(16,-10); ctx.lineTo(24,-22); ctx.lineTo(8,-17); ctx.closePath(); ctx.fill()
-    ctx.fillStyle = '#fff'
-    ctx.beginPath(); ctx.arc(-6,-2,3,0,Math.PI*2); ctx.arc(6,-2,3,0,Math.PI*2); ctx.fill()
-    ctx.fillStyle = '#0f172a'
-    ctx.beginPath(); ctx.arc(-6,-2,1.5,0,Math.PI*2); ctx.arc(6,-2,1.5,0,Math.PI*2); ctx.fill()
-    ctx.fillStyle = '#fff'
-    ctx.beginPath(); ctx.moveTo(-4,5); ctx.lineTo(4,5); ctx.lineTo(0,10); ctx.closePath(); ctx.fill()
-    ctx.fillStyle = '#000'
-    ctx.beginPath(); ctx.arc(0,5,1.5,0,Math.PI*2); ctx.fill()
+    ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI*2); ctx.fill()
+
+    // Direction indicator (front arrow)
+    ctx.fillStyle = '#1e293b'
+    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(-5, -3); ctx.lineTo(5, -3); ctx.closePath(); ctx.fill()
 
     // LED glow
     if (robot.ledColor !== 'OFF') {
