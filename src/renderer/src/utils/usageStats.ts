@@ -54,9 +54,9 @@ export interface StatsSummary {
   tokens: number
   activeDays: number
   streak: number
+  longestStreak: number
   favModel: string | null
   peakHour: string | null
-  /** last `weeks`×7 grid of counts, column-major (weeks), oldest first */
   heatmap: number[][]
 }
 
@@ -69,6 +69,19 @@ export function getStats(weeks = 12): StatsSummary {
   const dt = new Date()
   if (!d.days[dt.toISOString().slice(0, 10)]) dt.setDate(dt.getDate() - 1)
   while (d.days[dt.toISOString().slice(0, 10)]) { streak++; dt.setDate(dt.getDate() - 1) }
+
+  // Longest streak ever
+  let longestStreak = streak
+  const allDays = Object.keys(d.days).sort()
+  if (allDays.length > 0) {
+    let run = 1
+    for (let i = 1; i < allDays.length; i++) {
+      const prev = new Date(allDays[i - 1]), cur = new Date(allDays[i])
+      const diff = (cur.getTime() - prev.getTime()) / 86400000
+      run = diff === 1 ? run + 1 : 1
+      if (run > longestStreak) longestStreak = run
+    }
+  }
 
   let favModel: string | null = null, favN = 0
   for (const [m, n] of Object.entries(d.models)) if (n > favN) { favModel = m; favN = n }
@@ -90,5 +103,5 @@ export function getStats(weeks = 12): StatsSummary {
     heatmap.push(col)
   }
 
-  return { sessions: d.sessions, aiMsgs: d.aiMsgs, tokens: d.tokens, activeDays, streak, favModel, peakHour: peakHour != null ? `${peakHour}:00` : null, heatmap }
+  return { sessions: d.sessions, aiMsgs: d.aiMsgs, tokens: d.tokens, activeDays, streak, longestStreak, favModel, peakHour: peakHour != null ? `${Number(peakHour) % 12 || 12} ${Number(peakHour) >= 12 ? 'PM' : 'AM'}` : null, heatmap }
 }

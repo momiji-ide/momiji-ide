@@ -6,7 +6,6 @@ import { MarkdownPreview } from './MarkdownPreview'
 import { CodeFlowchart } from './CodeFlowchart'
 import { isFlowchartSupported } from '../../utils/codeToFlowchart'
 import { getT, getLang } from '../../utils/i18n'
-import { getStats } from '../../utils/usageStats'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
@@ -1051,7 +1050,6 @@ function WelcomeScreen() {
             const t = getT(getLang())
             const h = new Date().getHours()
             const greet = h < 11 ? `☀️ ${t.ws_greet_morning}` : h < 15 ? `🌤️ ${t.ws_greet_day}` : h < 19 ? `🌆 ${t.ws_greet_evening}` : `🌙 ${t.ws_greet_night}`
-            const stats = getStats(12)
             const tiles = [
               recentFolders[0] && {
                 icon: '📂', accent: false,
@@ -1069,16 +1067,6 @@ function WelcomeScreen() {
                 onClick: () => window.dispatchEvent(new CustomEvent('app:showAbout'))
               },
             ].filter(Boolean) as { icon: string; accent: boolean; title: string; sub: string; onClick: () => void }[]
-
-            const cards = [
-              { label: t.ws_sessions,    val: String(stats.sessions) },
-              { label: t.ws_ai_msgs,     val: String(stats.aiMsgs) },
-              { label: t.ws_tokens,      val: stats.tokens > 999 ? (stats.tokens / 1000).toFixed(1) + 'K' : String(stats.tokens) },
-              { label: t.ws_active_days, val: String(stats.activeDays) },
-              { label: t.ws_streak,      val: stats.streak + 'd' },
-              { label: t.ws_fav_model,   val: stats.favModel ? stats.favModel.split('-').slice(0, 2).join(' ') : '—' },
-            ]
-            const maxH = Math.max(1, ...stats.heatmap.flat())
 
             return (
               <>
@@ -1101,32 +1089,7 @@ function WelcomeScreen() {
                   ))}
                 </div>
 
-                {/* Overview — stats + heatmap (Claude Desktop style) */}
-                <div className="rounded-xl p-4" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
-                  <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>{t.ws_overview}</p>
-                  <div className="grid gap-2 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }}>
-                    {cards.map(c => (
-                      <div key={c.label} className="rounded-lg px-3 py-2.5" style={{ background: 'var(--bg-base)' }}>
-                        <p className="truncate" style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 3 }}>{c.label}</p>
-                        <p className="font-bold truncate" style={{ fontSize: 20, lineHeight: 1, color: 'var(--text)' }}>{c.val}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-1">
-                    {stats.heatmap.map((col, wi) => (
-                      <div key={wi} className="flex flex-col gap-1">
-                        {col.map((n, di) => (
-                          <div key={di} style={{
-                            width: 11, height: 11, borderRadius: 2,
-                            background: n === 0 ? 'var(--bg-surface1)' : `rgba(249,115,22,${0.25 + 0.75 * (n / maxH)})`
-                          }} />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* AI Usage chart */}
+                {/* AI Usage — Claude Code style */}
                 <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
                   <UsagePanel />
                 </div>
