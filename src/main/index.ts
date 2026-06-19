@@ -316,7 +316,8 @@ function setupIpcHandlers(): void {
       }
 
       const workDir = cwd || process.env.USERPROFILE || process.env.HOME || 'C:\\'
-      const proc = spawn(command, args, {
+      const normalizedArgs = args.map(a => path.resolve(a))
+      const proc = spawn(command, normalizedArgs, {
         cwd: workDir,
         shell: true,
         env: { ...process.env }
