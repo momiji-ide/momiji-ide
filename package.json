@@ -1,6 +1,6 @@
 {
   "name": "momiji-ide",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Momiji IDE — AI-native IDE platform powered by Kitsune AI 🍁",
   "main": "out/main/index.js",
   "homepage": "./",

@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-orange)](https://github.com/momiji-ide/momiji-ide/releases)
-[![Version](https://img.shields.io/badge/version-1.3.0-f97316)](https://github.com/momiji-ide/momiji-ide/releases)
+[![Version](https://img.shields.io/badge/version-1.3.3-f97316)](https://github.com/momiji-ide/momiji-ide/releases)
 [![Stars](https://img.shields.io/github/stars/momiji-ide/momiji-ide?color=f97316)](https://github.com/momiji-ide/momiji-ide/stargazers)
 
 [**Download**](https://github.com/momiji-ide/momiji-ide/releases) · [**Website**](https://momiji-ide.github.io/momiji-ide) · [**Report a bug**](https://github.com/momiji-ide/momiji-ide/issues)
@@ -41,7 +41,7 @@ Not competing with VS Code. Competing in a new arena — the **beginner→pro pr
 
 ---
 
-## What's new in v1.3.0
+## What's new in v1.3.3
 
 ### 🦊 Kitsune Avatar — Reactive Emotional States
 A small Kitsune character in the sidebar reacts to your code in real time:
@@ -136,12 +136,14 @@ Kitsune gives coding challenges inside your project:
 
 | Provider | Free tier | Default model |
 |---|---|---|
-| 🟠 Google Gemini | ✅ Free | `gemini-2.0-flash` |
-| 🟢 Groq | ✅ Free | `llama-3.3-70b-versatile` |
-| 🟤 OpenRouter | ✅ Free models | `meta-llama/llama-3.3-70b-instruct:free` |
-| 🔵 Anthropic Claude | BYOK | `claude-sonnet-4-5` |
-| 🟡 OpenAI GPT | BYOK | `gpt-4o-mini` |
-| 🟣 DeepSeek | BYOK | `deepseek-chat` |
+| 🟠 Google Gemini | ✅ Free | `gemini-3.5-flash` |
+| ⚡ Groq | ✅ Free | `llama-3.3-70b-versatile` |
+| 🔶 SambaNova | ✅ Free | `Meta-Llama-3.3-70B-Instruct` |
+| 🧠 Cerebras | ✅ Free | `llama-3.3-70b` (~2000 tok/s) |
+| 🌐 OpenRouter | ✅ Free models | `meta-llama/llama-3.3-70b-instruct:free` |
+| 🟣 Anthropic Claude | BYOK | `claude-sonnet-4-6` |
+| 🟢 OpenAI GPT | BYOK | `gpt-5-mini` |
+| 🔵 DeepSeek | BYOK | `deepseek-chat` |
 | ⚪ Mistral AI | BYOK | `mistral-small-latest` |
 | 🏠 Ollama | ✅ Local | `qwen2.5-coder:7b` |
 | ⚙️ Custom | Any | OpenAI-compatible endpoint |
@@ -173,9 +175,9 @@ Grab the latest installer from [**Releases →**](https://github.com/momiji-ide/
 
 | Platform | File |
 |---|---|
-| Windows | `Momiji-IDE-Setup-1.3.0.exe` |
-| macOS | `Momiji-IDE-1.3.0.dmg` |
-| Linux | `Momiji-IDE-1.3.0.AppImage` |
+| Windows | `Momiji-IDE-Setup-1.3.3.exe` |
+| macOS | `Momiji-IDE-1.3.3.dmg` |
+| Linux | `Momiji-IDE-1.3.3.AppImage` |
 
 ### Build from source
 
