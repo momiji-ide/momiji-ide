@@ -85,6 +85,14 @@ export interface KitsuneSession {
   agentId?: string
 }
 
+export interface UsageEntry {
+  date: string
+  model: string
+  providerId: string
+  tokensIn: number
+  tokensOut: number
+}
+
 export type ActivityBarItem =
   | 'explorer'
   | 'search'

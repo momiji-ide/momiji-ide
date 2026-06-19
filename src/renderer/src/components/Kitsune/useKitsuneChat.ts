@@ -143,6 +143,7 @@ export function useKitsuneChat() {
   const {
     aiProviders, tabs, activeTabId, updateTabContent, markTabClean, updateAIProvider, currentFolder,
     kitsuneSessions, activeKitsuneSessionId, createKitsuneSession, updateKitsuneSession, customAgents,
+    addUsageEntry,
   } = useAppStore()
 
   const activeSession = kitsuneSessions.find(s => s.id === activeKitsuneSessionId) ?? null
@@ -872,6 +873,19 @@ export function useKitsuneChat() {
         }
         setMessages(prev => prev.map(m => m.id === streamId ? { ...m, content: friendlyErrorMessage(msg, activeProvider?.model), streaming: false } : m))
       }
+    }
+
+    // Log usage for analytics
+    const lastMsg = useAppStore.getState().kitsuneSessions.find(s => s.id === activeKitsuneSessionId)
+      ?.messages.filter(m => m.role === 'assistant' && !m.streaming).pop()
+    if (lastMsg?.tokensIn || lastMsg?.tokensOut) {
+      addUsageEntry({
+        date: new Date().toISOString().slice(0, 10),
+        model: activeProvider.model,
+        providerId: activeProvider.id,
+        tokensIn: lastMsg.tokensIn ?? 0,
+        tokensOut: lastMsg.tokensOut ?? 0,
+      })
     }
 
     setIsLoading(false)

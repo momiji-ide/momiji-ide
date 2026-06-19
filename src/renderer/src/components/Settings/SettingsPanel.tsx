@@ -5,8 +5,9 @@ import { LANGUAGES, getLang, setLang, type Language } from '../../utils/i18n'
 import { toast } from '../../utils/toast'
 import { AISettings }    from './AISettings'
 import { LicensePanel } from './LicensePanel'
+import { UsagePanel }   from './UsagePanel'
 
-type SettingsTab = 'editor' | 'ai' | 'appearance' | 'pro'
+type SettingsTab = 'editor' | 'ai' | 'appearance' | 'usage' | 'pro'
 
 export function SettingsPanel() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('editor')
@@ -28,6 +29,7 @@ export function SettingsPanel() {
     { id: 'editor',     label: 'Editor',     icon: '📝' },
     { id: 'appearance', label: 'Appearance', icon: '🎨' },
     { id: 'ai',         label: 'AI & Keys',  icon: '✨' },
+    { id: 'usage',      label: 'Usage',      icon: '📊' },
     { id: 'pro',        label: licenseTier === 'free' ? 'Upgrade' : licenseTier === 'pro' ? '🦊 Pro' : '🏆 Studio', icon: licenseTier === 'free' ? '⭐' : '' },
   ]
 
@@ -262,6 +264,8 @@ export function SettingsPanel() {
             </SettingRow>
           </div>
         )}
+
+        {activeTab === 'usage' && <UsagePanel />}
 
         {activeTab === 'pro' && (
           <div className="flex flex-col gap-3">

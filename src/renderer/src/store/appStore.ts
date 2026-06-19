@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem, AgentConfig, KitsuneSession } from '../types'
+import type { AppState, Tab, FileNode, EditorSettings, AIProvider, ActivityBarItem, AgentConfig, KitsuneSession, UsageEntry } from '../types'
 import { detectLanguage } from '../utils/languageDetect'
 
 const defaultSettings: EditorSettings = {
@@ -70,6 +70,10 @@ interface AppStore extends AppState {
   deleteKitsuneSession: (id: string) => void
   setActiveKitsuneSession: (id: string) => void
   updateKitsuneSession: (id: string, patch: Partial<KitsuneSession>) => void
+
+  // AI usage analytics
+  usageHistory: UsageEntry[]
+  addUsageEntry: (entry: UsageEntry) => void
 
   // License / Pro tier
   licenseKey:    string | null
@@ -279,6 +283,13 @@ export const useAppStore = create<AppStore>()(
         )
       })),
 
+      usageHistory: [],
+      addUsageEntry: (entry) => set((s) => {
+        const history = [...s.usageHistory, entry]
+        if (history.length > 5000) history.splice(0, history.length - 5000)
+        return { usageHistory: history }
+      }),
+
       licenseKey:    null,
       licenseTier:   'free',
       licenseExpiry: null,
@@ -354,6 +365,7 @@ export const useAppStore = create<AppStore>()(
         licenseKey:     state.licenseKey,
         licenseTier:    state.licenseTier,
         licenseExpiry:  state.licenseExpiry,
+        usageHistory: state.usageHistory,
         kitsuneSessions: state.kitsuneSessions,
         activeKitsuneSessionId: state.activeKitsuneSessionId,
       })
