@@ -258,6 +258,12 @@ export const useAppStore = create<AppStore>()(
       activeKitsuneSessionId: null,
 
       createKitsuneSession: () => {
+        const { licenseTier, kitsuneSessions } = get()
+        const isPro = licenseTier === 'pro' || licenseTier === 'studio'
+        if (!isPro && kitsuneSessions.length >= 10) {
+          const oldest = kitsuneSessions[kitsuneSessions.length - 1]
+          set(s => ({ kitsuneSessions: s.kitsuneSessions.filter(sess => sess.id !== oldest.id) }))
+        }
         const id = `kitsune-${Date.now()}`
         const session: KitsuneSession = {
           id, title: 'New chat', createdAt: Date.now(), updatedAt: Date.now(),

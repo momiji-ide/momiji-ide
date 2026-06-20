@@ -143,8 +143,10 @@ export function useKitsuneChat() {
   const {
     aiProviders, tabs, activeTabId, updateTabContent, markTabClean, updateAIProvider, currentFolder,
     kitsuneSessions, activeKitsuneSessionId, createKitsuneSession, updateKitsuneSession, customAgents,
-    addUsageEntry,
+    addUsageEntry, licenseTier,
   } = useAppStore()
+
+  const isPro = licenseTier === 'pro' || licenseTier === 'studio'
 
   const activeSession = kitsuneSessions.find(s => s.id === activeKitsuneSessionId) ?? null
 
@@ -438,7 +440,14 @@ export function useKitsuneChat() {
     pendingWrites.find(w => w.path === path)?.resolve(approved)
   }
 
+  const FREE_TOOL_LIMIT = 5
+  const toolCallCount = useRef(0)
+
   const runTool = async (name: string, args: Record<string, any>): Promise<string> => {
+    if (!isPro && toolCallCount.current >= FREE_TOOL_LIMIT) {
+      return `⚡ Free tier limit: ${FREE_TOOL_LIMIT} tool calls per message. Upgrade to Pro for unlimited agentic mode.`
+    }
+    toolCallCount.current++
     const id = addToolMsg(name, args)
     const result = await executeTool(name, args, workingFolder, { onWriteRequest: requestWrite })
     updateToolMsg(id, result.startsWith('Error') || result.startsWith('Skipped by user') ? 'error' : 'done', result)
@@ -774,6 +783,7 @@ export function useKitsuneChat() {
     window.dispatchEvent(new CustomEvent('kitsune:avatar', { detail: { state: 'thinking' } }))
     startTimer()
     agentAbortRef.current = false
+    toolCallCount.current = 0
 
     // Prepend attached file/folder contents (not shown verbatim in the chat bubble)
     let messageForProvider = userMessage
@@ -985,6 +995,6 @@ export function useKitsuneChat() {
     projectMemory, memoryDraft, setMemoryDraft, memorySaved, saveMemory, autoContext,
     messagesEndRef, activeTab, aiProviders, updateAIProvider,
     handleSend, handleStop, handleSmartApply, handleCopyCode, handleInsertCode, extractCodeBlocks,
-    quickActions, clearChat, currentFolder, workingFolder,
+    quickActions, clearChat, currentFolder, workingFolder, isPro,
   }
 }

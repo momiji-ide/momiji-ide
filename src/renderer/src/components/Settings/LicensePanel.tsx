@@ -9,19 +9,19 @@ const TIER_CONFIG = {
     label: '🆓 Free',
     color: 'var(--text-subtle)',
     bg:    'var(--bg-surface0)',
-    desc:  'Full IDE, BYOK AI, free tier models (Groq, Gemini Flash-Lite)',
+    desc:  'Full IDE + BYOK AI chat. 5 tool calls/msg, 10 sessions, no project memory.',
   },
   pro: {
     label: '🦊 Pro',
     color: 'var(--accent-mauve)',
     bg:    'rgba(249,115,22,0.08)',
-    desc:  'Pro models unlocked: Gemini 2.5 Flash, Claude Haiku, GPT-4o Mini',
+    desc:  'Unlimited agentic tool calls, unlimited sessions, project memory, priority features.',
   },
   studio: {
     label: '🏆 Studio',
     color: 'var(--accent-yellow)',
     bg:    'rgba(249,226,175,0.08)',
-    desc:  'All models unlocked: Claude Sonnet, Gemini 3.5 Flash, GPT-4o',
+    desc:  'Everything in Pro + team workspace, custom Kitsune persona, priority support + SLA.',
   },
 }
 

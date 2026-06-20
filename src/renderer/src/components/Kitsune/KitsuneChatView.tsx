@@ -401,9 +401,9 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
             </>
           )}
           {onToggleMemory && (
-            <button onClick={onToggleMemory} title="Project memory"
+            <button onClick={chat.isPro ? onToggleMemory : undefined} title={chat.isPro ? 'Project memory' : 'Pro feature — upgrade to use'}
               className="text-xs px-1.5 py-0.5 rounded"
-              style={{ color: showMemory ? 'var(--accent-mauve)' : 'var(--text-subtle)', fontSize: 10 }}>🧠</button>
+              style={{ color: showMemory ? 'var(--accent-mauve)' : 'var(--text-subtle)', fontSize: 10, opacity: chat.isPro ? 1 : 0.4 }}>{chat.isPro ? '🧠' : '🧠 Pro'}</button>
           )}
           <div className="flex-1" />
           {chat.isLoading && (
