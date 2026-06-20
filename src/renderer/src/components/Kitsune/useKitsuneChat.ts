@@ -492,20 +492,21 @@ export function useKitsuneChat() {
     if (image) firstParts.push({ inline_data: { mime_type: image.mimeType, data: image.data } })
     firstParts.push({ text: userMessage })
     const contents: any[] = [...history, { role: 'user', parts: firstParts }]
+    const isGemma = provider.model.startsWith('gemma')
     const tools = filterGeminiTools()
     let tokensIn = 0, tokensOut = 0
 
     for (let i = 0; i < MAX_ITER; i++) {
       if (agentAbortRef.current) return { text: '_[stopped]_', tokensIn, tokensOut }
+      const body: any = {
+        system_instruction: { parts: [{ text: sysPrompt }] },
+        generationConfig: { maxOutputTokens: 8192 },
+        contents
+      }
+      if (!isGemma) { body.tools = [tools]; body.tool_config = { function_calling_config: { mode: 'AUTO' } } }
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent?key=${provider.apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: sysPrompt }] },
-          tools: [tools],
-          tool_config: { function_calling_config: { mode: 'AUTO' } },
-          generationConfig: { maxOutputTokens: 8192 },
-          contents
-        })
+        body: JSON.stringify(body)
       })
       const data = await resp.json()
       if (!resp.ok) throw new Error(data.error?.message ?? `Gemini error: ${JSON.stringify(data)}`)
