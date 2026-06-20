@@ -654,10 +654,8 @@ export function RobotSimulator({ runLines, runStatus, tmpPath }: RobotSimulatorP
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { x, y } = getPos(e)
     if (paintTool !== 'off' && arenaPreset === 'custom') { isPainting.current = true; applyPaint(x, y); return }
-    if (runStatus !== 'running') {
-      if (Math.sqrt((x-robot.x)**2 + (y-robot.y)**2) < 22) {
-        dragRef.current = { type: 'robot', ox: x - robot.x, oy: y - robot.y }; return
-      }
+    if (Math.sqrt((x-robot.x)**2 + (y-robot.y)**2) < 22) {
+      dragRef.current = { type: 'robot', ox: x - robot.x, oy: y - robot.y }; return
     }
     for (const o of [...obstacles].reverse()) {
       if (x >= o.x-o.w/2 && x <= o.x+o.w/2 && y >= o.y-o.h/2 && y <= o.y+o.h/2) {
