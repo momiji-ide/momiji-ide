@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { PixelKitsune } from './PixelKitsuneView'
-import { useKitsuneChat, quickActions } from './useKitsuneChat'
+import { useKitsuneChat, quickActions, SLASH_COMMANDS } from './useKitsuneChat'
 import { renderMessage, tryRenderReview, ThinkingIndicator, MessageFooter, DiffViewer, ToolActivityRow, PendingWriteCard, ContextBar } from './chatRender'
 import { ModelSelector } from '../AI/ModelSelector'
 import { useAppStore } from '../../store/appStore'
@@ -349,6 +349,28 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
           </div>
         )}
 
+        {/* Slash command autocomplete */}
+        {chat.input.startsWith('/') && !chat.isLoading && (() => {
+          const q = chat.input.slice(1).toLowerCase()
+          const matches = SLASH_COMMANDS.filter(c => c.cmd.slice(1).startsWith(q))
+          if (!matches.length || chat.input.includes(' ')) return null
+          return (
+            <div className="mx-3 mb-1 rounded-lg overflow-hidden shadow-lg" style={{ background: 'var(--bg-mantle)', border: '1px solid var(--border)' }}>
+              {matches.map(c => (
+                <button key={c.cmd} onClick={() => chat.setInput(c.cmd + ' ')}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
+                  style={{ background: 'transparent' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ fontSize: 12 }}>{c.label.split(' ')[0]}</span>
+                  <span className="font-mono font-bold" style={{ color: 'var(--accent-mauve)', fontSize: 11 }}>{c.cmd}</span>
+                  <span className="flex-1 truncate" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>{c.desc}</span>
+                </button>
+              ))}
+            </div>
+          )
+        })()}
+
         {/* Text input */}
         <div className="px-3 pt-2 pb-1.5">
           <textarea
@@ -356,7 +378,7 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
             onChange={e => chat.setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chat.handleSend() } }}
             onPaste={chat.handlePaste}
-            placeholder="Plan, search, build anything…"
+            placeholder="Plan, search, build anything… (/ for commands)"
             rows={2} disabled={chat.isLoading}
             className="w-full px-3 py-2 rounded-lg text-xs resize-none outline-none"
             style={{ background: 'var(--bg-surface0)', color: 'var(--text)', border: '1px solid var(--border)', opacity: chat.isLoading ? 0.6 : 1 }}

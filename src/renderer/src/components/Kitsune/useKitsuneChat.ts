@@ -122,6 +122,24 @@ export const quickActions = [
   { label: '📊 Review', prompt: 'Full code review. Rate 1–10 on correctness, performance, readability, security.' },
 ]
 
+export interface SlashCommand {
+  cmd: string
+  label: string
+  desc: string
+  agentId: string
+}
+
+export const SLASH_COMMANDS: SlashCommand[] = [
+  { cmd: '/review',   label: '🔍 Review',   desc: 'Code review with structured feedback',    agentId: 'builtin-reviewer' },
+  { cmd: '/test',     label: '🧪 Test',     desc: 'Write unit & integration tests',          agentId: 'builtin-tester' },
+  { cmd: '/security', label: '🔒 Security', desc: 'Scan for vulnerabilities (OWASP Top 10)', agentId: 'builtin-security' },
+  { cmd: '/docs',     label: '📝 Docs',     desc: 'Generate documentation & JSDoc',           agentId: 'builtin-docwriter' },
+  { cmd: '/refactor', label: '⚡ Refactor', desc: 'Improve structure & readability',          agentId: 'builtin-refactor' },
+  { cmd: '/debug',    label: '🐛 Debug',    desc: 'Find & fix bugs with root cause analysis', agentId: 'builtin-debugger' },
+  { cmd: '/plan',     label: '📋 Plan',     desc: 'Architect a feature or project structure', agentId: 'builtin-kitsune' },
+  { cmd: '/explain',  label: '💡 Explain',  desc: 'Explain code in detail, step by step',    agentId: 'builtin-kitsune' },
+]
+
 function friendlyErrorMessage(msg: string, model?: string): string {
   if (msg.includes('quota') || msg.includes('limit: 0') || msg.includes('RESOURCE_EXHAUSTED')) {
     return `❌ **API Quota / Access Error** (model: \`${model}\`)\n\n"limit: 0" usually means Gemini API is not enabled for this key's project.\n\n**Fix:**\n1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)\n2. Create a new API key there\n3. Paste it in ⚙️ Settings → AI & API Keys\n\n__FIX_BUTTON__`
@@ -764,7 +782,20 @@ export function useKitsuneChat() {
   const handleSend = useCallback(async (overridePrompt?: string) => {
     const textToSend = overridePrompt ?? input
     if ((!textToSend.trim() && !attachedImage && attachedFiles.length === 0 && attachedFolders.length === 0) || isLoading || !activeProvider) return
-    const userMessage   = textToSend.trim() || '(analyze this image)'
+
+    // Slash command detection — temporarily switch agent for this turn
+    let userMessage = textToSend.trim() || '(analyze this image)'
+    const slashMatch = userMessage.match(/^\/(\w+)\s*(.*)/)
+    let prevAgentId: string | null = null
+    if (slashMatch) {
+      const cmd = SLASH_COMMANDS.find(c => c.cmd === `/${slashMatch[1]}`)
+      if (cmd) {
+        prevAgentId = agentId
+        setAgentId(cmd.agentId)
+        const rest = slashMatch[2].trim()
+        userMessage = rest || cmd.desc
+      }
+    }
     const imageSnapshot = attachedImage
     const filesSnapshot = attachedFiles
     const foldersSnapshot = attachedFolders
@@ -899,11 +930,13 @@ export function useKitsuneChat() {
       })
     }
 
+    if (prevAgentId) setAgentId(prevAgentId)
+
     setIsLoading(false)
     setKitsuneExpr('happy')
     window.dispatchEvent(new CustomEvent('kitsune:avatar', { detail: { state: 'idle' } }))
     setTimeout(() => setKitsuneExpr('normal'), 3000)
-  }, [input, attachedImage, attachedFiles, attachedFolders, isLoading, activeProvider, messages, activeTab, currentFolder, selectedAgent, autoApprove, persona, projectMemory, autoContext])
+  }, [input, attachedImage, attachedFiles, attachedFolders, isLoading, activeProvider, messages, activeTab, currentFolder, selectedAgent, autoApprove, persona, projectMemory, autoContext, agentId])
 
   // Keep ref in sync so event listeners always use latest closure
   useEffect(() => { handleSendRef.current = handleSend }, [handleSend])
