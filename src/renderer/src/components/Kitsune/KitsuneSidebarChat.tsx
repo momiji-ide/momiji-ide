@@ -28,9 +28,6 @@ export function KitsuneSidebarChat() {
         )}
       </div>
       <KitsuneChatView chat={chat} />
-      {chat.activeProvider && chat.contextUsed > 0 && (
-        <ContextBar used={chat.contextUsed} model={chat.activeProvider.model} />
-      )}
     </div>
   )
 }

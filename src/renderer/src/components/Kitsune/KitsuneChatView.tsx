@@ -224,7 +224,7 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
                 </div>
               </div>
             ) : msg.role === 'assistant' && msg.streaming && !msg.content ? (
-              <ThinkingIndicator elapsed={chat.streamElapsed} tokens={chat.streamTokens} />
+              <ThinkingIndicator elapsed={chat.streamElapsed} tokens={chat.streamTokens} contextUsed={chat.contextUsed} filesWritten={chat.filesWritten} toolCallCount={chat.messages.filter(m => m.role === 'tool' && m.tool !== 'thinking').length} />
             ) : (
               <div className="text-xs max-w-full" style={{
                 color: 'var(--text)', wordBreak: 'break-word',

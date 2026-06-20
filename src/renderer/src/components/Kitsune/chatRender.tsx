@@ -197,41 +197,48 @@ export function PendingWriteCard({ path, content, onAccept, onReject }: { path: 
 }
 
 // ─── Thinking indicator (animated while streaming) ────────────────────────────
-export function ThinkingIndicator({ elapsed, tokens }: { elapsed: number; tokens: number }) {
+interface ThinkingProps {
+  elapsed: number
+  tokens: number
+  contextUsed?: number
+  filesWritten?: string[]
+  toolCallCount?: number
+}
+export function ThinkingIndicator({ elapsed, tokens, contextUsed, filesWritten, toolCallCount }: ThinkingProps) {
   const secs = (elapsed / 1000).toFixed(1)
-  const dots = [0, 1, 2].map(i => (
-    <span key={i} className="inline-block w-1 h-1 rounded-full"
-      style={{
-        background: 'var(--accent-mauve)',
-        animation: `bounce 1s ${i * 0.2}s infinite`,
-        verticalAlign: 'middle',
-        marginLeft: 2
-      }} />
-  ))
+  const fmtTok = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
+  const tps = elapsed > 1000 && tokens > 0 ? Math.round(tokens / (elapsed / 1000)) : 0
   return (
     <div className="flex flex-col gap-1.5 px-3 py-2 rounded-lg text-xs"
       style={{ background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
-      {/* Animated thinking bar */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <KitsuneLogo size={13} />
-          <span style={{ color: 'var(--accent-mauve)', fontSize: 11 }}>Kitsune is thinking</span>
-          {dots}
-        </div>
+        <KitsuneLogo size={13} />
+        <span className="font-medium" style={{ color: 'var(--accent-mauve)', fontSize: 11 }}>Kitsune is working</span>
+        <span className="animate-pulse" style={{ color: 'var(--accent-green)', fontSize: 9 }}>● live</span>
       </div>
-      {/* Progress bar */}
       <div className="rounded-full overflow-hidden" style={{ height: 2, background: 'var(--bg-surface1)' }}>
         <div className="h-full rounded-full" style={{
-          background: 'linear-gradient(90deg, var(--accent-mauve), var(--accent-mauve))',
+          background: 'var(--accent-mauve)',
           width: `${Math.min(100, (elapsed / 30000) * 100)}%`,
           transition: 'width 0.5s ease'
         }} />
       </div>
-      {/* Stats */}
-      <div className="flex gap-3" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
+      <div className="flex gap-3 flex-wrap" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
         <span>⏱ {secs}s</span>
-        {tokens > 0 && <span>~{tokens} tokens out</span>}
+        {contextUsed ? <span>↑ {fmtTok(contextUsed)}</span> : null}
+        {tokens > 0 && <span>↓ ~{fmtTok(tokens)}</span>}
+        {tps > 0 && <span>⚡ {tps} t/s</span>}
+        {(toolCallCount ?? 0) > 0 && <span>🔧 {toolCallCount} calls</span>}
       </div>
+      {(filesWritten?.length ?? 0) > 0 && (
+        <div className="flex gap-1 flex-wrap">
+          {filesWritten!.map(p => (
+            <span key={p} className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'var(--bg-surface1)', color: 'var(--accent-green)', fontSize: 9 }}>
+              ✓ {p.split(/[\\/]/).pop()}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
