@@ -300,206 +300,66 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
   return (
     <div ref={ref} className="relative">
 
-      {/* ── Trigger pill ── */}
+      {/* Trigger — minimal text pill */}
       <button onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all"
-        style={{
-          background: open ? 'var(--bg-surface1)' : 'var(--bg-surface0)',
-          border: `1px solid ${open ? 'var(--accent-mauve)' : 'var(--border)'}`,
-          color: 'var(--text)'
-        }}>
-        <KitsuneLogo size={13} />
-        <span className="text-xs font-semibold" style={{ color: 'var(--accent-mauve)' }}>
-          {displayLabel}
-        </span>
-        <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>▾</span>
+        className="flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
+        style={{ background: 'transparent', color: 'var(--text-subtle)', border: 'none', cursor: 'pointer' }}>
+        <span style={{ fontSize: 11 }}>{activeEntry?.emoji ?? '🤖'}</span>
+        <span className="font-medium" style={{ fontSize: 11 }}>{activeEntry?.label ?? activeProvider?.model.slice(0, 20) ?? 'Model'}</span>
+        <span style={{ fontSize: 8, marginLeft: 1 }}>▾</span>
       </button>
 
-      {/* ── Dropdown ── */}
+      {/* Dropdown — compact flat list */}
       {open && (
-        <div className="absolute bottom-full mb-2 left-0 z-50 flex flex-col rounded-2xl shadow-2xl overflow-hidden"
-          style={{ width: 300, maxHeight: 480, background: 'var(--bg-surface0)', border: '1px solid var(--border)' }}>
+        <div className="absolute bottom-full mb-1 left-0 z-50 flex flex-col rounded-lg shadow-xl overflow-hidden"
+          style={{ width: 260, maxHeight: 400, background: 'var(--bg-mantle)', border: '1px solid var(--border)' }}>
 
-          {/* Search */}
-          <div className="p-2" style={{ borderBottom: '1px solid var(--border)' }}>
-            <input
-              autoFocus
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search models…"
-              className="w-full px-2.5 py-1.5 rounded-lg text-xs outline-none"
-              style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--border)' }}
-              onClick={e => e.stopPropagation()}
-            />
-          </div>
-
-          {/* Model groups */}
-          <div className="overflow-y-auto flex-1">
-
-            {/* Auto mode */}
-            {!search && (
-              <div>
-                <button
-                  onClick={() => { setOpen(false) }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
-                  style={{ background: 'transparent' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface1)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span className="w-4 text-center text-xs" style={{ color: 'var(--accent-green)' }}>✓</span>
-                  <div className="flex-1">
-                    <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>Auto</span>
-                    <span className="text-xs ml-2" style={{ color: 'var(--text-subtle)' }}>best available model</span>
-                  </div>
-                </button>
-                <div style={{ height: 1, background: 'var(--border)', margin: '0 8px' }} />
-              </div>
-            )}
-
-            {/* Grouped model rows */}
+          <div className="overflow-y-auto flex-1 py-1">
             {TIER_ORDER.map(tier => {
               const items = grouped[tier]
               if (!items?.length) return null
               const unlocked = canAccess(tier)
               return (
                 <div key={tier}>
-                  {/* Section header */}
-                  <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
-                    <span className="text-xs font-bold uppercase tracking-widest" style={{ color: TIER_COLORS[tier], fontSize: 9 }}>
+                  <div className="px-3 pt-2 pb-0.5">
+                    <span className="uppercase tracking-wider font-bold" style={{ color: TIER_COLORS[tier], fontSize: 9 }}>
                       {TIER_LABELS[tier]}
                     </span>
-                    {!unlocked && (
-                      <span className="text-xs px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'var(--accent-yellow)22', color: 'var(--accent-yellow)', fontSize: 8, fontWeight: 700 }}>
-                        UPGRADE
-                      </span>
-                    )}
                   </div>
-
-                  {/* Model rows */}
                   {items.map(entry => {
                     const isActive   = activeProvider.id === entry.providerId && activeProvider.model === entry.model
                     const hasKey     = isProviderEnabled(entry.providerId)
                     const accessible = unlocked && hasKey
-
                     return (
                       <button key={entry.id}
                         onClick={() => accessible ? selectModel(entry) : undefined}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors"
-                        style={{
-                          background: 'transparent',
-                          cursor: accessible ? 'pointer' : 'default',
-                          opacity: accessible ? 1 : 0.45,
-                        }}
-                        onMouseEnter={e => { if (accessible) e.currentTarget.style.background = 'var(--bg-surface1)' }}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-
-                        {/* Check / lock icon */}
-                        <span className="w-4 flex-shrink-0 text-center text-xs">
-                          {isActive ? <span style={{ color: 'var(--accent-green)' }}>✓</span>
-                            : !unlocked ? <span style={{ color: 'var(--accent-yellow)' }}>🔒</span>
-                            : !hasKey   ? <span style={{ color: 'var(--text-subtle)', fontSize: 8 }}>key?</span>
-                            : null}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
+                        style={{ background: isActive ? 'var(--bg-surface1)' : 'transparent', cursor: accessible ? 'pointer' : 'default', opacity: accessible ? 1 : 0.4 }}
+                        onMouseEnter={e => { if (accessible && !isActive) e.currentTarget.style.background = 'var(--bg-surface0)' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                        <span style={{ fontSize: 12, flexShrink: 0, width: 16, textAlign: 'center' }}>
+                          {isActive ? <span style={{ color: 'var(--accent-green)' }}>✓</span> : !unlocked ? <span style={{ fontSize: 10 }}>🔒</span> : entry.emoji}
                         </span>
-
-                        {/* Provider emoji + name */}
-                        <span style={{ fontSize: 13, flexShrink: 0 }}>{entry.emoji}</span>
-
-                        {/* Label */}
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-semibold" style={{ color: isActive ? 'var(--accent-mauve)' : 'var(--text)' }}>
-                            {entry.label}
-                          </span>
-                          {entry.sublabel && (
-                            <span className="text-xs ml-1.5 truncate" style={{ color: 'var(--text-subtle)', fontSize: 10 }}>
-                              {entry.sublabel}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Badge */}
-                        {entry.badge && (
-                          <span className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0 font-bold"
-                            style={{
-                              fontSize: 8,
-                              background: !unlocked ? 'var(--accent-yellow)22'
-                                : entry.tier === 'free' || entry.tier === 'local' ? 'var(--accent-green)22'
-                                : entry.tier === 'pro' ? 'var(--accent-mauve)22'
-                                : 'var(--accent-yellow)22',
-                              color: !unlocked ? 'var(--accent-yellow)'
-                                : entry.tier === 'free' || entry.tier === 'local' ? 'var(--accent-green)'
-                                : entry.tier === 'pro' ? 'var(--accent-mauve)'
-                                : 'var(--accent-yellow)',
-                            }}>
-                            {!unlocked ? 'Upgrade' : !hasKey ? 'Add key' : entry.badge}
-                          </span>
-                        )}
+                        <span className="flex-1 truncate" style={{ fontSize: 11, fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--text)' : 'var(--text-muted)' }}>
+                          {entry.label}
+                        </span>
+                        {!unlocked && <span style={{ fontSize: 8, color: 'var(--accent-yellow)', fontWeight: 700 }}>PRO</span>}
+                        {!hasKey && unlocked && <span style={{ fontSize: 8, color: 'var(--text-subtle)' }}>key?</span>}
                       </button>
                     )
                   })}
                 </div>
               )
             })}
-
-            {/* No results */}
-            {Object.keys(grouped).length === 0 && (
-              <div className="flex items-center justify-center py-8" style={{ color: 'var(--text-subtle)' }}>
-                <p className="text-xs">No models match "{search}"</p>
-              </div>
-            )}
-
-            {/* BYOK / Custom model */}
-            <div style={{ borderTop: '1px solid var(--border)', marginTop: 4 }}>
-              <div className="px-3 pt-2.5 pb-1">
-                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: TIER_COLORS['byok'], fontSize: 9 }}>
-                  🔑 Custom Model ID
-                </span>
-              </div>
-              <div className="px-3 pb-3 flex gap-1">
-                <input
-                  value={customModel}
-                  onChange={e => setCustomModel(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && customModel.trim() && activeProvider) {
-                      updateAIProvider({ ...activeProvider, model: customModel.trim() })
-                      setOpen(false)
-                    }
-                  }}
-                  placeholder={`e.g. gemini-3.5-flash, gpt-5...`}
-                  className="flex-1 px-2 py-1.5 rounded-lg text-xs outline-none font-mono"
-                  style={{ background: 'var(--bg-surface1)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 10 }}
-                  onClick={e => e.stopPropagation()}
-                />
-                <button
-                  onClick={() => {
-                    if (customModel.trim() && activeProvider) {
-                      updateAIProvider({ ...activeProvider, model: customModel.trim() })
-                      setOpen(false)
-                    }
-                  }}
-                  className="px-2 rounded-lg text-xs"
-                  style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', cursor: 'pointer' }}>
-                  ↵
-                </button>
-              </div>
-            </div>
           </div>
 
-          {/* Footer — tier status */}
-          <div className="px-3 py-2 flex items-center gap-2 flex-shrink-0"
-            style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-mantle)' }}>
-            <span style={{ fontSize: 10, color: 'var(--text-subtle)' }}>
-              {userTier === 'studio' ? '🏆 Studio' : userTier === 'pro' ? '🦊 Pro' : '🆓 Free'}
-            </span>
-            <div className="flex-1" />
-            {userTier === 'free' && (
-              <button
-                onClick={() => { setOpen(false); window.open(CHECKOUT_URL, '_blank') }}
-                className="text-xs px-2 py-1 rounded-lg font-semibold"
-                style={{ background: 'var(--accent-mauve)', color: 'white', border: 'none', cursor: 'pointer' }}>
-                Upgrade to Pro →
-              </button>
-            )}
-          </div>
+          {userTier === 'free' && (
+            <button onClick={() => { setOpen(false); window.open(CHECKOUT_URL, '_blank') }}
+              className="w-full py-1.5 text-center flex-shrink-0"
+              style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-surface0)', color: 'var(--accent-mauve)', fontSize: 10, fontWeight: 600, cursor: 'pointer', border: 'none', borderTopStyle: 'solid', borderTopWidth: 1, borderTopColor: 'var(--border)' }}>
+              Upgrade to Pro →
+            </button>
+          )}
         </div>
       )}
     </div>
