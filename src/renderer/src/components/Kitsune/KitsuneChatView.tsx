@@ -358,6 +358,40 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
           </div>
         )}
 
+        {/* @file mention autocomplete */}
+        {(() => {
+          const atMatch = chat.input.match(/@([\w./\\-]*)$/)
+          if (!atMatch || chat.isLoading) return null
+          const q = atMatch[1].toLowerCase()
+          const { fileTree } = useAppStore.getState()
+          const flatFiles: string[] = []
+          const walk = (nodes: any[], prefix = '') => {
+            for (const n of nodes) {
+              const rel = prefix ? `${prefix}/${n.name}` : n.name
+              if (n.type === 'file' || !n.children) flatFiles.push(rel)
+              if (n.children) walk(n.children, rel)
+              if (flatFiles.length > 200) return
+            }
+          }
+          walk(fileTree)
+          const matches = flatFiles.filter(f => f.toLowerCase().includes(q)).slice(0, 8)
+          if (!matches.length) return null
+          return (
+            <div className="mx-3 mb-1 rounded-lg overflow-hidden shadow-lg" style={{ background: 'var(--bg-mantle)', border: '1px solid var(--border)', maxHeight: 200, overflowY: 'auto' }}>
+              {matches.map(f => (
+                <button key={f} onClick={() => chat.setInput(chat.input.replace(/@[\w./\\-]*$/, `@${f} `))}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
+                  style={{ background: 'transparent' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ fontSize: 10 }}>📄</span>
+                  <span className="font-mono truncate" style={{ color: 'var(--text)', fontSize: 11 }}>{f}</span>
+                </button>
+              ))}
+            </div>
+          )
+        })()}
+
         {/* Slash command autocomplete */}
         {chat.input.startsWith('/') && !chat.isLoading && (() => {
           const q = chat.input.slice(1).toLowerCase()
