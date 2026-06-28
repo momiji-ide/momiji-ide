@@ -157,7 +157,6 @@ function shortLabel(entry: ModelEntry): string {
   return entry.label.replace('Claude ', '').replace('Gemini ', '').replace('GPT-', '').slice(0, 22)
 }
 
-const CHECKOUT_URL = 'https://momiji-ide.lemonsqueezy.com/checkout/buy/495febcd-8f43-44cc-9fab-7cd2896874a5'
 
 const TIER_ORDER: Tier[] = ['free', 'byok', 'local']
 
@@ -187,7 +186,7 @@ interface Props {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
-  const { aiProviders, updateAIProvider, licenseTier } = useAppStore()
+  const { aiProviders, updateAIProvider } = useAppStore()
   const [open, setOpen]               = useState(false)
   const [search, setSearch]           = useState('')
   const [localModels, setLocalModels] = useState<string[]>([])
@@ -196,7 +195,6 @@ export function ModelSelector({ selectedProviderId, onProviderChange }: Props) {
   const detectedKeysRef = useRef<Set<string>>(new Set())
   const ref = useRef<HTMLDivElement>(null)
 
-  const userTier = licenseTier
 
   // Active provider + model
   const enabledProviders = aiProviders.filter(p => p.enabled && (p.apiKey || p.id === 'ollama' || p.id === 'custom'))

@@ -164,7 +164,7 @@ export function useKitsuneChat() {
     addUsageEntry, licenseTier,
   } = useAppStore()
 
-  const isPro = licenseTier === 'pro' || licenseTier === 'studio'
+  const isPro = true
 
   const activeSession = kitsuneSessions.find(s => s.id === activeKitsuneSessionId) ?? null
 
