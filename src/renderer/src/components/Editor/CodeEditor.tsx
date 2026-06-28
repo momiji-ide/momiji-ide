@@ -8,6 +8,7 @@ import { isFlowchartSupported } from '../../utils/codeToFlowchart'
 import { getT, getLang } from '../../utils/i18n'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
+import { CsvViewer, isCsvFile } from './CsvViewer'
 import { PdfViewer, isPdfFile } from './PdfViewer'
 import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
@@ -816,6 +817,11 @@ export function CodeEditor() {
   // Image files: show viewer instead of Monaco
   if (isImageFile(activeTab.filePath)) {
     return <ImageViewer filePath={activeTab.filePath} />
+  }
+
+  // CSV/TSV files: colored column table viewer
+  if (isCsvFile(activeTab.filePath)) {
+    return <CsvViewer content={activeTab.content} fileName={activeTab.fileName} />
   }
 
   // Binary files: show hex viewer instead of garbled text
