@@ -78,21 +78,23 @@ Kitsune gives coding challenges inside your project:
 
 ### 🦊 Kitsune AI
 
-- Chat with **Claude, Gemini, GPT, Groq, DeepSeek, Mistral, OpenRouter, or Ollama** — streaming
+- Chat with **Claude, Gemini, GPT, Groq, SambaNova, Cerebras, DeepSeek, Mistral, OpenRouter, or Ollama** — 11+ providers
+- **Agentic mode** — reads, writes, searches, and creates files autonomously (up to 20 tool-call iterations)
+- **Slash commands** — `/review`, `/test`, `/security`, `/docs`, `/refactor`, `/debug`, `/plan`, `/explain`
+- **Activity tab** — watch every tool call in real time as Kitsune works
 - **3 Explanation Personas** — Beginner (warm, analogies), Developer (direct, technical), Creative (visual, game-dev context)
-- **7 built-in agents** — Code Reviewer, Test Writer, Doc Writer, Security Scanner, Refactor Pro, Bug Hunter, Custom
-- **Custom Agent Manager** — build your own agents with custom system prompts, roles, and tools
-- **Mentor Mode** — structured code review: praise first → tips → one challenge (JSON cards UI)
-- **Error Explanation** — "Ask Kitsune" on any error in Problems panel → plain-language fix
 - **Project Memory** — write context once (`.momiji/kitsune-memory.md`), auto-included in every prompt
-- **Custom OpenAI-compatible endpoint** — plug in any API (company VPN, Azure OpenAI, LM Studio)
+- **Error Explanation** — "Ask Kitsune" on any error in Problems panel → plain-language fix
+- **Pending write approval** — review each file change or enable auto-approve for hands-free
 - Paste screenshots directly into chat — vision support across all providers
 - Inline AI completions — Copilot-style ghost text (toggleable)
 - `⚡ Apply to Editor` — shows a diff before touching files
+- **Usage analytics** — Claude-Code-style dashboard with token stats, heatmap, model breakdown
 
 ### 🖊️ Editor
 
 - Monaco editor (VS Code engine) — IntelliSense, 50+ languages, warm Momiji theme
+- **CSV/TSV Viewer** — color-coded columns, sortable headers, row filter
 - **Hex Viewer** — binary file inspector with magic byte detection (25+ formats)
 - **PDF Viewer** — open `.pdf` natively in editor tabs
 - **Image Viewer** — PNG, JPG, GIF, SVG, WebP with zoom controls
@@ -105,10 +107,11 @@ Kitsune gives coding challenges inside your project:
 ### 🧩 For Beginners & Creative Devs
 
 - **Block Editor** — Blockly with Beginner/Pro/Expert toolboxes + **bi-directional code sync**
+- **STEM Robot Simulator** — 2D/3D line-following robot with sensors, obstacles, 5 arena presets
 - **Visual Flow Editor** — node-graph programming with React Flow
 - **Algorithm Animator** — watch your code execute step by step with data visualization
 - **Coding Quests + XP** — gamified learning challenges with Kitsune hints
-- Onboarding wizard with free-tier AI setup in 60 seconds
+- Onboarding wizard with AI setup in 60 seconds
 - Template Gallery — scaffold common project types instantly
 
 ### 🔀 Git
@@ -123,7 +126,11 @@ Kitsune gives coding challenges inside your project:
 - **HTTP Client** — REST client with history, collections, env variables
 - **SQLite Browser** — run queries, browse tables without leaving the IDE
 - **Canvas Playground** — 10 interactive JS animation templates
+- **Shader Playground** — GLSL editor with live preview
 - **Regex Playground** — live match highlighting, named groups
+- **Color Palette Studio** — generate and export color schemes
+- **Easing Visualizer** — preview CSS/animation easing curves
+- **Sprite Sheet Slicer** — slice spritesheets with JSON/CSS export
 - **Time-Travel Debugger** — step through JavaScript execution history
 - **Package Manager** — npm, pip, cargo, go + npm scripts runner
 - **TODO Scanner** — finds every `TODO/FIXME/HACK` across the project
