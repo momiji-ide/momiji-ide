@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
 import { PixelKitsune } from './PixelKitsuneView'
 import { useKitsuneChat, quickActions, SLASH_COMMANDS } from './useKitsuneChat'
@@ -6,6 +6,56 @@ import { renderMessage, tryRenderReview, ThinkingIndicator, MessageFooter, DiffV
 import { ModelSelector } from '../AI/ModelSelector'
 import { ComposerPanel } from './ComposerPanel'
 import { useAppStore } from '../../store/appStore'
+
+function AtMentionPopup({ input, onSelect, isLoading }: { input: string; onSelect: (file: string) => void; isLoading: boolean }) {
+  const [files, setFiles] = useState<string[]>([])
+  const { currentFolder, fileTree } = useAppStore()
+
+  const atMatch = input.match(/@([^\s]*)$/)
+  const active = !!atMatch && !isLoading
+
+  useEffect(() => {
+    if (!active) return
+    const flat: string[] = []
+    const walk = (nodes: any[], prefix = '') => {
+      for (const n of nodes) {
+        const rel = prefix ? `${prefix}/${n.name}` : n.name
+        if (n.type === 'file') flat.push(rel)
+        if (n.children && flat.length < 500) walk(n.children, rel)
+      }
+    }
+    if (fileTree.length > 0) {
+      walk(fileTree)
+      setFiles(flat)
+    } else if (currentFolder) {
+      window.api.fs.readDir(currentFolder).then(tree => {
+        if (tree) { walk(tree); setFiles(flat) }
+      })
+    }
+  }, [active, currentFolder, fileTree])
+
+  if (!active || !atMatch) return null
+  const q = atMatch[1].toLowerCase()
+  const matches = (q ? files.filter(f => f.toLowerCase().includes(q)) : files).slice(0, 10)
+  if (!matches.length && q) return null
+
+  return (
+    <div className="mx-3 mb-1 rounded-lg overflow-hidden shadow-lg" style={{ background: 'var(--bg-mantle)', border: '1px solid var(--border)', maxHeight: 200, overflowY: 'auto' }}>
+      {matches.length === 0 ? (
+        <div className="px-3 py-2 text-xs" style={{ color: 'var(--text-subtle)' }}>No files found</div>
+      ) : matches.map(f => (
+        <button key={f} onClick={() => onSelect(f)}
+          className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
+          style={{ background: 'transparent' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <span style={{ fontSize: 10 }}>📄</span>
+          <span className="font-mono truncate" style={{ color: 'var(--text)', fontSize: 11 }}>{f}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
 
 interface KitsuneChatViewProps {
   chat: ReturnType<typeof useKitsuneChat>
@@ -359,38 +409,7 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
         )}
 
         {/* @file mention autocomplete */}
-        {(() => {
-          const atMatch = chat.input.match(/@([\w./\\-]*)$/)
-          if (!atMatch || chat.isLoading) return null
-          const q = atMatch[1].toLowerCase()
-          const { fileTree } = useAppStore.getState()
-          const flatFiles: string[] = []
-          const walk = (nodes: any[], prefix = '') => {
-            for (const n of nodes) {
-              const rel = prefix ? `${prefix}/${n.name}` : n.name
-              if (n.type === 'file' || !n.children) flatFiles.push(rel)
-              if (n.children) walk(n.children, rel)
-              if (flatFiles.length > 200) return
-            }
-          }
-          walk(fileTree)
-          const matches = flatFiles.filter(f => f.toLowerCase().includes(q)).slice(0, 8)
-          if (!matches.length) return null
-          return (
-            <div className="mx-3 mb-1 rounded-lg overflow-hidden shadow-lg" style={{ background: 'var(--bg-mantle)', border: '1px solid var(--border)', maxHeight: 200, overflowY: 'auto' }}>
-              {matches.map(f => (
-                <button key={f} onClick={() => chat.setInput(chat.input.replace(/@[\w./\\-]*$/, `@${f} `))}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
-                  style={{ background: 'transparent' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface0)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ fontSize: 10 }}>📄</span>
-                  <span className="font-mono truncate" style={{ color: 'var(--text)', fontSize: 11 }}>{f}</span>
-                </button>
-              ))}
-            </div>
-          )
-        })()}
+        <AtMentionPopup input={chat.input} onSelect={f => chat.setInput(chat.input.replace(/@[^\s]*$/, `@${f} `))} isLoading={chat.isLoading} />
 
         {/* Slash command autocomplete */}
         {chat.input.startsWith('/') && !chat.isLoading && (() => {
