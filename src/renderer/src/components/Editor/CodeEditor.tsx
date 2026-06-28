@@ -249,6 +249,37 @@ export function CodeEditor() {
   // Ctrl+K Inline Edit
   const [inlineEdit, setInlineEdit] = useState<{ selection: string; position: { top: number; left: number }; language: string } | null>(null)
 
+  // Inline diff decorations (Composer changes → green/red gutter in editor)
+  const diffDecsRef = useRef<string[]>([])
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ed = editorRef.current, mo = monacoRef.current
+      if (!ed || !mo || !activeTab) { if (ed) diffDecsRef.current = ed.deltaDecorations(diffDecsRef.current, []); return }
+      const changes = (e as CustomEvent).detail as { path: string; before: string; after: string }[] | undefined
+      const change = changes?.find(c => c.path === activeTab.filePath)
+      if (!change) { diffDecsRef.current = ed.deltaDecorations(diffDecsRef.current, []); return }
+      const oldLines = change.before.split('\n'), newLines = change.after.split('\n')
+      const decos: any[] = []
+      if (!document.getElementById('diff-gutter-style')) {
+        const s = document.createElement('style')
+        s.id = 'diff-gutter-style'
+        s.textContent = `.diff-added-gutter { border-left: 3px solid #a6e3a1 !important; } .diff-removed-gutter { border-left: 3px solid #f38ba8 !important; } .diff-added-line { background: rgba(166,227,161,0.08) !important; } .diff-removed-line { background: rgba(243,139,168,0.06) !important; }`
+        document.head.appendChild(s)
+      }
+      for (let i = 0; i < newLines.length; i++) {
+        if (i >= oldLines.length || newLines[i] !== oldLines[i]) {
+          decos.push({
+            range: new mo.Range(i + 1, 1, i + 1, 1),
+            options: { isWholeLine: true, linesDecorationsClassName: i >= oldLines.length ? 'diff-added-gutter' : 'diff-added-gutter', className: 'diff-added-line' }
+          })
+        }
+      }
+      diffDecsRef.current = ed.deltaDecorations(diffDecsRef.current, decos)
+    }
+    window.addEventListener('composer:changes', handler)
+    return () => window.removeEventListener('composer:changes', handler)
+  }, [activeTabId])
+
   // Git Blame
   const [blameMode, setBlameMode] = useState(false)
   const [blameData, setBlameData] = useState<{ line: number; hash: string; author: string; date: string; summary: string }[]>([])

@@ -442,7 +442,9 @@ export function useKitsuneChat() {
       setComposerChanges(prev => {
         const existing = prev.findIndex(c => c.path === path)
         const change: ComposerChange = { path, before: existing >= 0 ? prev[existing].before : before, after: content }
-        return existing >= 0 ? prev.map((c, i) => i === existing ? change : c) : [...prev, change]
+        const next = existing >= 0 ? prev.map((c, i) => i === existing ? change : c) : [...prev, change]
+        window.dispatchEvent(new CustomEvent('composer:changes', { detail: next }))
+        return next
       })
     }
     if (autoApprove) {
