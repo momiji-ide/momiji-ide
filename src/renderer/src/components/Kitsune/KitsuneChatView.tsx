@@ -4,6 +4,7 @@ import { PixelKitsune } from './PixelKitsuneView'
 import { useKitsuneChat, quickActions, SLASH_COMMANDS } from './useKitsuneChat'
 import { renderMessage, tryRenderReview, ThinkingIndicator, MessageFooter, DiffViewer, ToolActivityRow, PendingWriteCard, ContextBar } from './chatRender'
 import { ModelSelector } from '../AI/ModelSelector'
+import { ComposerPanel } from './ComposerPanel'
 import { useAppStore } from '../../store/appStore'
 
 interface KitsuneChatViewProps {
@@ -313,6 +314,14 @@ export function KitsuneChatView({ chat, onToggleMemory, showMemory }: KitsuneCha
             onAccept={() => chat.handleWriteDecision(w.path, true)}
             onReject={() => chat.handleWriteDecision(w.path, false)} />
         ))}
+        {chat.composerChanges.length > 0 && !chat.isLoading && (
+          <ComposerPanel
+            changes={chat.composerChanges}
+            onRevertFile={chat.revertComposerFile}
+            onAcceptAll={chat.acceptAllComposer}
+            onRevertAll={chat.revertAllComposer}
+          />
+        )}
         <div ref={chat.messagesEndRef} />
         </>
         )}

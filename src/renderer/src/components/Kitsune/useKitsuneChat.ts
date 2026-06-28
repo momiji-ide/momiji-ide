@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAppStore } from '../../store/appStore'
-import type { KitsuneMessage, KitsunePersona } from '../../types'
+import type { KitsuneMessage, KitsunePersona, ComposerChange } from '../../types'
 import { applyCodeToFile } from './chatRender'
 import { BUILTIN_AGENTS } from '../AI/AgentManager'
 import { CLAUDE_TOOLS, GEMINI_TOOLS, OPENAI_TOOLS, executeTool, buildToolsSystemSuffix, formatFileTree, extractFileBlocks, resolvePath } from './agentTools'
@@ -192,6 +192,7 @@ export function useKitsuneChat() {
   // ── Agentic file-tool state ────────────────────────────────────────────────
   const [pendingWrites, setPendingWrites] = useState<PendingWrite[]>([])
   const [autoApprove, setAutoApprove] = useState(false)
+  const [composerChanges, setComposerChanges] = useState<ComposerChange[]>([])
   const [filesWritten, setFilesWritten] = useState<string[]>([])
   const agentAbortRef = useRef(false)
 
@@ -429,15 +430,24 @@ export function useKitsuneChat() {
   }
 
   // ── write_file → auto-write or queue for approval ──────────────────────────
-  const requestWrite = (path: string, content: string): Promise<string> => {
+  const requestWrite = async (path: string, content: string): Promise<string> => {
+    let before = ''
+    try { const r = await window.api.fs.readFile(path); before = r.content ?? '' } catch {}
+
     const doWrite = async () => {
       await window.api.fs.writeFile(path, content)
       const tab = useAppStore.getState().tabs.find(t => t.filePath === path)
       if (tab) { updateTabContent(tab.id, content); markTabClean(tab.id) }
       setFilesWritten(prev => prev.includes(path) ? prev : [...prev, path])
+      setComposerChanges(prev => {
+        const existing = prev.findIndex(c => c.path === path)
+        const change: ComposerChange = { path, before: existing >= 0 ? prev[existing].before : before, after: content }
+        return existing >= 0 ? prev.map((c, i) => i === existing ? change : c) : [...prev, change]
+      })
     }
     if (autoApprove) {
-      return doWrite().then(() => `Written: ${path}`)
+      await doWrite()
+      return `Written: ${path}`
     }
     return new Promise<string>(resolve => {
       setPendingWrites(prev => [...prev, {
@@ -1025,6 +1035,25 @@ export function useKitsuneChat() {
     persona, setPersona, PERSONA_LABELS,
     agentId, setAgentId, selectedAgent, allAgents,
     pendingWrites, handleWriteDecision, autoApprove, setAutoApprove, filesWritten,
+    composerChanges, setComposerChanges,
+    revertComposerFile: async (path: string) => {
+      const change = composerChanges.find(c => c.path === path)
+      if (!change) return
+      await window.api.fs.writeFile(path, change.before)
+      const tab = useAppStore.getState().tabs.find(t => t.filePath === path)
+      if (tab) { updateTabContent(tab.id, change.before); markTabClean(tab.id) }
+      setComposerChanges(prev => prev.filter(c => c.path !== path))
+      setFilesWritten(prev => prev.filter(p => p !== path))
+    },
+    acceptAllComposer: () => setComposerChanges([]),
+    revertAllComposer: async () => {
+      for (const c of composerChanges) {
+        await window.api.fs.writeFile(c.path, c.before)
+        const tab = useAppStore.getState().tabs.find(t => t.filePath === c.path)
+        if (tab) { updateTabContent(tab.id, c.before); markTabClean(tab.id) }
+      }
+      setComposerChanges([]); setFilesWritten([])
+    },
     projectMemory, memoryDraft, setMemoryDraft, memorySaved, saveMemory, autoContext,
     messagesEndRef, activeTab, aiProviders, updateAIProvider,
     handleSend, handleStop, handleSmartApply, handleCopyCode, handleInsertCode, extractCodeBlocks,

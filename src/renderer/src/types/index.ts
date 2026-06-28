@@ -53,6 +53,13 @@ export interface AgentConfig {
   isBuiltIn?: boolean    // built-in agents can't be deleted
 }
 
+export interface ComposerChange {
+  path: string
+  before: string
+  after: string
+  accepted?: boolean
+}
+
 export type KitsunePersona = 'beginner' | 'developer' | 'creative'
 
 export interface KitsuneMessage {
