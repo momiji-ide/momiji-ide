@@ -43,34 +43,30 @@ Not competing with VS Code. Competing in a new arena — the **beginner→pro pr
 
 ## What's new in v1.3.3
 
-### 🦊 Kitsune Avatar — Reactive Emotional States
-A small Kitsune character in the sidebar reacts to your code in real time:
-- 😵 **Error** — wiggles when Monaco detects errors. Click to open Problems panel.
-- 🎉 **Success** — jumps when your code runs clean.
-- 🤔 **Thinking** — animates while Kitsune processes your request.
-- 💡 **Proactive** — quietly suggests a tip after 10 minutes of idle time.
+### 🦊 Kitsune AI — Full Coding Agent
+- **Composer Mode** — multi-file diff review after agentic edits (Accept All / Revert All / per-file)
+- **Ctrl+K Inline Edit** — select code, press Ctrl+K, describe the change, AI edits in-place
+- **@file Mentions** — type `@filename` in chat to auto-attach file content as context
+- **Terminal AI** — Kitsune can run shell commands (`npm install`, `git status`, etc.)
+- **Slash Commands** — `/review`, `/test`, `/security`, `/docs`, `/refactor`, `/debug`, `/plan`, `/explain`
+- **Activity Tab** — watch every tool call in real time as Kitsune works
+- **Inline Diff** — green gutter markers in the editor for AI-changed lines
+- **Live Processing Stats** — token count, throughput, tool calls, files changed — all live
 
-### ⟳ Block ↔ Code Bi-directional Sync
-The "magic moment" feature. Three sync modes in the Block Editor:
-- **Live** — drag blocks → code updates instantly (original)
-- **Edit** — type freely → one-click `↑ Sync to Blocks` button
-- **Auto-sync** — code changes automatically parse back to blocks (350ms debounce)
+### 🆕 New Free AI Providers
+- **SambaNova** — Llama 3.3 70B, DeepSeek R1, QwQ 32B (ultra fast, free)
+- **Cerebras** — Llama 3.3 70B (~2000 tok/s), Llama 4 Scout (free)
+- **Gemma 4 31B** — via Google API (free)
 
-Built a zero-dependency JS→Blockly XML parser from scratch. Handles variables, for/while loops, if/else, arithmetic, comparisons, logic, function definitions — the full subset Blockly itself generates.
+### 🛠️ New Tools
+- **CSV/TSV Viewer** — color-coded columns, sortable headers, row filter
+- **Usage Analytics** — Claude-Code-style dashboard (Overview/Models tabs, heatmap)
 
-### 🎬 Algorithm Animator
-Step-through visualization of code execution, right in the IDE:
-- Drag-to-analyze any open file
-- Variable tracker shows all values changing in real time
-- Animated bar chart for numeric arrays
-- Play/Pause/Step controls with adjustable speed
-
-### 🗺️ Coding Quests + XP System
-Kitsune gives coding challenges inside your project:
-- 14 quests across 4 tracks: Game Dev, Web, Python, General
-- Level up from Baby Coder → Grand Master
-- "Check My Code" auto-verifies against quest success patterns
-- XP and progress sync to `.momiji/kitsune-memory.md`
+### 🎨 UI Overhaul
+- Minimalist model selector (Cursor-style compact dropdown)
+- IDE-native chat style with role labels, no bubbles
+- Prominent retry/rewind buttons on error messages
+- Pixel Kitsune avatar with mood animations
 
 ---
 
@@ -182,9 +178,8 @@ Grab the latest installer from [**Releases →**](https://github.com/momiji-ide/
 
 | Platform | File |
 |---|---|
-| Windows | `Momiji-IDE-Setup-1.3.3.exe` |
-| macOS | `Momiji-IDE-1.3.3.dmg` |
-| Linux | `Momiji-IDE-1.3.3.AppImage` |
+| Windows | [`Momiji-IDE-Setup-1.3.3.exe`](https://github.com/momiji-ide/momiji-ide/releases/download/v1.3.3/Momiji-IDE-Setup-1.3.3.exe) |
+| macOS / Linux | Build from source (see below) |
 
 ### Build from source
 
