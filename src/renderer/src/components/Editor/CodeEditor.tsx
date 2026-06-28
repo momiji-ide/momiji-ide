@@ -9,6 +9,7 @@ import { getT, getLang } from '../../utils/i18n'
 import { ImageViewer, isImageFile } from './ImageViewer'
 import { HexViewer, isBinaryFile } from './HexViewer'
 import { CsvViewer, isCsvFile } from './CsvViewer'
+import { InlineEditPopup } from './InlineEditPopup'
 import { PdfViewer, isPdfFile } from './PdfViewer'
 import { MomijiLogo } from '../Logo/MomijiLogo'
 import { KitsuneLogo } from '../Logo/KitsuneLogo'
@@ -245,6 +246,9 @@ export function CodeEditor() {
   const [inlineEnabled, setInlineEnabled] = useState(true)
   const inlineCompletion = useInlineCompletion(editorRef, monacoRef)
 
+  // Ctrl+K Inline Edit
+  const [inlineEdit, setInlineEdit] = useState<{ selection: string; position: { top: number; left: number }; language: string } | null>(null)
+
   // Git Blame
   const [blameMode, setBlameMode] = useState(false)
   const [blameData, setBlameData] = useState<{ line: number; hash: string; author: string; date: string; summary: string }[]>([])
@@ -369,6 +373,23 @@ export function CodeEditor() {
   const handleEditorMount: OnMount = useCallback((editorInstance, monaco) => {
     editorRef.current = editorInstance
     monacoRef.current = monaco
+
+    // Ctrl+K = AI Inline Edit
+    editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
+      const sel = editorInstance.getSelection()
+      if (!sel || sel.isEmpty()) return
+      const text = editorInstance.getModel()?.getValueInRange(sel) ?? ''
+      if (!text.trim()) return
+      const coords = editorInstance.getScrolledVisiblePosition(sel.getStartPosition())
+      const domNode = editorInstance.getDomNode()
+      if (!coords || !domNode) return
+      const rect = domNode.getBoundingClientRect()
+      setInlineEdit({
+        selection: text,
+        position: { top: rect.top + coords.top + coords.height + 4, left: rect.left + coords.left },
+        language: activeTab?.language ?? 'text',
+      })
+    })
 
     // Ctrl+S = Format + Save
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
@@ -924,6 +945,22 @@ export function CodeEditor() {
             y={colorPicker.y}
             onApply={handleColorApply}
             onClose={() => setColorPicker(null)}
+          />
+        )}
+        {inlineEdit && (
+          <InlineEditPopup
+            selection={inlineEdit.selection}
+            position={inlineEdit.position}
+            language={inlineEdit.language}
+            onApply={newCode => {
+              const editor = editorRef.current
+              const sel = editor?.getSelection()
+              if (editor && sel) {
+                editor.executeEdits('inline-edit', [{ range: sel, text: newCode }])
+              }
+              setInlineEdit(null)
+            }}
+            onCancel={() => setInlineEdit(null)}
           />
         )}
       </div>

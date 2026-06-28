@@ -34,6 +34,11 @@ export const CLAUDE_TOOLS = [
     description: 'Delete a file. Use with caution.',
     input_schema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] }
   },
+  {
+    name: 'run_command',
+    description: 'Run a shell command in the project directory (e.g. npm install, git status, ls). Returns stdout/stderr.',
+    input_schema: { type: 'object', properties: { command: { type: 'string', description: 'The shell command to run' } }, required: ['command'] }
+  },
 ] as const
 
 export const GEMINI_TOOLS = {
@@ -44,6 +49,7 @@ export const GEMINI_TOOLS = {
     { name: 'search_in_files',description: 'Search text across files',   parameters: { type: 'OBJECT', properties: { query: { type: 'STRING' }, case_sensitive: { type: 'BOOLEAN' } }, required: ['query'] } },
     { name: 'create_folder',  description: 'Create a folder',            parameters: { type: 'OBJECT', properties: { path: { type: 'STRING' } }, required: ['path'] } },
     { name: 'delete_file',    description: 'Delete a file',              parameters: { type: 'OBJECT', properties: { path: { type: 'STRING' } }, required: ['path'] } },
+    { name: 'run_command',   description: 'Run a shell command',        parameters: { type: 'OBJECT', properties: { command: { type: 'STRING' } }, required: ['command'] } },
   ]
 }
 
@@ -130,6 +136,31 @@ export async function executeTool(
       const path = resolvePath(args.path, currentFolder)
       await window.api.fs.delete(path)
       return `Deleted: ${path}`
+
+    } else if (name === 'run_command') {
+      if (!currentFolder) return 'No folder open — cannot run commands'
+      const cmd = args.command as string
+      const blocked = ['rm -rf /', 'format ', 'del /s', 'shutdown', 'mkfs']
+      if (blocked.some(b => cmd.toLowerCase().includes(b))) return 'Blocked: dangerous command'
+      return new Promise<string>(resolve => {
+        const id = `kitsune-cmd-${Date.now()}`
+        let output = ''
+        const offOut = window.api.process.onStdout((pid, data) => { if (pid === id) output += data })
+        const offErr = window.api.process.onStderr((pid, data) => { if (pid === id) output += data })
+        const offExit = window.api.process.onExit((pid, code) => {
+          if (pid !== id) return
+          offOut(); offErr(); offExit()
+          resolve(output.slice(0, 4000) || `(exit code ${code})`)
+        })
+        const isWin = navigator.userAgent.includes('Win')
+        const shell = isWin ? 'cmd' : 'sh'
+        const flag = isWin ? '/c' : '-c'
+        window.api.process.run(id, shell, [flag, cmd], currentFolder).catch(err => {
+          offOut(); offErr(); offExit()
+          resolve(`Error: ${err}`)
+        })
+        setTimeout(() => { offOut(); offErr(); offExit(); resolve(output.slice(0, 4000) || '(timeout after 30s)') }, 30000)
+      })
     }
 
     return `Unknown tool: ${name}`

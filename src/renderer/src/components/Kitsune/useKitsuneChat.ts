@@ -806,8 +806,25 @@ export function useKitsuneChat() {
         userMessage = rest || cmd.desc
       }
     }
+    // @ mention detection — resolve @filename references to file content
+    const atMentions = [...userMessage.matchAll(/@([\w./\\-]+(?:\.\w+)?)/g)]
+    const atFiles: { name: string; content: string }[] = []
+    if (workingFolder && atMentions.length > 0) {
+      for (const m of atMentions) {
+        const rel = m[1]
+        const full = `${workingFolder}/${rel}`
+        try {
+          const r = await window.api.fs.readFile(full)
+          if (r.content !== null) {
+            atFiles.push({ name: rel, content: r.content })
+            userMessage = userMessage.replace(m[0], `\`${rel}\``)
+          }
+        } catch {}
+      }
+    }
+
     const imageSnapshot = attachedImage
-    const filesSnapshot = attachedFiles
+    const filesSnapshot = [...attachedFiles, ...atFiles.map(f => ({ name: f.name, path: f.name, content: f.content }))]
     const foldersSnapshot = attachedFolders
     if (!overridePrompt) setInput('')
     setAttachedImage(null)

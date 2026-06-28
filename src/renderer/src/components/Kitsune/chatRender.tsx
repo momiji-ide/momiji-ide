@@ -148,7 +148,7 @@ export function renderMessage(content: string): React.ReactNode {
 const TOOL_ICONS: Record<string, string> = {
   read_file: '📖', write_file: '✏️', list_directory: '📁',
   search_in_files: '🔍', create_folder: '📂', delete_file: '🗑️',
-  thinking: '🤔',
+  run_command: '💻', thinking: '🤔',
 }
 const TOOL_LABELS: Record<string, string> = {
   thinking: 'Kitsune is working…',
