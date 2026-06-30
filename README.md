@@ -179,7 +179,9 @@ Grab the latest installer from [**Releases →**](https://github.com/momiji-ide/
 | Platform | File |
 |---|---|
 | Windows | [`Momiji-IDE-Setup-1.3.3.exe`](https://github.com/momiji-ide/momiji-ide/releases/download/v1.3.3/Momiji-IDE-Setup-1.3.3.exe) |
-| macOS / Linux | Build from source (see below) |
+| macOS (Apple Silicon) | [`Momiji-IDE-1.3.3-arm64.dmg`](https://github.com/momiji-ide/momiji-ide/releases/download/v1.3.3/Momiji-IDE-1.3.3-arm64.dmg) |
+| macOS (Intel) | [`Momiji-IDE-1.3.3-x64.dmg`](https://github.com/momiji-ide/momiji-ide/releases/download/v1.3.3/Momiji-IDE-1.3.3-x64.dmg) |
+| Linux | [`Momiji-IDE-1.3.3.AppImage`](https://github.com/momiji-ide/momiji-ide/releases/download/v1.3.3/Momiji-IDE-1.3.3.AppImage) |
 
 ### Build from source
 
